@@ -94,6 +94,12 @@ Beide tabellen zijn nieuw en alleen voor MK Intranet — `mkapp` gebruikt ze
 niet en wordt hier niet door geraakt. Zet je in plaats daarvan een verse
 database op, dan staan deze tabellen ook gewoon al in `database.sql`.
 
+**V0.0.6** wijzigt alleen rechten in de PHP-code (geen nieuwe kolommen),
+maar voegt wel een wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -p mkapp < migratie_v0.0.6_crew_rechten.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -120,10 +126,10 @@ git push && git push --tags
 ## Aannames die ik zelf heb ingevuld
 
 Deze zijn niet expliciet gevraagd — pas ze gerust aan:
-- **Wie mag crew beheren:** elke ingelogde gebruiker (beheerder, medewerker
-  of viewer), niet alleen beheerders. Wil je dit beperken tot beheerders,
-  dan vervang je in `crew.php` de aanroep `vereis_login()` door
-  `vereis_beheerder()`.
+- **Wie mag crew beheren:** sinds V0.0.6 alleen beheerders (net als in
+  `mkapp`). Medewerkers en viewers zien de crewlijst wel, maar de
+  toevoeg-/bewerk-/verwijderknoppen verschijnen niet, en de bijbehorende
+  POST-acties in `crew.php` weigeren ook als je ze zelf zou aanroepen.
 - **Wie mag berichten plaatsen:** alleen gebruikers met de rol
   `beheerder` — `berichten.php` is met `vereis_beheerder()` afgeschermd,
   en de link in de navigatie is dan ook alleen voor hen zichtbaar.
