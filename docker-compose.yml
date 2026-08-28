@@ -11,8 +11,11 @@ services:
       DB_HOST: 192.168.60.199
       DB_PORT: "3306"
       DB_NAME: mkapp
-      DB_USER: phpserver
-      DB_PASS: mkappwachtwoord2026
+      # Gebruikersnaam/wachtwoord komen uit een lokaal .env-bestand (niet in
+      # git -- zie .env.example). Zo staan ze niet leesbaar in de (publieke)
+      # repo.
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
       APP_TIMEZONE: "Europe/Amsterdam"
 
 # Geen extern Docker-netwerk meer nodig: deze container bereikt de database

@@ -47,13 +47,29 @@ is tot dat IP-adres op poort 3306.
 meldkamerstack aansluiten (in plaats van een IP-adres), kijk dan naar de
 `V0.0.1`-versie van dit bestand in de git-historie voor die opzet.
 
-**Databasewachtwoord.** De `DB_PASS` in `docker-compose.yml` is dezelfde
-die ook in de `docker-compose.yml` van `mkapp` staat (`phpserver`-account).
-Die staat dus nu op twee plekken. Wil je dat liever niet, dan kun je in de
-database van `mkapp` een los, beperkter account aanmaken (bijvoorbeeld één
-dat alleen bij `crew`, `meldingen`, `gebruikers`, `statussen`,
-`hoofdclassificaties`, `subclassificaties` en `instellingen` mag) en dat
-hier gebruiken in plaats van het volledige `phpserver`-account.
+**Wachtwoord.** `DB_USER`/`DB_PASS` staan niet in `docker-compose.yml`
+zelf, maar in een lokaal `.env`-bestand (zelfde map), dat in `.gitignore`
+staat en dus nooit meegaat naar git/GitHub. Eerste keer opzetten:
+```bash
+cp .env.example .env
+# open .env en vul de echte gebruikersnaam/wachtwoord in
+```
+`docker compose` leest `.env` automatisch bij het starten. Wijzig je het
+wachtwoord (aanbevolen, zie de opmerking hieronder), dan pas je alleen
+`.env` aan -- daar hoef je nooit iets voor te committen.
+
+**Dit wachtwoord stond eerder wél in git.** De eerste versies (V0.0.1 en
+V0.0.2) van dit project hadden het wachtwoord nog gewoon leesbaar in
+`docker-compose.yml` staan, en zijn al naar een publieke GitHub-repo
+gepusht. Beschouw dat wachtwoord als gecompromitteerd: wijzig het
+`phpserver`-account op de database zelf (`ALTER USER 'phpserver'@'...'
+IDENTIFIED BY '...';` of het equivalent via je hostingpaneel) en zet het
+nieuwe wachtwoord alleen in je lokale `.env`. Gebruikt `mkapp` hetzelfde
+account/wachtwoord, dan moet die stack ook bijgewerkt worden. Wil je ook
+de oude, publieke git-geschiedenis opschonen (het wachtwoord staat nog in
+de V0.0.1/V0.0.2-commits), dan kan dat met `git filter-repo` of BFG
+Repo-Cleaner -- vraag het gerust, dat is een aparte, ingrijpendere
+operatie (herschrijft geschiedenis, vereist force-push).
 
 ## Handmatig (zonder Docker)
 
