@@ -17,25 +17,35 @@ productie draait deze app dus tegen de bestaande, echte database.
 
 ## Starten met Docker
 
-Deze app moet op **hetzelfde Docker-netwerk** draaien als de
-meldkamerstack, zodat hij de `meldkamer_db`-container bij naam kan
-bereiken.
+Deze app verbindt met de database van het meldkamersysteem via een vast
+IP-adres op het netwerk (huidige testopstelling: `192.168.60.199`), niet
+via een gedeelde Docker-container. Dat betekent dat deze app op een andere
+machine kan draaien dan de meldkamerstack zelf, zolang er netwerktoegang
+is tot dat IP-adres op poort 3306.
 
-1. Zorg dat de meldkamerstack (in `Documents/Docker`) al draait.
-2. Zoek het netwerk waar `meldkamer_db` op zit:
+1. Controleer dat de database op `192.168.60.199:3306` vanaf deze machine
+   bereikbaar is, bijvoorbeeld met:
    ```bash
-   docker inspect meldkamer_db --format '{{json .NetworkSettings.Networks}}'
+   nc -vz 192.168.60.199 3306
    ```
-   Staat de meldkamerstack in een map genaamd `Docker` en is die gestart met
-   `docker compose up`? Dan heet het netwerk standaard **`docker_default`**
-   — dat is ook de standaardwaarde in `docker-compose.yml` hier. Zie je een
-   andere naam, kopieer dan `.env.example` naar `.env` en zet die naam bij
-   `MELDKAMER_NETWORK`.
+2. Zorg dat de MariaDB/MySQL-server daar externe verbindingen toestaat
+   (bind-address niet beperkt tot `127.0.0.1`) en dat het `phpserver`-account
+   toegang heeft vanaf dit IP-adres/subnet (niet alleen `localhost`):
+   ```sql
+   SELECT user, host FROM mysql.user WHERE user = 'phpserver';
+   -- zo nodig: GRANT ALL ON mkapp.* TO 'phpserver'@'%';
+   ```
 3. Bouw en start:
    ```bash
    docker compose up -d --build
    ```
 4. Ga naar **http://localhost:8081** en log in met een bestaand account.
+
+**Ander IP-adres of terug naar hetzelfde Docker-netwerk?** Pas `DB_HOST`
+(en eventueel `DB_PORT`) aan onder `environment:` bij de `app`-service in
+`docker-compose.yml`. Wil je weer op hetzelfde Docker-netwerk als de
+meldkamerstack aansluiten (in plaats van een IP-adres), kijk dan naar de
+`V0.0.1`-versie van dit bestand in de git-historie voor die opzet.
 
 **Databasewachtwoord.** De `DB_PASS` in `docker-compose.yml` is dezelfde
 die ook in de `docker-compose.yml` van `mkapp` staat (`phpserver`-account).

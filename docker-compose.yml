@@ -6,28 +6,17 @@ services:
     ports:
       - "8081:80"
     environment:
-      # Zelfde database als het meldkamersysteem (mkapp) -- geen kopie,
-      # deze app leest/schrijft rechtstreeks in dezelfde tabellen.
-      DB_HOST: meldkamer_db
+      # Testopstelling: database bereikbaar via een vast IP-adres op het
+      # netwerk (niet via de lokale Docker-container van de meldkamerstack).
+      DB_HOST: 192.168.60.199
       DB_PORT: "3306"
       DB_NAME: mkapp
       DB_USER: phpserver
       DB_PASS: mkappwachtwoord2026
       APP_TIMEZONE: "Europe/Amsterdam"
-    networks:
-      - meldkamer
 
-# Sluit aan op het BESTAANDE Docker-netwerk van de meldkamerstack, in
-# plaats van een eigen (nieuw) netwerk te maken -- zo kan deze container
-# de "meldkamer_db"-container gewoon bij naam bereiken.
-#
-# Naam van dat netwerk verifiëren:
-#   docker inspect meldkamer_db --format '{{json .NetworkSettings.Networks}}'
-# (of: docker network ls, en zoek het netwerk waar meldkamer_db op draait)
-#
-# Klopt de standaardwaarde hieronder niet? Zet 'm in een .env-bestand naast
-# dit docker-compose.yml, bv.: MELDKAMER_NETWORK=docker_default
-networks:
-  meldkamer:
-    external: true
-    name: ${MELDKAMER_NETWORK:-docker_default}
+# Geen extern Docker-netwerk meer nodig: deze container bereikt de database
+# nu gewoon via het netwerk (LAN), niet via een gedeelde Docker-container.
+# Wil je later weer aansluiten op de meldkamerstack via hetzelfde
+# Docker-netwerk (in plaats van een IP-adres)? Zie de eerdere versie in de
+# git-historie (V0.0.1) voor die opzet, of vraag het gewoon opnieuw.
