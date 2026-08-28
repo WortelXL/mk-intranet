@@ -39,7 +39,7 @@ is tot dat IP-adres op poort 3306.
    ```bash
    docker compose up -d --build
    ```
-4. Ga naar **http://localhost:8081** en log in met een bestaand account.
+4. Ga naar **http://localhost** (poort 80) en log in met een bestaand account.
 
 **Ander IP-adres of terug naar hetzelfde Docker-netwerk?** Pas `DB_HOST`
 (en eventueel `DB_PORT`) aan onder `environment:` bij de `app`-service in
@@ -86,4 +86,7 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   categorie "actief" (zelfde definitie als het dashboard/Overview van
   `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,
   passief overzicht.
-- **Poort:** 8081, zodat deze niet botst met poort 8080 van `mkapp`.
+- **Poort:** 80. Draait in een eigen Proxmox-container, los van de Docker-host
+  van `mkapp` (poort 8080), dus geen conflict. Draai je 'm ooit op dezelfde
+  Docker-host als `mkapp`, kies dan een andere hostpoort (bv. `8081:80`) om
+  botsing met `mkapp`'s poort 8080 te voorkomen.

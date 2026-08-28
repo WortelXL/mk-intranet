@@ -4,7 +4,7 @@ services:
     container_name: mk_intranet_app
     restart: unless-stopped
     ports:
-      - "8081:80"
+      - "80:80"
     environment:
       # Testopstelling: database bereikbaar via een vast IP-adres op het
       # netwerk (niet via de lokale Docker-container van de meldkamerstack).
