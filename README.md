@@ -1,8 +1,8 @@
 # MK Intranet
 
-Een kleine, losse PHP-applicatie naast het meldkamersysteem (`mkapp`): één
-mooie pagina voor het intranet met een live, alleen-lezen overzicht van
-lopende meldingen en een crewlijst (toevoegen/bewerken/verwijderen).
+Een kleine, losse PHP-applicatie naast het meldkamersysteem (`mkapp`) voor
+het intranet: een live, alleen-lezen overzicht van lopende meldingen, een
+crewlijst en mededelingen van beheerders.
 
 Belangrijk: dit is **geen kopie** van de data. MK Intranet praat via een
 live databaseverbinding met dezelfde MariaDB-database als `mkapp` — een
@@ -14,6 +14,17 @@ werkt hier ook.
 `database.sql` staat er bewust wel bij, als kopie van het schema — handig
 als naslag of om lokaal een losstaande testdatabase op te zetten, maar in
 productie draait deze app dus tegen de bestaande, echte database.
+
+## Pagina's
+
+- **Dashboard** (`index.php`) — lopende meldingen (alleen-lezen) en de
+  laatste mededelingen.
+- **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
+  verwijderen. Toegankelijk voor elke ingelogde gebruiker.
+- **Berichten beheren** (`berichten.php`) — mededelingen aanmaken,
+  bewerken en verwijderen. Alleen zichtbaar/toegankelijk voor gebruikers
+  met de rol `beheerder`; de link verschijnt dan ook alleen voor hen in de
+  navigatie.
 
 ## Starten met Docker
 
@@ -71,6 +82,18 @@ de V0.0.1/V0.0.2-commits), dan kan dat met `git filter-repo` of BFG
 Repo-Cleaner -- vraag het gerust, dat is een aparte, ingrijpendere
 operatie (herschrijft geschiedenis, vereist force-push).
 
+## Database-migratie (nodig voor V0.0.5)
+
+V0.0.5 voegt twee nieuwe tabellen toe: `berichten` (mededelingen) en
+`intranet_versies` (het wijzigingenlog hieronder). Draai dit één keer tegen
+de bestaande, live database voordat je V0.0.5 in gebruik neemt:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -p mkapp < migratie_v0.0.5_berichten_en_versies.sql
+```
+Beide tabellen zijn nieuw en alleen voor MK Intranet — `mkapp` gebruikt ze
+niet en wordt hier niet door geraakt. Zet je in plaats daarvan een verse
+database op, dan staan deze tabellen ook gewoon al in `database.sql`.
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -84,20 +107,29 @@ php -S localhost:8081
 ## Versiebeheer
 
 Dit project begint bij **V0.0.1** en gebruikt git-tags per release, in
-dezelfde stijl als `mkapp` (bv. `V0.1.0`, `V0.2.0`, ...). Er is bewust nog
-geen GitHub-remote gekoppeld — dat doe je zelf:
+dezelfde stijl als `mkapp`. Het wijzigingenlog is ook zichtbaar ín de app
+zelf: de versieknop onderaan elke pagina opent een overzicht van wat er
+per versie is veranderd of toegevoegd (bron: de `intranet_versies`-tabel).
+Nieuwe versie committen en pushen:
 ```bash
-git remote add origin https://github.com/<jouw-account>/mk-intranet.git
-git push -u origin main --tags
+git add -A && git commit -m "V0.x.x - omschrijving"
+git tag V0.x.x
+git push && git push --tags
 ```
 
 ## Aannames die ik zelf heb ingevuld
 
 Deze zijn niet expliciet gevraagd — pas ze gerust aan:
 - **Wie mag crew beheren:** elke ingelogde gebruiker (beheerder, medewerker
-  of viewer), niet alleen beheerders. Wil je dit beperken tot beheerders
-  (zoals in `mkapp`), dan is dat een kleine aanpassing in `index.php`
-  (`vereis_login()` vervangen door een check op `is_beheerder()`).
+  of viewer), niet alleen beheerders. Wil je dit beperken tot beheerders,
+  dan vervang je in `crew.php` de aanroep `vereis_login()` door
+  `vereis_beheerder()`.
+- **Wie mag berichten plaatsen:** alleen gebruikers met de rol
+  `beheerder` — `berichten.php` is met `vereis_beheerder()` afgeschermd,
+  en de link in de navigatie is dan ook alleen voor hen zichtbaar.
+- **Berichten:** platte titel + tekst, geen categorieën, vastpinnen of
+  vervaldatum. Het dashboard toont de 20 meest recente; ouder dan dat zie
+  je alleen nog via `berichten.php`.
 - **Meldingenoverzicht:** toont alle meldingen met een status uit de
   categorie "actief" (zelfde definitie als het dashboard/Overview van
   `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,

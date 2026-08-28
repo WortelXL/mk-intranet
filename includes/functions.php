@@ -67,6 +67,27 @@ function vereis_login(): void
     }
 }
 
+function is_beheerder(): bool
+{
+    return huidige_gebruiker_rol() === 'beheerder';
+}
+
+/** Voor pagina's die alleen beheerders mogen zien (bv. berichten aanmaken) */
+function vereis_beheerder(): void
+{
+    vereis_login();
+    if (!is_beheerder()) {
+        http_response_code(403);
+        $pdo = get_pdo(); // lokaal, zodat header.php (event_naam($pdo)) 'm kan gebruiken
+        $paginatitel = 'Geen toegang';
+        $actief = '';
+        include __DIR__ . '/header.php';
+        echo '<div class="empty">Je hebt geen beheerdersrechten om deze pagina te bekijken.</div>';
+        include __DIR__ . '/footer.php';
+        exit;
+    }
+}
+
 /* =========================================================================
  * Crew (contactpersonen zonder eigen login)
  * ========================================================================= */
@@ -174,4 +195,79 @@ function get_status_tellingen(PDO $pdo): array
 {
     return $pdo->query('SELECT status, COUNT(*) AS aantal FROM meldingen GROUP BY status')
         ->fetchAll(PDO::FETCH_KEY_PAIR);
+}
+
+/* =========================================================================
+ * Berichten (mededelingen van beheerders, los van meldingen)
+ * ========================================================================= */
+
+/** Meest recente berichten eerst, met naam van de auteur erbij */
+function get_berichten(PDO $pdo, ?int $limiet = null): array
+{
+    $sql = 'SELECT b.*, g.naam AS auteur_naam
+            FROM berichten b
+            LEFT JOIN gebruikers g ON g.id = b.auteur_id
+            ORDER BY b.aangemaakt_op DESC';
+    if ($limiet !== null) {
+        $sql .= ' LIMIT ' . (int) $limiet;
+    }
+    return $pdo->query($sql)->fetchAll();
+}
+
+function get_bericht(PDO $pdo, int $id): ?array
+{
+    $stmt = $pdo->prepare('SELECT * FROM berichten WHERE id = :id');
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch() ?: null;
+}
+
+/* =========================================================================
+ * Versiebeheer / wijzigingenlog van MK Intranet zelf (los van mkapp's
+ * eigen 'versies'-tabel)
+ * ========================================================================= */
+
+function get_intranet_versies(PDO $pdo): array
+{
+    return $pdo->query('SELECT * FROM intranet_versies ORDER BY id DESC')->fetchAll();
+}
+
+function huidige_intranet_versie(PDO $pdo): string
+{
+    $nieuwste = $pdo->query('SELECT versienummer FROM intranet_versies ORDER BY id DESC LIMIT 1')->fetchColumn();
+    return $nieuwste ?: APP_VERSION;
+}
+
+/**
+ * Zet de vrije wijzigingen-tekst van een versie om naar HTML. Een regel
+ * die begint met "## " wordt een groepskop, een regel die begint met "- "
+ * (of gewoon een losse regel) wordt een bullet-item.
+ */
+function render_wijzigingen_html(string $tekst): string
+{
+    $html = '';
+    $binnen_lijst = false;
+    foreach (explode("\n", $tekst) as $regel) {
+        $regel = trim($regel);
+        if ($regel === '') {
+            continue;
+        }
+        if (str_starts_with($regel, '## ')) {
+            if ($binnen_lijst) {
+                $html .= '</ul>';
+                $binnen_lijst = false;
+            }
+            $html .= '<p class="wijzigingen-groep">' . e(trim(substr($regel, 3))) . '</p>';
+        } else {
+            if (!$binnen_lijst) {
+                $html .= '<ul>';
+                $binnen_lijst = true;
+            }
+            $regel = str_starts_with($regel, '- ') ? trim(substr($regel, 2)) : $regel;
+            $html .= '<li>' . e($regel) . '</li>';
+        }
+    }
+    if ($binnen_lijst) {
+        $html .= '</ul>';
+    }
+    return $html;
 }

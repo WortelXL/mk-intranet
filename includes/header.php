@@ -1,6 +1,7 @@
 <?php
-/** Verwacht optioneel: $paginatitel (string) */
+/** Verwacht optioneel: $paginatitel (string), $actief (string) */
 $paginatitel = $paginatitel ?? 'Intranet';
+$actief = $actief ?? '';
 ?>
 <!doctype html>
 <html lang="nl">
@@ -22,6 +23,11 @@ $paginatitel = $paginatitel ?? 'Intranet';
         </a>
         <nav class="mainnav">
             <?php if (is_ingelogd()): ?>
+                <a href="/index.php" class="<?= $actief === 'dashboard' ? 'active' : '' ?>">Dashboard</a>
+                <a href="/crew.php" class="<?= $actief === 'crew' ? 'active' : '' ?>">Crew</a>
+                <?php if (is_beheerder()): ?>
+                    <a href="/berichten.php" class="<?= $actief === 'berichten' ? 'active' : '' ?>">Berichten beheren</a>
+                <?php endif; ?>
                 <span class="user-chip">
                     <?= e(huidige_gebruiker_naam()) ?>
                     <span class="rol-badge rol-<?= e(huidige_gebruiker_rol()) ?>"><?= e(rol_label(huidige_gebruiker_rol())) ?></span>

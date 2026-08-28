@@ -27,7 +27,7 @@ define('DB_PASS', env_of('DB_PASS', 'wijzig_dit_wachtwoord'));
 define('DB_CHARSET', env_of('DB_CHARSET', 'utf8mb4'));
 
 // ---- Versie --------------------------------------------------------------
-define('APP_VERSION', 'V0.0.4');
+define('APP_VERSION', 'V0.0.5');
 
 // ---- Overig ----------------------------------------------------------------
 date_default_timezone_set(env_of('APP_TIMEZONE', 'Europe/Amsterdam'));

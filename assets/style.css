@@ -112,6 +112,7 @@ nav.mainnav a {
 }
 
 nav.mainnav a:hover { color: var(--text); background: var(--panel-2); }
+nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 
 .user-chip {
     display: inline-flex;
@@ -178,7 +179,16 @@ nav.mainnav a:hover { color: var(--text); background: var(--panel-2); }
     margin: 0 0 16px;
     padding-bottom: 10px;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
+
+.section-title-action { font-family: var(--font-body); font-weight: 500; }
+
+.back-link { color: var(--muted); text-decoration: none; }
+.back-link:hover { color: var(--text); }
 
 .section-note {
     color: var(--muted);
@@ -279,6 +289,32 @@ nav.mainnav a:hover { color: var(--text); background: var(--panel-2); }
     text-align: center;
     color: var(--muted);
     font-size: 13.5px;
+    border-radius: 10px;
+}
+
+/* ---- Berichten ---------------------------------------------------- */
+.bericht-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bericht-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+}
+
+.bericht-card h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    margin: 0 0 8px;
+}
+
+.bericht-card p {
+    margin: 0 0 4px;
+    line-height: 1.55;
 }
 
 /* ---- Panels & forms ---------------------------------------------------- */
@@ -317,9 +353,11 @@ nav.mainnav a:hover { color: var(--text); background: var(--panel-2); }
 }
 
 .field { display: flex; flex-direction: column; gap: 6px; }
+.field-full { grid-column: 1 / -1; }
 .field label { font-size: 12.5px; color: var(--muted); font-weight: 500; }
 
-.field input {
+.field input,
+.field textarea {
     background: var(--panel-2);
     border: 1px solid var(--border);
     color: var(--text);
@@ -327,10 +365,12 @@ nav.mainnav a:hover { color: var(--text); background: var(--panel-2); }
     padding: 9px 11px;
     font-size: 14px;
     font-family: inherit;
+    resize: vertical;
 }
-.field input:focus { outline: none; border-color: var(--teal); }
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--teal); }
 
-.actions.full { grid-column: 1 / -1; display: flex; gap: 10px; }
+.actions { display: flex; gap: 10px; margin-top: 12px; }
+.actions.full { grid-column: 1 / -1; margin-top: 0; }
 
 /* ---- Buttons ---------------------------------------------------- */
 .btn {
@@ -412,14 +452,142 @@ nav.mainnav a:hover { color: var(--text); background: var(--panel-2); }
     margin: 40px 0 0;
 }
 
-.versie-badge {
+.versie-knop {
     font-family: var(--font-mono);
     font-size: 11px;
     background: var(--panel-2);
     border: 1px solid var(--border);
+    color: var(--muted);
     border-radius: 100px;
     padding: 2px 9px;
     margin-left: 6px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+}
+.versie-knop:hover { color: var(--teal); border-color: var(--teal-dim); }
+
+/* ---- Wijzigingenlog-dialoog ---------------------------------------------------- */
+.wijzigingen-dialog {
+    width: min(560px, calc(100vw - 48px));
+    max-height: min(640px, calc(100vh - 96px));
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+    color: var(--text);
+}
+.wijzigingen-dialog::backdrop { background: rgba(6,8,12,0.6); }
+
+.wijzigingen-kop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--panel);
+}
+.wijzigingen-kop h2 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    margin: 0;
+}
+
+.wijzigingen-sluiten {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+.wijzigingen-sluiten:hover { color: var(--text); }
+
+.wijzigingen-inhoud {
+    padding: 8px 20px 20px;
+    overflow-y: auto;
+    max-height: calc(min(640px, calc(100vh - 96px)) - 60px);
+}
+
+.wijzigingen-release {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+}
+.wijzigingen-release:last-child { border-bottom: none; }
+
+.wijzigingen-release-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.wijzigingen-release-kop {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 13px;
+    margin: 0 0 6px;
+    color: var(--teal);
+}
+.wijzigingen-release-kop span { color: var(--muted); font-weight: 400; }
+
+.wijzigingen-groep {
+    font-weight: 600;
+    font-size: 13px;
+    margin: 10px 0 4px;
+}
+
+.wijzigingen-inhoud ul {
+    margin: 0 0 4px;
+    padding-left: 20px;
+}
+.wijzigingen-inhoud li {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin-bottom: 3px;
+    line-height: 1.5;
+}
+
+.log-toggle-wrap {
+    display: inline-flex;
+    cursor: pointer;
+}
+.log-toggle-switch {
+    width: 30px;
+    height: 17px;
+    border-radius: 100px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    position: relative;
+    transition: background 0.15s;
+}
+.log-toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: transform 0.15s, background 0.15s;
+}
+
+.log-toggle-checkbox { display: none; }
+.log-toggle-checkbox:checked + .row-log { display: block; }
+.row-log { display: none; margin-top: 6px; }
+
+/* De toggle-switch (label) staat vóór de checkbox in de markup, dus
+   stuurt het bovenliggende blok het uiterlijk aan op basis van :has(). */
+.wijzigingen-release:has(.log-toggle-checkbox:checked) .log-toggle-switch {
+    background: var(--teal-dim);
+    border-color: var(--teal);
+}
+.wijzigingen-release:has(.log-toggle-checkbox:checked) .log-toggle-switch::after {
+    transform: translateX(13px);
+    background: var(--teal);
 }
 
 /* ---- Responsive ---------------------------------------------------- */
