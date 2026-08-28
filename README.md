@@ -82,13 +82,15 @@ de V0.0.1/V0.0.2-commits), dan kan dat met `git filter-repo` of BFG
 Repo-Cleaner -- vraag het gerust, dat is een aparte, ingrijpendere
 operatie (herschrijft geschiedenis, vereist force-push).
 
-## Database-migratie (nodig voor V0.0.5)
+## Database-migratie
 
-V0.0.5 voegt twee nieuwe tabellen toe: `berichten` (mededelingen) en
+Migratiescripts staan in de map `migratie/`, één bestand per versie die een databasewijziging nodig heeft (niet elke versie heeft er een).
+
+**V0.0.5** voegt twee nieuwe tabellen toe: `berichten` (mededelingen) en
 `intranet_versies` (het wijzigingenlog hieronder). Draai dit één keer tegen
 de bestaande, live database voordat je V0.0.5 in gebruik neemt:
 ```bash
-mysql -h 192.168.60.199 -P 3306 -u phpserver -p mkapp < migratie_v0.0.5_berichten_en_versies.sql
+mysql -h 192.168.60.199 -P 3306 -u phpserver -p mkapp < migratie/V0.0.5_berichten_en_versies.sql
 ```
 Beide tabellen zijn nieuw en alleen voor MK Intranet — `mkapp` gebruikt ze
 niet en wordt hier niet door geraakt. Zet je in plaats daarvan een verse
@@ -97,7 +99,13 @@ database op, dan staan deze tabellen ook gewoon al in `database.sql`.
 **V0.0.6** wijzigt alleen rechten in de PHP-code (geen nieuwe kolommen),
 maar voegt wel een wijzigingenlog-regel toe:
 ```bash
-mysql -h 192.168.60.199 -P 3306 -u phpserver -p mkapp < migratie_v0.0.6_crew_rechten.sql
+mysql -h 192.168.60.199 -P 3306 -u phpserver -p mkapp < migratie/V0.0.6_crew_rechten.sql
+```
+
+**V0.0.7** verplaatst alleen de migratiescripts zelf naar deze map (geen
+databasewijziging), en voegt de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -p mkapp < migratie/V0.0.7_changelog.sql
 ```
 
 ## Handmatig (zonder Docker)

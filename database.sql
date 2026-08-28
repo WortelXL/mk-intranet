@@ -499,4 +499,6 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Versiebeheer/wijzigingenlog onderaan de pagina, net als in het meldkamersysteem, zodat te zien is wat er per versie veranderd of toegevoegd is.'),
 ('V0.0.6', '28 augustus 2026', '## Rechten
 - Medewerkers (centralisten) en viewers kunnen de crewlijst alleen nog bekijken, niet meer bewerken.
-- Toevoegen, bewerken en verwijderen van crew is voortaan voorbehouden aan beheerders, net als in het meldkamersysteem.');
+- Toevoegen, bewerken en verwijderen van crew is voortaan voorbehouden aan beheerders, net als in het meldkamersysteem.'),
+('V0.0.7', '28 augustus 2026', '## Opgeruimd
+- Migratiescripts verplaatst naar een eigen map (migratie/) voor overzicht, in plaats van losse bestanden in de hoofdmap.');
