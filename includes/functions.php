@@ -213,12 +213,18 @@ function get_hoofdclassificaties(PDO $pdo): array
     return $pdo->query('SELECT * FROM hoofdclassificaties ORDER BY naam ASC')->fetchAll();
 }
 
+/** Alle labels (zelfde labels-tabel als het meldkamersysteem) */
+function get_labels(PDO $pdo): array
+{
+    return $pdo->query('SELECT * FROM labels ORDER BY naam ASC')->fetchAll();
+}
+
 /**
  * Afgeronde meldingen (status uit de categorie 'afgerond'), meest recent
- * eerst, optioneel gefilterd op hoofdclassificatie en/of prioriteit.
+ * eerst, optioneel gefilterd op hoofdclassificatie, prioriteit en/of label.
  * Alleen-lezen, met een bovengrens op het aantal resultaten.
  */
-function get_archief_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?string $prioriteit = null): array
+function get_archief_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?string $prioriteit = null, ?int $label_id = null): array
 {
     $max_resultaten = 150;
 
@@ -244,6 +250,10 @@ function get_archief_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?st
         $where[] = 'm.prioriteit = :prioriteit';
         $params['prioriteit'] = $prioriteit;
     }
+    if ($label_id) {
+        $where[] = 'EXISTS (SELECT 1 FROM melding_labels ml2 WHERE ml2.melding_id = m.id AND ml2.label_id = :label_id)';
+        $params['label_id'] = $label_id;
+    }
 
     $sql = 'SELECT m.*, h.naam AS hoofd_naam, h.kleur AS hoofd_kleur, s.naam AS sub_naam
             FROM meldingen m
@@ -256,6 +266,31 @@ function get_archief_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?st
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     return $stmt->fetchAll();
+}
+
+/**
+ * Labels per melding-id, voor een gegeven lijst van melding-ids (bv. het
+ * huidige archiefresultaat). Los van de hoofdquery opgehaald om GROUP BY-
+ * gedoe met meerdere labels per melding te voorkomen. Resultaat:
+ * [melding_id => [label, label, ...]].
+ */
+function get_labels_per_melding(PDO $pdo, array $melding_ids): array
+{
+    $labels_per_melding = [];
+    if (!$melding_ids) {
+        return $labels_per_melding;
+    }
+    $plekhouders = implode(',', array_fill(0, count($melding_ids), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT ml.melding_id, l.* FROM melding_labels ml
+         JOIN labels l ON l.id = ml.label_id
+         WHERE ml.melding_id IN ($plekhouders) ORDER BY l.naam ASC"
+    );
+    $stmt->execute($melding_ids);
+    foreach ($stmt->fetchAll() as $rij) {
+        $labels_per_melding[$rij['melding_id']][] = $rij;
+    }
+    return $labels_per_melding;
 }
 
 /* =========================================================================

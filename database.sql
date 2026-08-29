@@ -503,4 +503,7 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 ('V0.0.7', '28 augustus 2026', '## Opgeruimd
 - Migratiescripts verplaatst naar een eigen map (migratie/) voor overzicht, in plaats van losse bestanden in de hoofdmap.'),
 ('V0.0.8', '29 augustus 2026', '## Nieuw
-- Archiefpagina toegevoegd: alleen-lezen overzicht van afgeronde meldingen, met filters op hoofdclassificatie en prioriteit.');
+- Archiefpagina toegevoegd: alleen-lezen overzicht van afgeronde meldingen, met filters op hoofdclassificatie en prioriteit.'),
+('V0.0.9', '29 augustus 2026', '## Nieuw
+- Archief: filter op label toegevoegd, naast hoofdclassificatie en prioriteit. Labels worden ook per melding getoond.
+- Archief: exporteren naar PDF, met dezelfde filters als op het scherm ingesteld.');

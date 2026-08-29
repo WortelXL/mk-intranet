@@ -283,6 +283,16 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
     white-space: nowrap;
 }
 
+.label-chip {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 100px;
+    white-space: nowrap;
+    display: inline-block;
+    margin-left: 4px;
+}
+
 .empty {
     background: var(--panel);
     padding: 32px;

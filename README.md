@@ -22,8 +22,9 @@ productie draait deze app dus tegen de bestaande, echte database.
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
 - **Archief** (`archief.php`) — afgeronde meldingen bekijken (alleen-lezen),
-  met filters op hoofdclassificatie en prioriteit. Toegankelijk voor elke
-  ingelogde gebruiker.
+  met filters op hoofdclassificatie, prioriteit en label, en een knop om de
+  huidige (gefilterde) selectie te exporteren naar PDF (`export.php`).
+  Toegankelijk voor elke ingelogde gebruiker.
 - **Berichten beheren** (`berichten.php`) — mededelingen aanmaken,
   bewerken en verwijderen. Alleen zichtbaar/toegankelijk voor gebruikers
   met de rol `beheerder`; de link verschijnt dan ook alleen voor hen in de
@@ -117,6 +118,13 @@ geen schemawijziging), en voegt de wijzigingenlog-regel toe:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.8_changelog.sql
 ```
 
+**V0.0.9** voegt het labelfilter en de PDF-export toe aan het archief
+(labels/melding_labels bestonden al in de gedeelde database — geen
+schemawijziging), en voegt de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.9_changelog.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -158,9 +166,17 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,
   passief overzicht.
 - **Archief:** toont meldingen met een status uit de categorie "afgerond",
-  met alleen filters op hoofdclassificatie en prioriteit (geen zoeken,
-  subclassificatie- of labelfilter zoals in `mkapp`'s eigen archief).
-  Gecapped op 150 resultaten, alleen-lezen.
+  met filters op hoofdclassificatie, prioriteit en label (geen zoeken of
+  subclassificatiefilter zoals in `mkapp`'s eigen archief). Gecapped op 150
+  resultaten, alleen-lezen.
+- **PDF-export archief:** neemt dezelfde filters mee als op het scherm
+  staan (of alles, zonder filters), en toont per melding meld-ID, titel,
+  classificatie, prioriteit, status, locatie, labels, aanmaakdatum en
+  omschrijving. Geen logboek, protocollen, subtaken of doorlooptijden zoals
+  in `mkapp`'s eigen export — dat is data die MK Intranet's archief sowieso
+  niet toont. Gebruikt dezelfde dependency-vrije PDF-generator
+  (`includes/minipdf.php`) als het meldkamersysteem, geen Composer/externe
+  library nodig.
 - **Poort:** 80. Draait in een eigen Proxmox-container, los van de Docker-host
   van `mkapp` (poort 8080), dus geen conflict. Draai je 'm ooit op dezelfde
   Docker-host als `mkapp`, kies dan een andere hostpoort (bv. `8081:80`) om
