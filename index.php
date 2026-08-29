@@ -117,6 +117,9 @@ include __DIR__ . '/includes/header.php';
                 <article class="bericht-card">
                     <h3><?= e($b['titel']) ?></h3>
                     <p><?= nl2br(e($b['inhoud'])) ?></p>
+                    <?php if (!empty($b['url'])): ?>
+                        <p><a href="<?= e($b['url']) ?>" target="_blank" rel="noopener" class="bericht-link">&#128279; <?= e($b['url']) ?></a></p>
+                    <?php endif; ?>
                     <p class="section-note">
                         <?= e($b['auteur_naam'] ?: 'Onbekend') ?>
                         &middot; <?= (new DateTime($b['aangemaakt_op']))->format('d-m-Y H:i') ?>

@@ -190,6 +190,47 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 .back-link { color: var(--muted); text-decoration: none; }
 .back-link:hover { color: var(--text); }
 
+/* ---- Beheer-hub ---------------------------------------------------- */
+.beheer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+}
+.beheer-card {
+    display: block;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.15s;
+}
+.beheer-card:hover { border-color: var(--teal); }
+.beheer-card h3 { font-family: var(--font-display); font-size: 16px; margin: 0 0 6px; }
+.beheer-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+
+/* ---- Berichten: link ------------------------------------------------ */
+.bericht-link {
+    color: var(--teal);
+    font-size: 13px;
+    word-break: break-all;
+}
+
+/* ---- Admin-tabellen: compacte inline-formuliertjes per rij ---------- */
+.tabel-scroll { overflow-x: auto; }
+.inline-form { display: flex; gap: 4px; align-items: center; }
+.select-small, .input-small {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 12.5px;
+    font-family: inherit;
+}
+.input-small { width: 130px; }
+
 .section-note {
     color: var(--muted);
     font-size: 13px;

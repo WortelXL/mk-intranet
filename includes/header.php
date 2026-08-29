@@ -27,7 +27,7 @@ $actief = $actief ?? '';
                 <a href="/crew.php" class="<?= $actief === 'crew' ? 'active' : '' ?>">Crew</a>
                 <a href="/archief.php" class="<?= $actief === 'archief' ? 'active' : '' ?>">Archief</a>
                 <?php if (is_beheerder()): ?>
-                    <a href="/berichten.php" class="<?= $actief === 'berichten' ? 'active' : '' ?>">Berichten beheren</a>
+                    <a href="/beheer.php" class="<?= $actief === 'beheer' ? 'active' : '' ?>">Beheer</a>
                 <?php endif; ?>
                 <span class="user-chip">
                     <?= e(huidige_gebruiker_naam()) ?>

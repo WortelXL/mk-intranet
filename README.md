@@ -18,8 +18,9 @@ productie draait deze app dus tegen de bestaande, echte database.
 ## Pagina's
 
 - **Dashboard** (`index.php`) — lopende meldingen (alleen-lezen) en de
-  laatste mededelingen. Per melding kan het logboek (de notities)
-  in-/uitgeklapt worden via het vinkje "Laat log zien".
+  laatste mededelingen (incl. eventuele link). Per melding kan het
+  logboek (de notities) in-/uitgeklapt worden via het vinkje "Laat log
+  zien".
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
 - **Archief** (`archief.php`) — afgeronde meldingen bekijken (alleen-lezen),
@@ -27,10 +28,13 @@ productie draait deze app dus tegen de bestaande, echte database.
   PDF (`export.php`) kan op twee manieren: alles binnen de huidige filters,
   of een handmatige selectie via de aanvinkvakjes per melding.
   Toegankelijk voor elke ingelogde gebruiker.
-- **Berichten beheren** (`berichten.php`) — mededelingen aanmaken,
-  bewerken en verwijderen. Alleen zichtbaar/toegankelijk voor gebruikers
-  met de rol `beheerder`; de link verschijnt dan ook alleen voor hen in de
-  navigatie.
+- **Beheer** (`beheer.php`) — hub met twee kaarten, alleen zichtbaar/
+  toegankelijk voor gebruikers met de rol `beheerder`:
+  - **Berichten beheren** (`berichten.php`) — mededelingen aanmaken,
+    bewerken en verwijderen, met een optionele URL erbij.
+  - **Gebruikers beheren** (`gebruikers.php`) — accounts aanmaken, rol/
+    functie/wachtwoord wijzigen, activeren/deactiveren. Werkt op dezelfde
+    gedeelde `gebruikers`-tabel als het meldkamersysteem zelf.
 
 ## Starten met Docker
 
@@ -140,6 +144,12 @@ wijzigingenlog-regel toe:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.0_changelog.sql
 ```
 
+**V0.1.1** voegt een `url`-kolom toe aan `berichten` (wél een
+schemawijziging dit keer) en de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.1_beheer_en_url.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -173,9 +183,19 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
 - **Wie mag berichten plaatsen:** alleen gebruikers met de rol
   `beheerder` — `berichten.php` is met `vereis_beheerder()` afgeschermd,
   en de link in de navigatie is dan ook alleen voor hen zichtbaar.
-- **Berichten:** platte titel + tekst, geen categorieën, vastpinnen of
-  vervaldatum. Het dashboard toont de 20 meest recente; ouder dan dat zie
-  je alleen nog via `berichten.php`.
+- **Berichten:** platte titel + tekst + optionele URL, geen categorieën,
+  vastpinnen of vervaldatum. Eén enkele link per bericht (geen meerdere
+  links met eigen label zoals bij een protocol in het meldkamersysteem) —
+  bewust simpel gehouden. Het dashboard toont de 20 meest recente; ouder
+  dan dat zie je alleen nog via `berichten.php`.
+- **Gebruikersbeheer:** dezelfde velden en beveiligingen als het
+  gebruikersbeheer in het meldkamersysteem zelf (wachtwoorden gehasht met
+  `password_hash()`/`PASSWORD_DEFAULT`, dus compatibel), maar zonder de
+  API-tokenfunctionaliteit (die is specifiek voor de Stream Deck-API van
+  het meldkamersysteem en hoort hier niet thuis). Er blijft altijd
+  minstens één actieve beheerder over, en je kunt je eigen account niet
+  verwijderen. Let op: dit werkt op de live, gedeelde inlogtabel — een
+  wijziging hier is ook meteen een wijziging in het meldkamersysteem.
 - **Meldingenoverzicht:** toont alle meldingen met een status uit de
   categorie "actief" (zelfde definitie als het dashboard/Overview van
   `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,

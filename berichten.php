@@ -14,16 +14,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id      = (int) ($_POST['id'] ?? 0);
         $titel   = trim($_POST['titel'] ?? '');
         $inhoud  = trim($_POST['inhoud'] ?? '');
+        $url     = trim($_POST['url'] ?? '');
 
         if ($titel === '' || $inhoud === '') {
             $fout = 'Vul een titel en tekst in.';
+        } elseif ($url !== '' && !filter_var($url, FILTER_VALIDATE_URL)) {
+            $fout = 'Vul een geldige URL in (met http:// of https://), of laat het veld leeg.';
         } elseif ($id > 0) {
-            $stmt = $pdo->prepare('UPDATE berichten SET titel = :t, inhoud = :i WHERE id = :id');
-            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'id' => $id]);
+            $stmt = $pdo->prepare('UPDATE berichten SET titel = :t, inhoud = :i, url = :u WHERE id = :id');
+            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'u' => $url ?: null, 'id' => $id]);
             $succes = 'Bericht bijgewerkt.';
         } else {
-            $stmt = $pdo->prepare('INSERT INTO berichten (titel, inhoud, auteur_id) VALUES (:t, :i, :a)');
-            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'a' => $_SESSION['gebruiker_id']]);
+            $stmt = $pdo->prepare('INSERT INTO berichten (titel, inhoud, url, auteur_id) VALUES (:t, :i, :u, :a)');
+            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'u' => $url ?: null, 'a' => $_SESSION['gebruiker_id']]);
             $succes = 'Bericht "' . $titel . '" is geplaatst.';
         }
     }
@@ -42,14 +45,14 @@ if (isset($_GET['bewerk'])) {
 
 $berichten = get_berichten($pdo);
 
-$actief = 'berichten';
+$actief = 'beheer';
 $paginatitel = 'Berichten beheren';
 include __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-head">
     <div>
-        <p class="eyebrow"><a href="/index.php" class="back-link">&larr; Dashboard</a></p>
+        <p class="eyebrow"><a href="/beheer.php" class="back-link">&larr; Beheer</a></p>
         <h1>Berichten beheren</h1>
         <p>Mededelingen die je hier plaatst, verschijnen voor iedereen op het dashboard onder de lopende meldingen.</p>
     </div>
@@ -71,6 +74,10 @@ include __DIR__ . '/includes/header.php';
             <label for="inhoud">Tekst</label>
             <textarea id="inhoud" name="inhoud" required rows="4" placeholder="Wat wil je delen met de crew?"><?= e($bewerk['inhoud'] ?? '') ?></textarea>
         </div>
+        <div class="field field-full">
+            <label for="url">URL (optioneel)</label>
+            <input type="url" id="url" name="url" value="<?= e($bewerk['url'] ?? '') ?>" placeholder="bv. link naar een draaiboek of externe pagina">
+        </div>
         <div class="actions full">
             <button type="submit" class="btn btn-primary"><?= $bewerk ? 'Wijzigingen opslaan' : 'Bericht plaatsen' ?></button>
             <?php if ($bewerk): ?>
@@ -90,6 +97,9 @@ include __DIR__ . '/includes/header.php';
                 <article class="bericht-card">
                     <h3><?= e($b['titel']) ?></h3>
                     <p><?= nl2br(e($b['inhoud'])) ?></p>
+                    <?php if (!empty($b['url'])): ?>
+                        <p><a href="<?= e($b['url']) ?>" target="_blank" rel="noopener" class="bericht-link">&#128279; <?= e($b['url']) ?></a></p>
+                    <?php endif; ?>
                     <p class="section-note">
                         <?= e($b['auteur_naam'] ?: 'Onbekend') ?>
                         &middot; <?= (new DateTime($b['aangemaakt_op']))->format('d-m-Y H:i') ?>

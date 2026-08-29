@@ -466,6 +466,7 @@ CREATE TABLE IF NOT EXISTS berichten (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titel VARCHAR(150) NOT NULL,
     inhoud TEXT NOT NULL,
+    url VARCHAR(500) DEFAULT NULL,
     auteur_id INT DEFAULT NULL,
     aangemaakt_op DATETIME DEFAULT CURRENT_TIMESTAMP,
     bijgewerkt_op DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -510,4 +511,8 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 ('V0.0.9.1', '29 augustus 2026', '## Nieuw
 - Archief: meldingen kunnen nu individueel aangevinkt worden om alleen die selectie naar PDF te exporteren, naast de bestaande "exporteer alles binnen de huidige filters".'),
 ('V0.1.0', '29 augustus 2026', '## Nieuw
-- Dashboard: bij elke actieve melding een vinkje "Laat log zien" om het logboek (de notities) van die melding in te klappen, alleen-lezen.');
+- Dashboard: bij elke actieve melding een vinkje "Laat log zien" om het logboek (de notities) van die melding in te klappen, alleen-lezen.'),
+('V0.1.1', '29 augustus 2026', '## Nieuw
+- Beheer-knop toegevoegd in de navigatie: verzamelt Berichten beheren en het nieuwe Gebruikers beheren op één plek.
+- Gebruikersbeheer: accounts aanmaken, rol/functie/wachtwoord wijzigen, activeren/deactiveren. Zelfde gedeelde inlogtabel als het meldkamersysteem, met dezelfde beveiligingen (o.a. altijd minstens één actieve beheerder, geen eigen account verwijderen).
+- Berichten kunnen nu een optionele URL bevatten (bv. een link naar een draaiboek of externe pagina), zichtbaar op het dashboard en in Berichten beheren.');
