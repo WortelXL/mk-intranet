@@ -21,6 +21,9 @@ productie draait deze app dus tegen de bestaande, echte database.
   laatste mededelingen.
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
+- **Archief** (`archief.php`) — afgeronde meldingen bekijken (alleen-lezen),
+  met filters op hoofdclassificatie en prioriteit. Toegankelijk voor elke
+  ingelogde gebruiker.
 - **Berichten beheren** (`berichten.php`) — mededelingen aanmaken,
   bewerken en verwijderen. Alleen zichtbaar/toegankelijk voor gebruikers
   met de rol `beheerder`; de link verschijnt dan ook alleen voor hen in de
@@ -108,6 +111,12 @@ databasewijziging), en voegt de wijzigingenlog-regel toe:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.7_changelog.sql
 ```
 
+**V0.0.8** voegt de archiefpagina toe (leest alleen bestaande tabellen,
+geen schemawijziging), en voegt de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.8_changelog.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -148,6 +157,10 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   categorie "actief" (zelfde definitie als het dashboard/Overview van
   `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,
   passief overzicht.
+- **Archief:** toont meldingen met een status uit de categorie "afgerond",
+  met alleen filters op hoofdclassificatie en prioriteit (geen zoeken,
+  subclassificatie- of labelfilter zoals in `mkapp`'s eigen archief).
+  Gecapped op 150 resultaten, alleen-lezen.
 - **Poort:** 80. Draait in een eigen Proxmox-container, los van de Docker-host
   van `mkapp` (poort 8080), dus geen conflict. Draai je 'm ooit op dezelfde
   Docker-host als `mkapp`, kies dan een andere hostpoort (bv. `8081:80`) om

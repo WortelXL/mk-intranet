@@ -116,6 +116,11 @@ function get_actieve_statussen(PDO $pdo): array
     return array_values(array_filter(get_statussen($pdo), fn($s) => $s['categorie'] === 'actief'));
 }
 
+function get_afgeronde_statussen(PDO $pdo): array
+{
+    return array_values(array_filter(get_statussen($pdo), fn($s) => $s['categorie'] === 'afgerond'));
+}
+
 function statussen_sleutels(array $statussen): array
 {
     return array_column($statussen, 'sleutel');
@@ -195,6 +200,62 @@ function get_status_tellingen(PDO $pdo): array
 {
     return $pdo->query('SELECT status, COUNT(*) AS aantal FROM meldingen GROUP BY status')
         ->fetchAll(PDO::FETCH_KEY_PAIR);
+}
+
+/* =========================================================================
+ * Archief (afgeronde meldingen) — alleen-lezen, simpel gehouden: alleen
+ * filters op hoofdclassificatie en prioriteit (geen zoeken, geen
+ * subclassificatie/labelfilter zoals in het hoofdsysteem).
+ * ========================================================================= */
+
+function get_hoofdclassificaties(PDO $pdo): array
+{
+    return $pdo->query('SELECT * FROM hoofdclassificaties ORDER BY naam ASC')->fetchAll();
+}
+
+/**
+ * Afgeronde meldingen (status uit de categorie 'afgerond'), meest recent
+ * eerst, optioneel gefilterd op hoofdclassificatie en/of prioriteit.
+ * Alleen-lezen, met een bovengrens op het aantal resultaten.
+ */
+function get_archief_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?string $prioriteit = null): array
+{
+    $max_resultaten = 150;
+
+    $afgeronde_sleutels = statussen_sleutels(get_afgeronde_statussen($pdo));
+    if (!$afgeronde_sleutels) {
+        return [];
+    }
+
+    $plekhouders = [];
+    $params = [];
+    foreach ($afgeronde_sleutels as $i => $sleutel) {
+        $plekhouders[] = ':s' . $i;
+        $params['s' . $i] = $sleutel;
+    }
+
+    $where = ['m.status IN (' . implode(',', $plekhouders) . ')'];
+
+    if ($hoofdclassificatie_id) {
+        $where[] = 'm.hoofdclassificatie_id = :hoofdclassificatie_id';
+        $params['hoofdclassificatie_id'] = $hoofdclassificatie_id;
+    }
+    if ($prioriteit) {
+        $where[] = 'm.prioriteit = :prioriteit';
+        $params['prioriteit'] = $prioriteit;
+    }
+
+    $sql = 'SELECT m.*, h.naam AS hoofd_naam, h.kleur AS hoofd_kleur, s.naam AS sub_naam
+            FROM meldingen m
+            LEFT JOIN hoofdclassificaties h ON h.id = m.hoofdclassificatie_id
+            LEFT JOIN subclassificaties s ON s.id = m.subclassificatie_id
+            WHERE ' . implode(' AND ', $where) . '
+            ORDER BY m.aangemaakt_op DESC
+            LIMIT ' . $max_resultaten;
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetchAll();
 }
 
 /* =========================================================================

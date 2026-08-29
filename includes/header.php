@@ -25,6 +25,7 @@ $actief = $actief ?? '';
             <?php if (is_ingelogd()): ?>
                 <a href="/index.php" class="<?= $actief === 'dashboard' ? 'active' : '' ?>">Dashboard</a>
                 <a href="/crew.php" class="<?= $actief === 'crew' ? 'active' : '' ?>">Crew</a>
+                <a href="/archief.php" class="<?= $actief === 'archief' ? 'active' : '' ?>">Archief</a>
                 <?php if (is_beheerder()): ?>
                     <a href="/berichten.php" class="<?= $actief === 'berichten' ? 'active' : '' ?>">Berichten beheren</a>
                 <?php endif; ?>

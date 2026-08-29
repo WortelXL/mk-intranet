@@ -501,4 +501,6 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Medewerkers (centralisten) en viewers kunnen de crewlijst alleen nog bekijken, niet meer bewerken.
 - Toevoegen, bewerken en verwijderen van crew is voortaan voorbehouden aan beheerders, net als in het meldkamersysteem.'),
 ('V0.0.7', '28 augustus 2026', '## Opgeruimd
-- Migratiescripts verplaatst naar een eigen map (migratie/) voor overzicht, in plaats van losse bestanden in de hoofdmap.');
+- Migratiescripts verplaatst naar een eigen map (migratie/) voor overzicht, in plaats van losse bestanden in de hoofdmap.'),
+('V0.0.8', '29 augustus 2026', '## Nieuw
+- Archiefpagina toegevoegd: alleen-lezen overzicht van afgeronde meldingen, met filters op hoofdclassificatie en prioriteit.');
