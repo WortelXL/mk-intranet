@@ -267,6 +267,22 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 .melding-main .titel { font-weight: 600; }
 .melding-main .meta { font-size: 12.5px; color: var(--muted); }
 
+/* ---- Archief: selectievakjes voor export ------------------------ */
+.melding-row.archief-row {
+    grid-template-columns: 20px 100px 1fr auto auto auto;
+}
+
+.selectie-balk {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    color: var(--muted);
+    font-size: 12.5px;
+}
+.selectie-balk label { cursor: pointer; }
+.selectie-balk-spacer { flex: 1; }
+
 .cat-chip {
     font-size: 11.5px;
     font-weight: 600;
@@ -603,7 +619,8 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 
 /* ---- Responsive ---------------------------------------------------- */
 @media (max-width: 720px) {
-    .melding-row {
+    .melding-row,
+    .melding-row.archief-row {
         grid-template-columns: 1fr;
         gap: 6px;
     }

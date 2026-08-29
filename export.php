@@ -3,14 +3,36 @@ require_once __DIR__ . '/includes/functions.php';
 vereis_login();
 $pdo = get_pdo();
 
-// Zelfde filters als het archief, zodat de PDF precies aansluit op wat er
-// op het scherm stond.
-$hoofdclassificatie_id = isset($_GET['hoofd']) && $_GET['hoofd'] !== '' ? (int) $_GET['hoofd'] : null;
-$prioriteit = $_GET['prioriteit'] ?? '';
-$prioriteit = in_array($prioriteit, ['laag', 'normaal', 'hoog', 'kritiek'], true) ? $prioriteit : null;
-$label_id = isset($_GET['label']) && $_GET['label'] !== '' ? (int) $_GET['label'] : null;
+// Twee manieren om te bepalen wélke meldingen geëxporteerd worden:
+// 1) een handmatige selectie (aangevinkte checkboxes op archief.php, POST);
+// 2) anders de filters van het archief zelf (GET), zodat "exporteer alles"
+//    precies aansluit op wat er op het scherm stond.
+$geselecteerde_ids = [];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['ids']) && is_array($_POST['ids'])) {
+    $geselecteerde_ids = array_values(array_unique(array_filter(array_map('intval', $_POST['ids']))));
+}
 
-$meldingen = get_archief_meldingen($pdo, $hoofdclassificatie_id, $prioriteit, $label_id);
+if ($geselecteerde_ids) {
+    $plekhouders = implode(',', array_fill(0, count($geselecteerde_ids), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT m.*, h.naam AS hoofd_naam, h.kleur AS hoofd_kleur, s.naam AS sub_naam
+         FROM meldingen m
+         LEFT JOIN hoofdclassificaties h ON h.id = m.hoofdclassificatie_id
+         LEFT JOIN subclassificaties s ON s.id = m.subclassificatie_id
+         WHERE m.id IN ($plekhouders)
+         ORDER BY m.aangemaakt_op DESC"
+    );
+    $stmt->execute($geselecteerde_ids);
+    $meldingen = $stmt->fetchAll();
+} else {
+    $hoofdclassificatie_id = isset($_REQUEST['hoofd']) && $_REQUEST['hoofd'] !== '' ? (int) $_REQUEST['hoofd'] : null;
+    $prioriteit = $_REQUEST['prioriteit'] ?? '';
+    $prioriteit = in_array($prioriteit, ['laag', 'normaal', 'hoog', 'kritiek'], true) ? $prioriteit : null;
+    $label_id = isset($_REQUEST['label']) && $_REQUEST['label'] !== '' ? (int) $_REQUEST['label'] : null;
+
+    $meldingen = get_archief_meldingen($pdo, $hoofdclassificatie_id, $prioriteit, $label_id);
+}
+
 $labels_per_melding = get_labels_per_melding($pdo, array_column($meldingen, 'id'));
 
 require_once __DIR__ . '/includes/minipdf.php';
@@ -28,7 +50,7 @@ $pdf->nieuweRegel();
 $pdf->nieuweRegel();
 
 if (!$meldingen) {
-    $pdf->tekstOp($marge, 'Geen afgeronde meldingen gevonden voor deze filters.');
+    $pdf->tekstOp($marge, 'Geen meldingen gevonden voor deze selectie/filters.');
     $pdf->nieuweRegel();
 }
 

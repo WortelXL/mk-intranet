@@ -22,8 +22,9 @@ productie draait deze app dus tegen de bestaande, echte database.
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
 - **Archief** (`archief.php`) — afgeronde meldingen bekijken (alleen-lezen),
-  met filters op hoofdclassificatie, prioriteit en label, en een knop om de
-  huidige (gefilterde) selectie te exporteren naar PDF (`export.php`).
+  met filters op hoofdclassificatie, prioriteit en label. Exporteren naar
+  PDF (`export.php`) kan op twee manieren: alles binnen de huidige filters,
+  of een handmatige selectie via de aanvinkvakjes per melding.
   Toegankelijk voor elke ingelogde gebruiker.
 - **Berichten beheren** (`berichten.php`) — mededelingen aanmaken,
   bewerken en verwijderen. Alleen zichtbaar/toegankelijk voor gebruikers
@@ -123,6 +124,12 @@ mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migra
 schemawijziging), en voegt de wijzigingenlog-regel toe:
 ```bash
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.9_changelog.sql
+```
+
+**V0.0.9.1** voegt selectie-export toe aan het archief (geen
+schemawijziging), en voegt de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.9.1_changelog.sql
 ```
 
 ## Handmatig (zonder Docker)

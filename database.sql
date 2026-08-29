@@ -506,4 +506,6 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Archiefpagina toegevoegd: alleen-lezen overzicht van afgeronde meldingen, met filters op hoofdclassificatie en prioriteit.'),
 ('V0.0.9', '29 augustus 2026', '## Nieuw
 - Archief: filter op label toegevoegd, naast hoofdclassificatie en prioriteit. Labels worden ook per melding getoond.
-- Archief: exporteren naar PDF, met dezelfde filters als op het scherm ingesteld.');
+- Archief: exporteren naar PDF, met dezelfde filters als op het scherm ingesteld.'),
+('V0.0.9.1', '29 augustus 2026', '## Nieuw
+- Archief: meldingen kunnen nu individueel aangevinkt worden om alleen die selectie naar PDF te exporteren, naast de bestaande "exporteer alles binnen de huidige filters".');

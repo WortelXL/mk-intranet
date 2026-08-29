@@ -32,7 +32,7 @@ include __DIR__ . '/includes/header.php';
         <h1>Archief</h1>
         <p>Afgeronde meldingen uit het meldkamersysteem, alleen-lezen.</p>
     </div>
-    <a href="/export.php<?= $export_query ? '?' . $export_query : '' ?>" class="btn">Exporteren naar PDF</a>
+    <a href="/export.php<?= $export_query ? '?' . $export_query : '' ?>" class="btn">Exporteren naar PDF (alles, huidige filters)</a>
 </div>
 
 <div class="panel">
@@ -76,12 +76,24 @@ include __DIR__ . '/includes/header.php';
 <section class="section">
     <h2 class="section-title">Afgeronde meldingen <span class="count-badge"><?= count($meldingen) ?></span></h2>
 
+    <form method="post" action="/export.php">
     <div class="melding-list">
         <?php if (!$meldingen): ?>
             <div class="empty">Geen afgeronde meldingen gevonden<?= ($gekozen_hoofd_id || $gekozen_prioriteit || $gekozen_label_id) ? ' voor deze filters' : '' ?>.</div>
         <?php endif; ?>
+
+        <?php if ($meldingen): ?>
+            <div class="selectie-balk">
+                <input type="checkbox" id="selecteer-alles" onchange="document.querySelectorAll('.export-checkbox').forEach(function(c){ c.checked = this.checked; })">
+                <label for="selecteer-alles">Alles selecteren (<?= count($meldingen) ?>)</label>
+                <span class="selectie-balk-spacer"></span>
+                <button type="submit" class="btn btn-small">Exporteren naar PDF (selectie)</button>
+            </div>
+        <?php endif; ?>
+
         <?php foreach ($meldingen as $m): ?>
-            <div class="melding-row">
+            <div class="melding-row archief-row">
+                <input type="checkbox" name="ids[]" value="<?= (int) $m['id'] ?>" class="export-checkbox">
                 <span class="melding-id"><?= e($m['meld_id']) ?></span>
                 <span class="melding-main">
                     <span class="titel"><?= e($m['titel']) ?></span>
@@ -112,7 +124,8 @@ include __DIR__ . '/includes/header.php';
             </div>
         <?php endforeach; ?>
     </div>
-    <p class="section-note">Alleen-lezen, maximaal 150 resultaten. Meldingen zelf beheer je in het meldkamersysteem. De PDF-export neemt dezelfde filters mee als hierboven ingesteld.</p>
+    </form>
+    <p class="section-note">Alleen-lezen, maximaal 150 resultaten. Meldingen zelf beheer je in het meldkamersysteem. Vink meldingen aan om alleen die te exporteren, of gebruik de knop hierboven om alles binnen de huidige filters te exporteren.</p>
 </section>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
