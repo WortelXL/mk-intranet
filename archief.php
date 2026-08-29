@@ -4,19 +4,22 @@ vereis_login();
 $pdo = get_pdo();
 
 $hoofdclassificaties = get_hoofdclassificaties($pdo);
+$subclassificaties = get_subclassificaties($pdo);
 $labels = get_labels($pdo);
 
 $gekozen_hoofd_id  = isset($_GET['hoofd']) && $_GET['hoofd'] !== '' ? (int) $_GET['hoofd'] : null;
+$gekozen_sub_id = isset($_GET['sub']) && $_GET['sub'] !== '' ? (int) $_GET['sub'] : null;
 $gekozen_prioriteit = $_GET['prioriteit'] ?? '';
 $gekozen_prioriteit = in_array($gekozen_prioriteit, ['laag', 'normaal', 'hoog', 'kritiek'], true) ? $gekozen_prioriteit : null;
 $gekozen_label_id = isset($_GET['label']) && $_GET['label'] !== '' ? (int) $_GET['label'] : null;
 
-$meldingen = get_archief_meldingen($pdo, $gekozen_hoofd_id, $gekozen_prioriteit, $gekozen_label_id);
+$meldingen = get_archief_meldingen($pdo, $gekozen_hoofd_id, $gekozen_prioriteit, $gekozen_label_id, $gekozen_sub_id);
 $labels_per_melding = get_labels_per_melding($pdo, array_column($meldingen, 'id'));
 
 // Query-string voor de exportlink: precies dezelfde filters als hierboven.
 $export_query = http_build_query(array_filter([
     'hoofd'      => $gekozen_hoofd_id,
+    'sub'        => $gekozen_sub_id,
     'prioriteit' => $gekozen_prioriteit,
     'label'      => $gekozen_label_id,
 ]));
@@ -47,6 +50,22 @@ include __DIR__ . '/includes/header.php';
             </select>
         </div>
         <div class="field">
+            <label for="sub">Subclassificatie</label>
+            <select id="sub" name="sub">
+                <option value="">Alle subclassificaties</option>
+                <?php foreach ($hoofdclassificaties as $h): ?>
+                    <?php $subs_van_hoofd = array_filter($subclassificaties, fn($s) => (int) $s['hoofdclassificatie_id'] === (int) $h['id']); ?>
+                    <?php if ($subs_van_hoofd): ?>
+                        <optgroup label="<?= e($h['naam']) ?>">
+                            <?php foreach ($subs_van_hoofd as $s): ?>
+                                <option value="<?= $s['id'] ?>" <?= $gekozen_sub_id === (int) $s['id'] ? 'selected' : '' ?>><?= e($s['naam']) ?></option>
+                            <?php endforeach; ?>
+                        </optgroup>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="field">
             <label for="prioriteit">Prioriteit</label>
             <select id="prioriteit" name="prioriteit">
                 <option value="">Alle prioriteiten</option>
@@ -66,7 +85,7 @@ include __DIR__ . '/includes/header.php';
         </div>
         <div class="actions full">
             <button type="submit" class="btn btn-primary">Filteren</button>
-            <?php if ($gekozen_hoofd_id || $gekozen_prioriteit || $gekozen_label_id): ?>
+            <?php if ($gekozen_hoofd_id || $gekozen_sub_id || $gekozen_prioriteit || $gekozen_label_id): ?>
                 <a href="/archief.php" class="btn">Wis filters</a>
             <?php endif; ?>
         </div>
@@ -79,7 +98,7 @@ include __DIR__ . '/includes/header.php';
     <form method="post" action="/export.php">
     <div class="melding-list">
         <?php if (!$meldingen): ?>
-            <div class="empty">Geen afgeronde meldingen gevonden<?= ($gekozen_hoofd_id || $gekozen_prioriteit || $gekozen_label_id) ? ' voor deze filters' : '' ?>.</div>
+            <div class="empty">Geen afgeronde meldingen gevonden<?= ($gekozen_hoofd_id || $gekozen_sub_id || $gekozen_prioriteit || $gekozen_label_id) ? ' voor deze filters' : '' ?>.</div>
         <?php endif; ?>
 
         <?php if ($meldingen): ?>
@@ -94,9 +113,9 @@ include __DIR__ . '/includes/header.php';
         <?php foreach ($meldingen as $m): ?>
             <div class="melding-row archief-row">
                 <input type="checkbox" name="ids[]" value="<?= (int) $m['id'] ?>" class="export-checkbox">
-                <span class="melding-id"><?= e($m['meld_id']) ?></span>
+                <a href="/melding.php?id=<?= (int) $m['id'] ?>" class="melding-id melding-link"><?= e($m['meld_id']) ?></a>
                 <span class="melding-main">
-                    <span class="titel"><?= e($m['titel']) ?></span>
+                    <a href="/melding.php?id=<?= (int) $m['id'] ?>" class="titel melding-link"><?= e($m['titel']) ?></a>
                     <span class="meta">
                         <?= e($m['locatie'] ?: 'Geen locatie opgegeven') ?>
                         &middot; <?= (new DateTime($m['aangemaakt_op']))->format('d-m-Y H:i') ?>

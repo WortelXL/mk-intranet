@@ -219,12 +219,19 @@ function get_labels(PDO $pdo): array
     return $pdo->query('SELECT * FROM labels ORDER BY naam ASC')->fetchAll();
 }
 
+/** Alle subclassificaties, gegroepeerd op hoofdclassificatie voor het archieffilter */
+function get_subclassificaties(PDO $pdo): array
+{
+    return $pdo->query('SELECT * FROM subclassificaties ORDER BY naam ASC')->fetchAll();
+}
+
 /**
  * Afgeronde meldingen (status uit de categorie 'afgerond'), meest recent
- * eerst, optioneel gefilterd op hoofdclassificatie, prioriteit en/of label.
- * Alleen-lezen, met een bovengrens op het aantal resultaten.
+ * eerst, optioneel gefilterd op hoofdclassificatie, subclassificatie,
+ * prioriteit en/of label. Alleen-lezen, met een bovengrens op het aantal
+ * resultaten.
  */
-function get_archief_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?string $prioriteit = null, ?int $label_id = null): array
+function get_archief_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?string $prioriteit = null, ?int $label_id = null, ?int $subclassificatie_id = null): array
 {
     $max_resultaten = 150;
 
@@ -246,6 +253,10 @@ function get_archief_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?st
         $where[] = 'm.hoofdclassificatie_id = :hoofdclassificatie_id';
         $params['hoofdclassificatie_id'] = $hoofdclassificatie_id;
     }
+    if ($subclassificatie_id) {
+        $where[] = 'm.subclassificatie_id = :subclassificatie_id';
+        $params['subclassificatie_id'] = $subclassificatie_id;
+    }
     if ($prioriteit) {
         $where[] = 'm.prioriteit = :prioriteit';
         $params['prioriteit'] = $prioriteit;
@@ -266,6 +277,161 @@ function get_archief_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?st
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     return $stmt->fetchAll();
+}
+
+/**
+ * Eén afgeronde melding met alle details, voor de archief-detailpagina en
+ * de PDF-export. Geeft null terug als de melding niet bestaat of (nog)
+ * niet afgerond is -- mk-intranet toont alleen afgeronde meldingen in
+ * detail, actieve meldingen blijven beperkt tot het passieve
+ * dashboardoverzicht.
+ */
+function get_afgeronde_melding(PDO $pdo, int $id): ?array
+{
+    $afgeronde_sleutels = statussen_sleutels(get_afgeronde_statussen($pdo));
+    if (!$afgeronde_sleutels) {
+        return null;
+    }
+    $plekhouders = [];
+    $params = ['id' => $id];
+    foreach ($afgeronde_sleutels as $i => $sleutel) {
+        $plekhouders[] = ':s' . $i;
+        $params['s' . $i] = $sleutel;
+    }
+
+    $sql = 'SELECT m.*, h.naam AS hoofd_naam, h.kleur AS hoofd_kleur, s.naam AS sub_naam,
+                   g1.naam AS aangemaakt_door_naam, g2.naam AS bijgewerkt_door_naam
+            FROM meldingen m
+            LEFT JOIN hoofdclassificaties h ON h.id = m.hoofdclassificatie_id
+            LEFT JOIN subclassificaties s ON s.id = m.subclassificatie_id
+            LEFT JOIN gebruikers g1 ON g1.id = m.aangemaakt_door_id
+            LEFT JOIN gebruikers g2 ON g2.id = m.bijgewerkt_door_id
+            WHERE m.id = :id AND m.status IN (' . implode(',', $plekhouders) . ')';
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt->fetch() ?: null;
+}
+
+/** Logboekregels (notities) van één melding, chronologisch (oud -> nieuw) */
+function get_notities_voor_melding(PDO $pdo, int $melding_id): array
+{
+    return get_notities_per_melding($pdo, [$melding_id])[$melding_id] ?? [];
+}
+
+/**
+ * Gekoppelde protocollen van een melding, elk met de bijbehorende
+ * subtaken en de afvinkstatus daarvan (specifiek voor déze melding --
+ * dezelfde subtaak kan bij een andere melding los afgevinkt zijn).
+ * Resultaat: [['id'=>.., 'titel'=>.., 'inhoud'=>.., 'subtaken'=>[...]], ...]
+ */
+function get_protocollen_voor_melding(PDO $pdo, int $melding_id): array
+{
+    $stmt = $pdo->prepare(
+        'SELECT p.* FROM melding_protocollen mp
+         JOIN protocollen p ON p.id = mp.protocol_id
+         WHERE mp.melding_id = :m ORDER BY p.titel ASC'
+    );
+    $stmt->execute(['m' => $melding_id]);
+    $protocollen = $stmt->fetchAll();
+
+    if (!$protocollen) {
+        return [];
+    }
+
+    $subtaak_stmt = $pdo->prepare(
+        'SELECT ps.*, mss.afgevinkt, mss.afgevinkt_op, g.naam AS afgevinkt_door_naam
+         FROM protocol_subtaken ps
+         LEFT JOIN melding_subtaak_status mss ON mss.subtaak_id = ps.id AND mss.melding_id = :m
+         LEFT JOIN gebruikers g ON g.id = mss.afgevinkt_door_id
+         WHERE ps.protocol_id = :p ORDER BY ps.volgorde ASC, ps.id ASC'
+    );
+    foreach ($protocollen as &$protocol) {
+        $subtaak_stmt->execute(['m' => $melding_id, 'p' => $protocol['id']]);
+        $protocol['subtaken'] = $subtaak_stmt->fetchAll();
+    }
+    unset($protocol);
+
+    return $protocollen;
+}
+
+/** Losse taken (los van protocollen) van een melding, op volgorde */
+function get_losse_taken_voor_melding(PDO $pdo, int $melding_id): array
+{
+    $stmt = $pdo->prepare(
+        'SELECT lt.*, g.naam AS afgevinkt_door_naam
+         FROM melding_taken lt
+         LEFT JOIN gebruikers g ON g.id = lt.afgevinkt_door_id
+         WHERE lt.melding_id = :m ORDER BY lt.volgorde ASC, lt.id ASC'
+    );
+    $stmt->execute(['m' => $melding_id]);
+    return $stmt->fetchAll();
+}
+
+/** Volledige statusgeschiedenis van een melding, oud -> nieuw */
+function get_status_geschiedenis(PDO $pdo, int $melding_id): array
+{
+    $stmt = $pdo->prepare(
+        'SELECT sl.*, g.naam AS gebruiker_naam FROM melding_status_log sl
+         LEFT JOIN gebruikers g ON g.id = sl.gebruiker_id
+         WHERE sl.melding_id = :m ORDER BY sl.aangemaakt_op ASC'
+    );
+    $stmt->execute(['m' => $melding_id]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Zet een statusgeschiedenis om in tijdvakken met duur, bv.
+ * [['status'=>'open','van'=>DateTime,'tot'=>DateTime,'duur_seconden'=>1234], ...].
+ * $afgeronde_sleutels zijn de statussleutels uit categorie 'afgerond'
+ * (get_afgeronde_statussen()) -- zodra de melding in zo'n status komt,
+ * loopt het laatste tijdvak tot $laatst_bijgewerkt in plaats van tot nu.
+ */
+function bereken_status_tijdvakken(array $geschiedenis, array $afgeronde_sleutels, string $laatst_bijgewerkt): array
+{
+    if (!$geschiedenis) {
+        return [];
+    }
+    $tijdvakken = [];
+    $aantal = count($geschiedenis);
+    for ($i = 0; $i < $aantal; $i++) {
+        $van = new DateTime($geschiedenis[$i]['aangemaakt_op']);
+        if ($i + 1 < $aantal) {
+            $tot = new DateTime($geschiedenis[$i + 1]['aangemaakt_op']);
+        } elseif (in_array($geschiedenis[$i]['status'], $afgeronde_sleutels, true)) {
+            $tot = new DateTime($laatst_bijgewerkt);
+        } else {
+            $tot = new DateTime(); // nog actief: loopt door tot nu
+        }
+        $tijdvakken[] = [
+            'status'        => $geschiedenis[$i]['status'],
+            'gebruiker'     => $geschiedenis[$i]['gebruiker_naam'],
+            'van'           => $van,
+            'tot'           => $tot,
+            'duur_seconden' => max(0, $tot->getTimestamp() - $van->getTimestamp()),
+            'lopend'        => $i + 1 === $aantal && !in_array($geschiedenis[$i]['status'], $afgeronde_sleutels, true),
+        ];
+    }
+    return $tijdvakken;
+}
+
+/** Leesbare duur, bv. "2d 3u", "45m", "12s" */
+function format_duur(int $seconden): string
+{
+    if ($seconden < 60) {
+        return $seconden . 's';
+    }
+    $dagen = intdiv($seconden, 86400);
+    $uren = intdiv($seconden % 86400, 3600);
+    $minuten = intdiv($seconden % 3600, 60);
+
+    if ($dagen > 0) {
+        return $dagen . 'd ' . $uren . 'u';
+    }
+    if ($uren > 0) {
+        return $uren . 'u ' . $minuten . 'm';
+    }
+    return $minuten . 'm';
 }
 
 /**

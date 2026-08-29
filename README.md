@@ -24,10 +24,14 @@ productie draait deze app dus tegen de bestaande, echte database.
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
 - **Archief** (`archief.php`) — afgeronde meldingen bekijken (alleen-lezen),
-  met filters op hoofdclassificatie, prioriteit en label. Exporteren naar
-  PDF (`export.php`) kan op twee manieren: alles binnen de huidige filters,
-  of een handmatige selectie via de aanvinkvakjes per melding.
-  Toegankelijk voor elke ingelogde gebruiker.
+  met filters op hoofdclassificatie, subclassificatie, prioriteit en label.
+  Elke melding is aanklikbaar en opent een detailpagina (`melding.php`) met
+  logboek, gekoppelde protocollen/subtaken, losse taken en het volledige
+  statusverloop met doorlooptijd. Exporteren naar PDF (`export.php`) kan
+  op twee manieren: alles binnen de huidige filters, of een handmatige
+  selectie via de aanvinkvakjes per melding — de PDF bevat dezelfde
+  uitgebreide inhoud als de detailpagina. Toegankelijk voor elke
+  ingelogde gebruiker.
 - **Beheer** (`beheer.php`) — hub met twee kaarten, alleen zichtbaar/
   toegankelijk voor gebruikers met de rol `beheerder`:
   - **Berichten beheren** (`berichten.php`) — mededelingen aanmaken,
@@ -150,6 +154,13 @@ schemawijziging dit keer) en de wijzigingenlog-regel:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.1_beheer_en_url.sql
 ```
 
+**V0.1.2** voegt de subclassificatie-filter, de melding-detailpagina en de
+uitgebreide PDF-export toe (leest alleen bestaande tabellen, geen
+schemawijziging), en de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.2_changelog.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -201,9 +212,17 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,
   passief overzicht.
 - **Archief:** toont meldingen met een status uit de categorie "afgerond",
-  met filters op hoofdclassificatie, prioriteit en label (geen zoeken of
-  subclassificatiefilter zoals in `mkapp`'s eigen archief). Gecapped op 150
-  resultaten, alleen-lezen.
+  met filters op hoofdclassificatie, subclassificatie, prioriteit en label
+  (geen zoekveld/-commando zoals in `mkapp`'s eigen archief). Gecapped op
+  150 resultaten, alleen-lezen.
+- **Melding-detailpagina (`melding.php`):** alleen bereikbaar voor
+  afgeronde meldingen (via het archief) — een actieve, nog lopende melding
+  heeft hier bewust geen detailpagina; het dashboard blijft een passief
+  overzicht zonder doorklikken. Puur alleen-lezen: subtaken/losse taken
+  worden getoond als afgevinkt of niet, maar kunnen hier niet aan-/
+  uitgevinkt worden (dat blijft in het meldkamersysteem). Protocol-links
+  (de externe verwijzingen bij een protocol in `mkapp`) worden niet
+  getoond — bewust simpel gehouden.
 - **Logboek op dashboard:** alleen bij de actieve meldingen op het
   dashboard, niet in het archief. Puur alleen-lezen (dezelfde notities als
   in het meldkamersysteem, zonder daar zelf een notitie toe te kunnen
