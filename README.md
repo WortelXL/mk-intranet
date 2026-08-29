@@ -18,7 +18,8 @@ productie draait deze app dus tegen de bestaande, echte database.
 ## Pagina's
 
 - **Dashboard** (`index.php`) — lopende meldingen (alleen-lezen) en de
-  laatste mededelingen.
+  laatste mededelingen. Per melding kan het logboek (de notities)
+  in-/uitgeklapt worden via het vinkje "Laat log zien".
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
 - **Archief** (`archief.php`) — afgeronde meldingen bekijken (alleen-lezen),
@@ -132,6 +133,13 @@ schemawijziging), en voegt de wijzigingenlog-regel toe:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.9.1_changelog.sql
 ```
 
+**V0.1.0** voegt het logboek toe aan het dashboard (leest de bestaande
+tabel `melding_notities`, geen schemawijziging), en voegt de
+wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.0_changelog.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -176,6 +184,12 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   met filters op hoofdclassificatie, prioriteit en label (geen zoeken of
   subclassificatiefilter zoals in `mkapp`'s eigen archief). Gecapped op 150
   resultaten, alleen-lezen.
+- **Logboek op dashboard:** alleen bij de actieve meldingen op het
+  dashboard, niet in het archief. Puur alleen-lezen (dezelfde notities als
+  in het meldkamersysteem, zonder daar zelf een notitie toe te kunnen
+  voegen) en klapt in/uit zonder pagina-herlaad (CSS-only, net als het
+  wijzigingenlog onderaan de pagina). De in-/uitgeklapte staat onthoudt
+  niet over een ververste pagina heen.
 - **PDF-export archief:** neemt dezelfde filters mee als op het scherm
   staan (of alles, zonder filters), en toont per melding meld-ID, titel,
   classificatie, prioriteit, status, locatie, labels, aanmaakdatum en

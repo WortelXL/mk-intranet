@@ -293,6 +293,30 @@ function get_labels_per_melding(PDO $pdo, array $melding_ids): array
     return $labels_per_melding;
 }
 
+/**
+ * Logboekregels (notities) per melding-id, voor een gegeven lijst van
+ * melding-ids (bv. de actieve meldingen op het dashboard). Chronologisch
+ * (oud -> nieuw, zoals een logboek leest), los van de hoofdquery opgehaald.
+ * Alleen-lezen -- notities zelf toevoegen/bewerken gebeurt in het
+ * meldkamersysteem. Resultaat: [melding_id => [notitie, notitie, ...]].
+ */
+function get_notities_per_melding(PDO $pdo, array $melding_ids): array
+{
+    $notities_per_melding = [];
+    if (!$melding_ids) {
+        return $notities_per_melding;
+    }
+    $plekhouders = implode(',', array_fill(0, count($melding_ids), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT * FROM melding_notities WHERE melding_id IN ($plekhouders) ORDER BY aangemaakt_op ASC"
+    );
+    $stmt->execute($melding_ids);
+    foreach ($stmt->fetchAll() as $rij) {
+        $notities_per_melding[$rij['melding_id']][] = $rij;
+    }
+    return $notities_per_melding;
+}
+
 /* =========================================================================
  * Berichten (mededelingen van beheerders, los van meldingen)
  * ========================================================================= */

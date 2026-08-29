@@ -508,4 +508,6 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Archief: filter op label toegevoegd, naast hoofdclassificatie en prioriteit. Labels worden ook per melding getoond.
 - Archief: exporteren naar PDF, met dezelfde filters als op het scherm ingesteld.'),
 ('V0.0.9.1', '29 augustus 2026', '## Nieuw
-- Archief: meldingen kunnen nu individueel aangevinkt worden om alleen die selectie naar PDF te exporteren, naast de bestaande "exporteer alles binnen de huidige filters".');
+- Archief: meldingen kunnen nu individueel aangevinkt worden om alleen die selectie naar PDF te exporteren, naast de bestaande "exporteer alles binnen de huidige filters".'),
+('V0.1.0', '29 augustus 2026', '## Nieuw
+- Dashboard: bij elke actieve melding een vinkje "Laat log zien" om het logboek (de notities) van die melding in te klappen, alleen-lezen.');

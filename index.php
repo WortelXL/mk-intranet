@@ -7,6 +7,7 @@ $pdo = get_pdo();
 $meldingen = get_actieve_meldingen($pdo);
 $actieve_statussen = get_actieve_statussen($pdo);
 $tellingen = get_status_tellingen($pdo);
+$notities_per_melding = get_notities_per_melding($pdo, array_column($meldingen, 'id'));
 $kritiek_open = 0;
 foreach ($meldingen as $m) {
     if ($m['prioriteit'] === 'kritiek') {
@@ -52,28 +53,48 @@ include __DIR__ . '/includes/header.php';
             <div class="empty">Geen actieve meldingen.</div>
         <?php endif; ?>
         <?php foreach ($meldingen as $m): ?>
-            <div class="melding-row">
-                <span class="melding-id"><?= $m['attentie'] ? '⚠️ ' : '' ?><?= e($m['meld_id']) ?></span>
-                <span class="melding-main">
-                    <span class="titel"><?= e($m['titel']) ?></span>
-                    <span class="meta">
-                        <?= e($m['locatie'] ?: 'Geen locatie opgegeven') ?>
-                        &middot; <?= (new DateTime($m['aangemaakt_op']))->format('d-m H:i') ?>
+            <div class="melding-block">
+                <div class="melding-row dashboard-row">
+                    <span class="melding-id"><?= $m['attentie'] ? '⚠️ ' : '' ?><?= e($m['meld_id']) ?></span>
+                    <span class="melding-main">
+                        <span class="titel"><?= e($m['titel']) ?></span>
+                        <span class="meta">
+                            <?= e($m['locatie'] ?: 'Geen locatie opgegeven') ?>
+                            &middot; <?= (new DateTime($m['aangemaakt_op']))->format('d-m H:i') ?>
+                        </span>
                     </span>
-                </span>
-                <?php if ($m['hoofd_naam']): ?>
-                    <span class="cat-chip" style="background: <?= e($m['hoofd_kleur']) ?>22; color: <?= e($m['hoofd_kleur']) ?>;">
-                        <?= e($m['hoofd_naam']) ?><?= $m['sub_naam'] ? ' &middot; ' . e($m['sub_naam']) : '' ?>
+                    <?php if ($m['hoofd_naam']): ?>
+                        <span class="cat-chip" style="background: <?= e($m['hoofd_kleur']) ?>22; color: <?= e($m['hoofd_kleur']) ?>;">
+                            <?= e($m['hoofd_naam']) ?><?= $m['sub_naam'] ? ' &middot; ' . e($m['sub_naam']) : '' ?>
+                        </span>
+                    <?php else: ?>
+                        <span></span>
+                    <?php endif; ?>
+                    <span class="tag" style="background:<?= e(prioriteit_kleur($m['prioriteit'])) ?>22; color:<?= e(prioriteit_kleur($m['prioriteit'])) ?>;">
+                        <?= e(prioriteit_label($m['prioriteit'])) ?>
                     </span>
-                <?php else: ?>
-                    <span></span>
-                <?php endif; ?>
-                <span class="tag" style="background:<?= e(prioriteit_kleur($m['prioriteit'])) ?>22; color:<?= e(prioriteit_kleur($m['prioriteit'])) ?>;">
-                    <?= e(prioriteit_label($m['prioriteit'])) ?>
-                </span>
-                <span class="tag" style="background:<?= e(status_kleur($pdo, $m['status'])) ?>22; color:<?= e(status_kleur($pdo, $m['status'])) ?>;">
-                    <?= e(status_label($pdo, $m['status'])) ?>
-                </span>
+                    <span class="tag" style="background:<?= e(status_kleur($pdo, $m['status'])) ?>22; color:<?= e(status_kleur($pdo, $m['status'])) ?>;">
+                        <?= e(status_label($pdo, $m['status'])) ?>
+                    </span>
+                    <label for="log-toggle-<?= $m['id'] ?>" class="log-toggle-wrap" title="Logboek in-/uitklappen">
+                        <span class="log-toggle-switch"></span>
+                        <span class="log-toggle-tekst">Laat log zien</span>
+                    </label>
+                </div>
+                <input type="checkbox" id="log-toggle-<?= $m['id'] ?>" class="log-toggle-checkbox">
+                <div class="row-log">
+                    <?php if (!empty($notities_per_melding[$m['id']])): ?>
+                        <?php foreach ($notities_per_melding[$m['id']] as $n): ?>
+                            <p class="melding-log-regel">
+                                <span class="melding-log-tijd"><?= (new DateTime($n['aangemaakt_op']))->format('d-m H:i') ?></span>
+                                <span class="melding-log-auteur"><?= e($n['auteur'] ?: 'Onbekend') ?>:</span>
+                                <?= nl2br(e($n['notitie'])) ?>
+                            </p>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <p class="melding-log-leeg">Nog geen logboekregels voor deze melding.</p>
+                    <?php endif; ?>
+                </div>
             </div>
         <?php endforeach; ?>
     </div>

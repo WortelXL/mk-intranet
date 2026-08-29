@@ -272,6 +272,23 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
     grid-template-columns: 20px 100px 1fr auto auto auto;
 }
 
+.melding-row.dashboard-row {
+    grid-template-columns: 100px 1fr auto auto auto auto;
+}
+
+.melding-log-regel {
+    font-size: 12.5px;
+    margin: 0 0 6px;
+}
+.melding-log-regel:last-child { margin-bottom: 0; }
+.melding-log-tijd {
+    font-family: var(--font-mono);
+    color: var(--muted);
+    margin-right: 6px;
+}
+.melding-log-auteur { font-weight: 600; margin-right: 4px; }
+.melding-log-leeg { font-size: 12.5px; color: var(--muted); margin: 0; }
+
 .selectie-balk {
     display: flex;
     align-items: center;
@@ -579,7 +596,14 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 
 .log-toggle-wrap {
     display: inline-flex;
+    align-items: center;
+    gap: 6px;
     cursor: pointer;
+}
+.log-toggle-tekst {
+    font-size: 11.5px;
+    color: var(--muted);
+    white-space: nowrap;
 }
 .log-toggle-switch {
     width: 30px;
@@ -606,6 +630,24 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 .log-toggle-checkbox:checked + .row-log { display: block; }
 .row-log { display: none; margin-top: 6px; }
 
+/* Logboek per melding op het dashboard (melding-block = rij + toggle +
+   inklapbaar logboek). Eigen achtergrond nodig omdat melding-block zelf
+   transparant is (de .melding-row erin heeft al een achtergrond). */
+.melding-block .row-log {
+    background: var(--panel);
+    padding: 10px 16px 14px;
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+}
+.melding-block:has(.log-toggle-checkbox:checked) .log-toggle-switch {
+    background: var(--teal-dim);
+    border-color: var(--teal);
+}
+.melding-block:has(.log-toggle-checkbox:checked) .log-toggle-switch::after {
+    transform: translateX(13px);
+    background: var(--teal);
+}
+
 /* De toggle-switch (label) staat vóór de checkbox in de markup, dus
    stuurt het bovenliggende blok het uiterlijk aan op basis van :has(). */
 .wijzigingen-release:has(.log-toggle-checkbox:checked) .log-toggle-switch {
@@ -620,7 +662,8 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 /* ---- Responsive ---------------------------------------------------- */
 @media (max-width: 720px) {
     .melding-row,
-    .melding-row.archief-row {
+    .melding-row.archief-row,
+    .melding-row.dashboard-row {
         grid-template-columns: 1fr;
         gap: 6px;
     }
