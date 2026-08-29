@@ -507,6 +507,27 @@ function get_bericht(PDO $pdo, int $id): ?array
     return $stmt->fetch() ?: null;
 }
 
+/**
+ * Links per bericht-id (net als protocol_links bij een protocol in het
+ * meldkamersysteem): [bericht_id => [link, link, ...]], op volgorde.
+ */
+function get_links_per_bericht(PDO $pdo, array $bericht_ids): array
+{
+    $links_per_bericht = [];
+    if (!$bericht_ids) {
+        return $links_per_bericht;
+    }
+    $plekhouders = implode(',', array_fill(0, count($bericht_ids), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT * FROM bericht_links WHERE bericht_id IN ($plekhouders) ORDER BY volgorde ASC, id ASC"
+    );
+    $stmt->execute($bericht_ids);
+    foreach ($stmt->fetchAll() as $rij) {
+        $links_per_bericht[$rij['bericht_id']][] = $rij;
+    }
+    return $links_per_bericht;
+}
+
 /* =========================================================================
  * Versiebeheer / wijzigingenlog van MK Intranet zelf (los van mkapp's
  * eigen 'versies'-tabel)

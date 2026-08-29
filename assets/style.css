@@ -244,12 +244,44 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 .taak-item input[type="checkbox"] { margin-top: 3px; }
 .taak-meta { color: var(--muted); font-size: 12px; }
 
-/* ---- Berichten: link ------------------------------------------------ */
+/* ---- Berichten: links ------------------------------------------------ */
 .bericht-link {
     color: var(--teal);
     font-size: 13px;
     word-break: break-all;
 }
+
+.link-knoppen {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0 4px;
+}
+
+.link-beheer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.link-beheer-kop {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    margin: 0 0 8px;
+}
+.link-lijst { margin: 0 0 10px; padding-left: 0; list-style: none; }
+.link-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    margin-bottom: 6px;
+}
+.link-item-tekst { flex: 1; min-width: 0; }
+.link-toevoegen-form { display: flex; gap: 8px; flex-wrap: wrap; }
+.link-input-label { flex: 1; min-width: 140px; }
+.link-input-url { flex: 2; min-width: 200px; }
 
 /* ---- Admin-tabellen: compacte inline-formuliertjes per rij ---------- */
 .tabel-scroll { overflow-x: auto; }

@@ -14,19 +14,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id      = (int) ($_POST['id'] ?? 0);
         $titel   = trim($_POST['titel'] ?? '');
         $inhoud  = trim($_POST['inhoud'] ?? '');
-        $url     = trim($_POST['url'] ?? '');
 
         if ($titel === '' || $inhoud === '') {
             $fout = 'Vul een titel en tekst in.';
-        } elseif ($url !== '' && !filter_var($url, FILTER_VALIDATE_URL)) {
-            $fout = 'Vul een geldige URL in (met http:// of https://), of laat het veld leeg.';
         } elseif ($id > 0) {
-            $stmt = $pdo->prepare('UPDATE berichten SET titel = :t, inhoud = :i, url = :u WHERE id = :id');
-            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'u' => $url ?: null, 'id' => $id]);
+            $stmt = $pdo->prepare('UPDATE berichten SET titel = :t, inhoud = :i WHERE id = :id');
+            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'id' => $id]);
             $succes = 'Bericht bijgewerkt.';
         } else {
-            $stmt = $pdo->prepare('INSERT INTO berichten (titel, inhoud, url, auteur_id) VALUES (:t, :i, :u, :a)');
-            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'u' => $url ?: null, 'a' => $_SESSION['gebruiker_id']]);
+            $stmt = $pdo->prepare('INSERT INTO berichten (titel, inhoud, auteur_id) VALUES (:t, :i, :a)');
+            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'a' => $_SESSION['gebruiker_id']]);
             $succes = 'Bericht "' . $titel . '" is geplaatst.';
         }
     }
@@ -37,6 +34,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute(['id' => $id]);
         $succes = 'Bericht verwijderd.';
     }
+
+    // Links naar naslag/documenten per bericht -- zelfde opzet als
+    // protocol-links in het meldkamersysteem: max 5 per bericht, elk met
+    // een eigen knoptekst (label) en URL.
+    if ($actie === 'link_aanmaken') {
+        $bericht_id = (int) ($_POST['bericht_id'] ?? 0);
+        $label      = trim($_POST['label'] ?? '');
+        $url        = trim($_POST['url'] ?? '');
+
+        $aantal_stmt = $pdo->prepare('SELECT COUNT(*) FROM bericht_links WHERE bericht_id = :b');
+        $aantal_stmt->execute(['b' => $bericht_id]);
+        $huidig_aantal = (int) $aantal_stmt->fetchColumn();
+
+        if ($bericht_id <= 0 || $label === '' || $url === '') {
+            $fout = 'Vul zowel een knoptekst als een link in.';
+        } elseif ($huidig_aantal >= 5) {
+            $fout = 'Een bericht kan maximaal 5 links hebben.';
+        } elseif (!preg_match('#^https?://#i', $url)) {
+            $fout = 'De link moet beginnen met http:// of https://';
+        } else {
+            $volgorde_stmt = $pdo->prepare('SELECT COALESCE(MAX(volgorde), 0) + 1 FROM bericht_links WHERE bericht_id = :b');
+            $volgorde_stmt->execute(['b' => $bericht_id]);
+            $volgende_volgorde = (int) $volgorde_stmt->fetchColumn();
+
+            $stmt = $pdo->prepare(
+                'INSERT INTO bericht_links (bericht_id, label, url, volgorde) VALUES (:b, :l, :u, :v)'
+            );
+            $stmt->execute(['b' => $bericht_id, 'l' => $label, 'u' => $url, 'v' => $volgende_volgorde]);
+            $succes = 'Link toegevoegd.';
+        }
+    }
+
+    if ($actie === 'link_verwijderen') {
+        $id = (int) ($_POST['id'] ?? 0);
+        $stmt = $pdo->prepare('DELETE FROM bericht_links WHERE id = :id');
+        $stmt->execute(['id' => $id]);
+        $succes = 'Link verwijderd.';
+    }
 }
 
 if (isset($_GET['bewerk'])) {
@@ -44,6 +79,7 @@ if (isset($_GET['bewerk'])) {
 }
 
 $berichten = get_berichten($pdo);
+$links_per_bericht = get_links_per_bericht($pdo, array_column($berichten, 'id'));
 
 $actief = 'beheer';
 $paginatitel = 'Berichten beheren';
@@ -74,10 +110,6 @@ include __DIR__ . '/includes/header.php';
             <label for="inhoud">Tekst</label>
             <textarea id="inhoud" name="inhoud" required rows="4" placeholder="Wat wil je delen met de crew?"><?= e($bewerk['inhoud'] ?? '') ?></textarea>
         </div>
-        <div class="field field-full">
-            <label for="url">URL (optioneel)</label>
-            <input type="url" id="url" name="url" value="<?= e($bewerk['url'] ?? '') ?>" placeholder="bv. link naar een draaiboek of externe pagina">
-        </div>
         <div class="actions full">
             <button type="submit" class="btn btn-primary"><?= $bewerk ? 'Wijzigingen opslaan' : 'Bericht plaatsen' ?></button>
             <?php if ($bewerk): ?>
@@ -97,9 +129,6 @@ include __DIR__ . '/includes/header.php';
                 <article class="bericht-card">
                     <h3><?= e($b['titel']) ?></h3>
                     <p><?= nl2br(e($b['inhoud'])) ?></p>
-                    <?php if (!empty($b['url'])): ?>
-                        <p><a href="<?= e($b['url']) ?>" target="_blank" rel="noopener" class="bericht-link">&#128279; <?= e($b['url']) ?></a></p>
-                    <?php endif; ?>
                     <p class="section-note">
                         <?= e($b['auteur_naam'] ?: 'Onbekend') ?>
                         &middot; <?= (new DateTime($b['aangemaakt_op']))->format('d-m-Y H:i') ?>
@@ -111,6 +140,39 @@ include __DIR__ . '/includes/header.php';
                             <input type="hidden" name="id" value="<?= $b['id'] ?>">
                             <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
                         </form>
+                    </div>
+
+                    <?php $links = $links_per_bericht[$b['id']] ?? []; ?>
+                    <div class="link-beheer">
+                        <p class="link-beheer-kop">Links naar naslag/documenten (max. 5)</p>
+                        <?php if (!$links): ?>
+                            <p class="section-note">Nog geen links voor dit bericht.</p>
+                        <?php else: ?>
+                            <ul class="link-lijst">
+                                <?php foreach ($links as $link): ?>
+                                    <li class="link-item">
+                                        <span class="link-item-tekst">
+                                            <strong><?= e($link['label']) ?></strong>
+                                            <span class="muted"> &rarr; <a href="<?= e($link['url']) ?>" target="_blank" rel="noopener" class="bericht-link"><?= e($link['url']) ?></a></span>
+                                        </span>
+                                        <form method="post" style="display:inline;" onsubmit="return confirm('Link \'<?= e($link['label']) ?>\' verwijderen?');">
+                                            <input type="hidden" name="actie" value="link_verwijderen">
+                                            <input type="hidden" name="id" value="<?= $link['id'] ?>">
+                                            <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
+                                        </form>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                        <?php if (count($links) < 5): ?>
+                            <form method="post" class="link-toevoegen-form">
+                                <input type="hidden" name="actie" value="link_aanmaken">
+                                <input type="hidden" name="bericht_id" value="<?= $b['id'] ?>">
+                                <input type="text" name="label" placeholder="Knoptekst, bv. 'Draaiboek'" class="input-small link-input-label" required>
+                                <input type="text" name="url" placeholder="https://..." class="input-small link-input-url" required>
+                                <button type="submit" class="btn btn-small">Link toevoegen</button>
+                            </form>
+                        <?php endif; ?>
                     </div>
                 </article>
             <?php endforeach; ?>

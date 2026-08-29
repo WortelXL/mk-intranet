@@ -17,6 +17,7 @@ foreach ($meldingen as $m) {
 
 /* ---- Berichten: alleen-lezen, beheren gebeurt op berichten.php --------- */
 $berichten = get_berichten($pdo, 20);
+$links_per_bericht = get_links_per_bericht($pdo, array_column($berichten, 'id'));
 
 $actief = 'dashboard';
 $paginatitel = 'Intranet';
@@ -117,8 +118,12 @@ include __DIR__ . '/includes/header.php';
                 <article class="bericht-card">
                     <h3><?= e($b['titel']) ?></h3>
                     <p><?= nl2br(e($b['inhoud'])) ?></p>
-                    <?php if (!empty($b['url'])): ?>
-                        <p><a href="<?= e($b['url']) ?>" target="_blank" rel="noopener" class="bericht-link">&#128279; <?= e($b['url']) ?></a></p>
+                    <?php if (!empty($links_per_bericht[$b['id']])): ?>
+                        <div class="link-knoppen">
+                            <?php foreach ($links_per_bericht[$b['id']] as $link): ?>
+                                <a href="<?= e($link['url']) ?>" target="_blank" rel="noopener" class="btn btn-small">&#128279; <?= e($link['label']) ?></a>
+                            <?php endforeach; ?>
+                        </div>
                     <?php endif; ?>
                     <p class="section-note">
                         <?= e($b['auteur_naam'] ?: 'Onbekend') ?>

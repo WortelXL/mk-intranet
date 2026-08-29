@@ -35,7 +35,8 @@ productie draait deze app dus tegen de bestaande, echte database.
 - **Beheer** (`beheer.php`) — hub met twee kaarten, alleen zichtbaar/
   toegankelijk voor gebruikers met de rol `beheerder`:
   - **Berichten beheren** (`berichten.php`) — mededelingen aanmaken,
-    bewerken en verwijderen, met een optionele URL erbij.
+    bewerken en verwijderen, met tot 5 eigen links (knoptekst + URL)
+    per bericht, net als bij een protocol in het meldkamersysteem.
   - **Gebruikers beheren** (`gebruikers.php`) — accounts aanmaken, rol/
     functie/wachtwoord wijzigen, activeren/deactiveren. Werkt op dezelfde
     gedeelde `gebruikers`-tabel als het meldkamersysteem zelf.
@@ -161,6 +162,15 @@ schemawijziging), en de wijzigingenlog-regel:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.2_changelog.sql
 ```
 
+**V0.1.3** vervangt het url-veld van een bericht door een eigen
+links-tabel (`bericht_links`, max. 5 per bericht). De migratie zet
+bestaande url-waarden automatisch over voordat de oude kolom verdwijnt --
+**belangrijk: draai deze migratie vóórdat je de nieuwe code live zet**,
+anders verwijst de oude code nog naar een kolom die niet meer bestaat:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.3_bericht_links.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -194,10 +204,12 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
 - **Wie mag berichten plaatsen:** alleen gebruikers met de rol
   `beheerder` — `berichten.php` is met `vereis_beheerder()` afgeschermd,
   en de link in de navigatie is dan ook alleen voor hen zichtbaar.
-- **Berichten:** platte titel + tekst + optionele URL, geen categorieën,
-  vastpinnen of vervaldatum. Eén enkele link per bericht (geen meerdere
-  links met eigen label zoals bij een protocol in het meldkamersysteem) —
-  bewust simpel gehouden. Het dashboard toont de 20 meest recente; ouder
+- **Berichten:** platte titel + tekst, geen categorieën, vastpinnen of
+  vervaldatum. Sinds V0.1.3 wel tot 5 links per bericht (knoptekst + URL),
+  precies zoals protocol_links bij een protocol in het meldkamersysteem —
+  zelfde validatie (verplicht http(s)://, max. 5) en dezelfde
+  beheer-interactie (los toevoegen/verwijderen, geen bewerken van een
+  bestaande link). Het dashboard toont de 20 meest recente berichten; ouder
   dan dat zie je alleen nog via `berichten.php`.
 - **Gebruikersbeheer:** dezelfde velden en beveiligingen als het
   gebruikersbeheer in het meldkamersysteem zelf (wachtwoorden gehasht met

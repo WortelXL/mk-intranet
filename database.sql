@@ -466,11 +466,23 @@ CREATE TABLE IF NOT EXISTS berichten (
     id INT AUTO_INCREMENT PRIMARY KEY,
     titel VARCHAR(150) NOT NULL,
     inhoud TEXT NOT NULL,
-    url VARCHAR(500) DEFAULT NULL,
     auteur_id INT DEFAULT NULL,
     aangemaakt_op DATETIME DEFAULT CURRENT_TIMESTAMP,
     bijgewerkt_op DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (auteur_id) REFERENCES gebruikers(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Links naar naslag/documenten bij een bericht, net als protocol_links bij
+-- een protocol in het meldkamersysteem (max. 5 per bericht, afgedwongen
+-- in de beheer-UI, niet in de database).
+CREATE TABLE IF NOT EXISTS bericht_links (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    bericht_id INT NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    url VARCHAR(500) NOT NULL,
+    volgorde INT NOT NULL DEFAULT 0,
+    aangemaakt_op DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (bericht_id) REFERENCES berichten(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Eigen wijzigingenlog voor MK Intranet, los van de 'versies'-tabel van mkapp.
@@ -519,4 +531,6 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 ('V0.1.2', '29 augustus 2026', '## Nieuw
 - Archief: filter op subclassificatie toegevoegd, naast hoofdclassificatie, prioriteit en label.
 - Archief: elke melding is nu aanklikbaar en opent een alleen-lezen detailpagina met logboek, gekoppelde protocollen (met subtaken), losse taken en het volledige statusverloop met doorlooptijd per status.
-- PDF-export uitgebreid met dezelfde inhoud: logboek, protocollen/subtaken, losse taken en statusverloop/doorlooptijd per melding.');
+- PDF-export uitgebreid met dezelfde inhoud: logboek, protocollen/subtaken, losse taken en statusverloop/doorlooptijd per melding.'),
+('V0.1.3', '29 augustus 2026', '## Gewijzigd
+- Berichten: het ene URL-veld is vervangen door een eigen links-lijst (max. 5 per bericht), elk met een eigen knoptekst -- net als bij een protocol in het meldkamersysteem. Bestaande links zijn automatisch overgezet.');
