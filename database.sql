@@ -539,4 +539,7 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 
 ## Gewijzigd
 - Lopende meldingen zijn verplaatst van het dashboard naar een eigen pagina "Meldingen" in de navigatie. Het dashboard toont voortaan alleen nog de berichten.
-- Een geopend logboek bij een melding blijft open staan als de pagina ververst (handmatig of automatisch), tot je het zelf weer dichtklikt.');
+- Een geopend logboek bij een melding blijft open staan als de pagina ververst (handmatig of automatisch), tot je het zelf weer dichtklikt.'),
+('V0.1.4.2', '30 augustus 2026', '## Verbeterd
+- Automatisch verversen op de Meldingen-pagina werkt nu net als in het meldkamersysteem: het blijft doorlopen op het ingestelde interval (niet nog maar één keer), pauzeert vanzelf zodra het tabblad niet actief in beeld is, en de pagina springt niet meer naar boven bij het verversen.
+- De keuzelijst voor het interval is gelijkgetrokken met het meldkamersysteem: Uit, 10s, 15s, 20s, 30s of 60s.');

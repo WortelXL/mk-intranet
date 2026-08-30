@@ -48,13 +48,20 @@ productie draait deze app dus tegen de bestaande, echte database.
 
 Rechtsboven, onder je eigen naam in de navigatie, staat een keuzelijst
 ("Auto-verversen") waarmee je zelf instelt of en hoe vaak de pagina
-ververst — Uit, 15s, 30s, 60s of 2 min. Dit is dezelfde kolom
+ververst — Uit, 10s, 15s, 20s, 30s of 60s, dezelfde intervallen als in het
+meldkamersysteem. Dit is dezelfde kolom
 (`gebruikers.auto_refresh_seconden`) die het meldkamersysteem al gebruikt,
 dus de instelling is gedeeld: wijzig je 'm hier, dan verandert 'm ook
 daar (en andersom). Alleen de **Meldingen**-pagina ververst automatisch;
 de andere pagina's (Dashboard, Crew, Archief, Beheer) niet, om te
 voorkomen dat je halverwege het invullen van een formulier onderuitgehaald
 wordt door een automatische ververs.
+
+Het verversen zelf werkt net als het dashboard van het meldkamersysteem:
+het blijft doorlopen op het ingestelde interval (niet nog maar één keer),
+pauzeert vanzelf zodra dit tabblad niet actief in beeld is (bv. een ander
+tabblad open), en de scrollpositie wordt onthouden zodat de pagina niet
+telkens naar boven springt.
 
 ## Starten met Docker
 
@@ -191,6 +198,14 @@ Meldingen-pagina toe (leest een bestaande kolom, geen schemawijziging), en
 de wijzigingenlog-regel:
 ```bash
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.4_changelog.sql
+```
+
+**V0.1.4.2** trekt het automatisch verversen gelijk met het meldkamersysteem
+(zelfde intervallen, blijft doorlopen, pauzeert bij een niet-actief
+tabblad, scrollpositie onthouden). Geen schemawijziging, alleen de
+wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.4.2_changelog.sql
 ```
 
 ## Handmatig (zonder Docker)

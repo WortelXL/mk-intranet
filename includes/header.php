@@ -40,7 +40,9 @@ $actief = $actief ?? '';
                         <label for="auto-refresh-select">Auto-verversen</label>
                         <?php
                             $huidige_auto_refresh = huidige_gebruiker_auto_refresh($pdo);
-                            $auto_refresh_opties = [0 => 'Uit', 15 => '15s', 30 => '30s', 60 => '60s', 120 => '2 min'];
+                            // Zelfde intervallen als in het meldkamersysteem (profiel.php), zodat
+                            // de instelling overal hetzelfde aanvoelt en dezelfde waarden begrijpt.
+                            $auto_refresh_opties = [0 => 'Uit', 10 => '10s', 15 => '15s', 20 => '20s', 30 => '30s', 60 => '60s'];
                             // Kan al een andere waarde hebben staan (bv. ingesteld vanuit het
                             // meldkamersysteem zelf) -- dan die erbij zetten i.p.v. verliezen.
                             if (!array_key_exists($huidige_auto_refresh, $auto_refresh_opties)) {

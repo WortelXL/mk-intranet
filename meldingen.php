@@ -99,7 +99,25 @@ include __DIR__ . '/includes/header.php';
 
 <?php if ($auto_refresh_seconden > 0): ?>
 <script>
-setTimeout(function () { location.reload(); }, <?= $auto_refresh_seconden * 1000 ?>);
+(function () {
+    // Ververst de pagina automatisch op het ingestelde interval -- net als
+    // het dashboard van het meldkamersysteem: blijft doorlopen (niet één
+    // keer), pauzeert vanzelf zodra dit tabblad niet actief in beeld is, en
+    // onthoudt de scrollpositie zodat de pagina niet steeds naar boven springt.
+    var SCROLL_SLEUTEL = 'mkintranet_scroll_' + location.pathname;
+    var opgeslagen_scroll = sessionStorage.getItem(SCROLL_SLEUTEL);
+    if (opgeslagen_scroll !== null) {
+        window.scrollTo(0, parseInt(opgeslagen_scroll, 10) || 0);
+        sessionStorage.removeItem(SCROLL_SLEUTEL);
+    }
+
+    setInterval(function () {
+        if (document.visibilityState === 'visible') {
+            sessionStorage.setItem(SCROLL_SLEUTEL, window.scrollY);
+            window.location.reload();
+        }
+    }, <?= $auto_refresh_seconden * 1000 ?>);
+})();
 </script>
 <?php endif; ?>
 
