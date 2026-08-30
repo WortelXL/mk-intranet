@@ -49,6 +49,31 @@ function huidige_gebruiker_rol(): string
     return $_SESSION['gebruiker_rol'] ?? '';
 }
 
+/**
+ * Automatisch-verversen-instelling van de ingelogde gebruiker, in
+ * seconden (0 = uit). Zelfde kolom als het meldkamersysteem gebruikt
+ * (gebruikers.auto_refresh_seconden), dus per persoon en overal gelijk.
+ */
+function huidige_gebruiker_auto_refresh(PDO $pdo): int
+{
+    static $cache = null;
+    if ($cache === null) {
+        $stmt = $pdo->prepare('SELECT auto_refresh_seconden FROM gebruikers WHERE id = :id');
+        $stmt->execute(['id' => $_SESSION['gebruiker_id'] ?? 0]);
+        $waarde = $stmt->fetchColumn();
+        $cache = $waarde !== false ? (int) $waarde : 0;
+    }
+    return $cache;
+}
+
+/** Slaat de automatisch-verversen-instelling op voor de ingelogde gebruiker */
+function stel_auto_refresh_in(PDO $pdo, int $seconden): void
+{
+    $seconden = max(0, min(600, $seconden));
+    $stmt = $pdo->prepare('UPDATE gebruikers SET auto_refresh_seconden = :s WHERE id = :id');
+    $stmt->execute(['s' => $seconden, 'id' => $_SESSION['gebruiker_id'] ?? 0]);
+}
+
 function rol_label(string $rol): string
 {
     return [

@@ -17,10 +17,13 @@ productie draait deze app dus tegen de bestaande, echte database.
 
 ## Pagina's
 
-- **Dashboard** (`index.php`) — lopende meldingen (alleen-lezen) en de
-  laatste mededelingen (incl. eventuele link). Per melding kan het
-  logboek (de notities) in-/uitgeklapt worden via het vinkje "Laat log
-  zien".
+- **Dashboard** (`index.php`) — de laatste mededelingen (incl. eventuele
+  links).
+- **Meldingen** (`meldingen.php`) — lopende meldingen (alleen-lezen).
+  Per melding kan het logboek (de notities) in-/uitgeklapt worden via het
+  vinkje "Laat log zien"; die staat blijft open na een ververste pagina
+  (handmatig of automatisch), tot je 'm zelf weer dichtklikt. Ververst
+  automatisch als de gebruiker dat zo heeft ingesteld (zie hieronder).
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
 - **Archief** (`archief.php`) — afgeronde meldingen bekijken (alleen-lezen),
@@ -40,6 +43,18 @@ productie draait deze app dus tegen de bestaande, echte database.
   - **Gebruikers beheren** (`gebruikers.php`) — accounts aanmaken, rol/
     functie/wachtwoord wijzigen, activeren/deactiveren. Werkt op dezelfde
     gedeelde `gebruikers`-tabel als het meldkamersysteem zelf.
+
+## Automatisch verversen
+
+Rechtsboven, onder je eigen naam in de navigatie, staat een keuzelijst
+("Auto-verversen") waarmee je zelf instelt of en hoe vaak de pagina
+ververst — Uit, 15s, 30s, 60s of 2 min. Dit is dezelfde kolom
+(`gebruikers.auto_refresh_seconden`) die het meldkamersysteem al gebruikt,
+dus de instelling is gedeeld: wijzig je 'm hier, dan verandert 'm ook
+daar (en andersom). Alleen de **Meldingen**-pagina ververst automatisch;
+de andere pagina's (Dashboard, Crew, Archief, Beheer) niet, om te
+voorkomen dat je halverwege het invullen van een formulier onderuitgehaald
+wordt door een automatische ververs.
 
 ## Starten met Docker
 
@@ -171,6 +186,13 @@ anders verwijst de oude code nog naar een kolom die niet meer bestaat:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.3_bericht_links.sql
 ```
 
+**V0.1.4** voegt de instelling voor automatisch verversen en de nieuwe
+Meldingen-pagina toe (leest een bestaande kolom, geen schemawijziging), en
+de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.4_changelog.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -249,6 +271,15 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   niet toont. Gebruikt dezelfde dependency-vrije PDF-generator
   (`includes/minipdf.php`) als het meldkamersysteem, geen Composer/externe
   library nodig.
+- **Automatisch verversen:** alleen op de Meldingen-pagina, niet
+  site-breed — de andere pagina's hebben formulieren of filters waar een
+  onverwachte ververs vervelend zou zijn. De instelling zelf staat in de
+  gedeelde `gebruikers`-tabel, dus is per persoon en werkt hetzelfde in
+  beide applicaties.
+- **Open logboek onthouden:** per browser (via `localStorage`), niet
+  gedeeld tussen apparaten of gebruikers. Werkt de browser met
+  privénavigatie of blokkeert die lokale opslag, dan valt het gewoon terug
+  op het standaardgedrag (dichtgeklapt na een ververs).
 - **Poort:** 80. Draait in een eigen Proxmox-container, los van de Docker-host
   van `mkapp` (poort 8080), dus geen conflict. Draai je 'm ooit op dezelfde
   Docker-host als `mkapp`, kies dan een andere hostpoort (bv. `8081:80`) om

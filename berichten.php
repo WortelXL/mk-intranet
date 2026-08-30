@@ -90,7 +90,7 @@ include __DIR__ . '/includes/header.php';
     <div>
         <p class="eyebrow"><a href="/beheer.php" class="back-link">&larr; Beheer</a></p>
         <h1>Berichten beheren</h1>
-        <p>Mededelingen die je hier plaatst, verschijnen voor iedereen op het dashboard onder de lopende meldingen.</p>
+        <p>Mededelingen die je hier plaatst, verschijnen voor iedereen op het dashboard.</p>
     </div>
 </div>
 

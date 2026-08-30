@@ -533,4 +533,10 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Archief: elke melding is nu aanklikbaar en opent een alleen-lezen detailpagina met logboek, gekoppelde protocollen (met subtaken), losse taken en het volledige statusverloop met doorlooptijd per status.
 - PDF-export uitgebreid met dezelfde inhoud: logboek, protocollen/subtaken, losse taken en statusverloop/doorlooptijd per melding.'),
 ('V0.1.3', '29 augustus 2026', '## Gewijzigd
-- Berichten: het ene URL-veld is vervangen door een eigen links-lijst (max. 5 per bericht), elk met een eigen knoptekst -- net als bij een protocol in het meldkamersysteem. Bestaande links zijn automatisch overgezet.');
+- Berichten: het ene URL-veld is vervangen door een eigen links-lijst (max. 5 per bericht), elk met een eigen knoptekst -- net als bij een protocol in het meldkamersysteem. Bestaande links zijn automatisch overgezet.'),
+('V0.1.4', '30 augustus 2026', '## Nieuw
+- Automatisch verversen is nu zichtbaar en instelbaar onder je eigen naam rechtsboven, per gebruiker (dezelfde instelling als in het meldkamersysteem).
+
+## Gewijzigd
+- Lopende meldingen zijn verplaatst van het dashboard naar een eigen pagina "Meldingen" in de navigatie. Het dashboard toont voortaan alleen nog de berichten.
+- Een geopend logboek bij een melding blijft open staan als de pagina ververst (handmatig of automatisch), tot je het zelf weer dichtklikt.');

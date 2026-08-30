@@ -19,7 +19,7 @@ include __DIR__ . '/includes/header.php';
 <div class="beheer-grid">
     <a href="/berichten.php" class="beheer-card">
         <h3>Berichten beheren</h3>
-        <p>Mededelingen aanmaken, bewerken en verwijderen. Verschijnen op het dashboard onder de lopende meldingen.</p>
+        <p>Mededelingen aanmaken, bewerken en verwijderen. Verschijnen voor iedereen op het dashboard.</p>
     </a>
     <a href="/gebruikers.php" class="beheer-card">
         <h3>Gebruikers beheren</h3>
