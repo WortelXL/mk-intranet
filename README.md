@@ -43,25 +43,39 @@ productie draait deze app dus tegen de bestaande, echte database.
   - **Gebruikers beheren** (`gebruikers.php`) — accounts aanmaken, rol/
     functie/wachtwoord wijzigen, activeren/deactiveren. Werkt op dezelfde
     gedeelde `gebruikers`-tabel als het meldkamersysteem zelf.
+- **Mijn instellingen** (`instellingen.php`) — persoonlijke instellingen,
+  te openen via je naam rechtsboven, net als in het meldkamersysteem. Zie
+  hieronder.
 
-## Automatisch verversen
+## Mijn instellingen
 
-Rechtsboven, onder je eigen naam in de navigatie, staat een keuzelijst
-("Auto-verversen") waarmee je zelf instelt of en hoe vaak de pagina
-ververst — Uit, 10s, 15s, 20s, 30s of 60s, dezelfde intervallen als in het
-meldkamersysteem. Dit is dezelfde kolom
-(`gebruikers.auto_refresh_seconden`) die het meldkamersysteem al gebruikt,
-dus de instelling is gedeeld: wijzig je 'm hier, dan verandert 'm ook
-daar (en andersom). Alleen de **Meldingen**-pagina ververst automatisch;
-de andere pagina's (Dashboard, Crew, Archief, Beheer) niet, om te
-voorkomen dat je halverwege het invullen van een formulier onderuitgehaald
-wordt door een automatische ververs.
+Klik rechtsboven op je eigen naam om "Mijn instellingen" te openen — net
+als in het meldkamersysteem (daar heet die pagina `profiel.php`). Dit is
+geen aparte instellingenset: het zijn dezelfde kolommen op de gedeelde
+`gebruikers`-tabel, dus alles hier is synchroon met het meldkamersysteem —
+wijzig je iets hier, dan verandert het ook daar (en andersom).
 
-Het verversen zelf werkt net als het dashboard van het meldkamersysteem:
-het blijft doorlopen op het ingestelde interval (niet nog maar één keer),
-pauzeert vanzelf zodra dit tabblad niet actief in beeld is (bv. een ander
-tabblad open), en de scrollpositie wordt onthouden zodat de pagina niet
-telkens naar boven springt.
+- **Automatisch verversen** — Uit, 10s, 15s, 20s, 30s of 60s, dezelfde
+  intervallen als in het meldkamersysteem
+  (`gebruikers.auto_refresh_seconden`). Alleen de **Meldingen**-pagina
+  ververst automatisch; de andere pagina's (Dashboard, Crew, Archief,
+  Beheer) niet, om te voorkomen dat je halverwege het invullen van een
+  formulier onderuitgehaald wordt door een automatische ververs. Het
+  verversen zelf werkt net als het dashboard van het meldkamersysteem: het
+  blijft doorlopen op het ingestelde interval (niet nog maar één keer),
+  pauzeert vanzelf zodra dit tabblad niet actief in beeld is, en de
+  scrollpositie wordt onthouden zodat de pagina niet telkens naar boven
+  springt.
+- **Geluid bij een nieuwe melding** (`gebruikers.geluid_nieuwe_melding`) —
+  speelt een kort geluidje op de Meldingen-pagina zodra er een nieuwe
+  melding bijkomt, en een ander (dubbel) geluidje bij een nieuwe
+  attentie-melding. Puur clientside (Web Audio API), werkt alleen zolang
+  die pagina open staat in de browser; sommige browsers blokkeren geluid
+  totdat er ergens op de pagina geklikt is.
+- **Wachtwoord wijzigen** — vraagt eerst je huidige wachtwoord, dan een
+  nieuw wachtwoord van minimaal 8 tekens (tweemaal, ter controle). Werkt
+  op dezelfde `wachtwoord_hash`-kolom als het meldkamersysteem, dus een
+  wijziging hier werkt ook meteen daar.
 
 ## Starten met Docker
 
@@ -208,6 +222,14 @@ wijzigingenlog-regel:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.4.2_changelog.sql
 ```
 
+**V0.1.5** voegt de pagina "Mijn instellingen" toe (geluid bij een nieuwe
+melding en wachtwoord wijzigen, naast het al bestaande automatisch
+verversen dat nu hiernaartoe verhuisd is). Leest bestaande kolommen, geen
+schemawijziging, alleen de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.5_instellingen.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -295,6 +317,17 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   gedeeld tussen apparaten of gebruikers. Werkt de browser met
   privénavigatie of blokkeert die lokale opslag, dan valt het gewoon terug
   op het standaardgedrag (dichtgeklapt na een ververs).
+- **Mijn instellingen (V0.1.5):** vervangt de kleine keuzelijst die eerst
+  in de navigatiebalk stond — die is verwijderd, alle instellingen zitten
+  nu op één pagina, bereikbaar via je naam rechtsboven, net als
+  `profiel.php` in het meldkamersysteem. Het losse endpoint
+  `instelling_opslaan.php` uit V0.1.4 is daarmee overbodig geworden.
+- **Geluid bij een nieuwe melding:** herkent een nieuwe melding aan een
+  hoger meld-ID dan de vorige keer dat de Meldingen-pagina open was, net
+  als het meldkamersysteem — geen serveraanroep nodig. Alleen actief als
+  je het zelf aanzet bij "Mijn instellingen"; staat standaard aan (net als
+  in het meldkamersysteem) voor wie de instelling nog nooit heeft
+  aangeraakt.
 - **Poort:** 80. Draait in een eigen Proxmox-container, los van de Docker-host
   van `mkapp` (poort 8080), dus geen conflict. Draai je 'm ooit op dezelfde
   Docker-host als `mkapp`, kies dan een andere hostpoort (bv. `8081:80`) om

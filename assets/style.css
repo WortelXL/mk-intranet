@@ -120,33 +120,14 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
     gap: 8px;
     font-size: 13px;
     color: var(--muted);
-    padding: 6px 4px;
+    padding: 6px 4px 6px 12px;
+    margin-left: 4px;
+    border-left: 1px solid var(--border);
+    text-decoration: none;
+    border-radius: 6px;
+    transition: color 0.15s;
 }
-
-.user-chip-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-}
-
-.auto-refresh-form {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    color: var(--muted);
-    padding: 0 4px;
-}
-.auto-refresh-form select {
-    background: var(--panel-2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 5px;
-    padding: 2px 5px;
-    font-size: 11px;
-    font-family: inherit;
-}
+.user-chip:hover { color: var(--text); }
 
 .rol-badge {
     font-family: var(--font-mono);

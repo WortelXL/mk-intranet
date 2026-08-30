@@ -542,4 +542,11 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Een geopend logboek bij een melding blijft open staan als de pagina ververst (handmatig of automatisch), tot je het zelf weer dichtklikt.'),
 ('V0.1.4.2', '30 augustus 2026', '## Verbeterd
 - Automatisch verversen op de Meldingen-pagina werkt nu net als in het meldkamersysteem: het blijft doorlopen op het ingestelde interval (niet nog maar één keer), pauzeert vanzelf zodra het tabblad niet actief in beeld is, en de pagina springt niet meer naar boven bij het verversen.
-- De keuzelijst voor het interval is gelijkgetrokken met het meldkamersysteem: Uit, 10s, 15s, 20s, 30s of 60s.');
+- De keuzelijst voor het interval is gelijkgetrokken met het meldkamersysteem: Uit, 10s, 15s, 20s, 30s of 60s.'),
+('V0.1.5', '30 augustus 2026', '## Nieuw
+- Eigen pagina "Mijn instellingen", te openen via je naam rechtsboven -- net als in het meldkamersysteem.
+- Geluid bij een nieuwe (of nieuw-attentie) melding, in te schakelen op de instellingenpagina. Werkt op de Meldingen-pagina zolang die openstaat.
+- Wachtwoord wijzigen kan nu ook vanuit MK Intranet zelf, zonder tussenkomst van een beheerder.
+
+## Gewijzigd
+- Automatisch verversen is verplaatst van de navigatiebalk naar "Mijn instellingen". De instelling zelf is ongewijzigd en blijft gedeeld met het meldkamersysteem.');

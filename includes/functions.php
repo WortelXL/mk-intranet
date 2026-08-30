@@ -54,24 +54,26 @@ function huidige_gebruiker_rol(): string
  * seconden (0 = uit). Zelfde kolom als het meldkamersysteem gebruikt
  * (gebruikers.auto_refresh_seconden), dus per persoon en overal gelijk.
  */
-function huidige_gebruiker_auto_refresh(PDO $pdo): int
+/**
+ * Persoonlijke instellingen van de ingelogde gebruiker -- zelfde kolommen
+ * (auto_refresh_seconden, geluid_nieuwe_melding) als het meldkamersysteem
+ * gebruikt, dus altijd synchroon: wijzig je 'm hier, dan verandert 'm ook
+ * daar (en andersom).
+ */
+function huidige_gebruiker_instellingen(PDO $pdo): array
 {
+    $standaard = ['auto_refresh_seconden' => 20, 'geluid_nieuwe_melding' => 1];
     static $cache = null;
     if ($cache === null) {
-        $stmt = $pdo->prepare('SELECT auto_refresh_seconden FROM gebruikers WHERE id = :id');
-        $stmt->execute(['id' => $_SESSION['gebruiker_id'] ?? 0]);
-        $waarde = $stmt->fetchColumn();
-        $cache = $waarde !== false ? (int) $waarde : 0;
+        if (empty($_SESSION['gebruiker_id'])) {
+            return $standaard;
+        }
+        $stmt = $pdo->prepare('SELECT auto_refresh_seconden, geluid_nieuwe_melding FROM gebruikers WHERE id = :id');
+        $stmt->execute(['id' => $_SESSION['gebruiker_id']]);
+        $rij = $stmt->fetch();
+        $cache = $rij ?: $standaard;
     }
     return $cache;
-}
-
-/** Slaat de automatisch-verversen-instelling op voor de ingelogde gebruiker */
-function stel_auto_refresh_in(PDO $pdo, int $seconden): void
-{
-    $seconden = max(0, min(600, $seconden));
-    $stmt = $pdo->prepare('UPDATE gebruikers SET auto_refresh_seconden = :s WHERE id = :id');
-    $stmt->execute(['s' => $seconden, 'id' => $_SESSION['gebruiker_id'] ?? 0]);
 }
 
 function rol_label(string $rol): string
@@ -225,6 +227,38 @@ function get_status_tellingen(PDO $pdo): array
 {
     return $pdo->query('SELECT status, COUNT(*) AS aantal FROM meldingen GROUP BY status')
         ->fetchAll(PDO::FETCH_KEY_PAIR);
+}
+
+/**
+ * Hoogste ID onder de actieve meldingen (ongeacht filters) en hoogste ID
+ * onder de actieve meldingen met attentie=1 -- gebruikt om clientside te
+ * bepalen of er een nieuwe (of nieuw-attentie) melding is bijgekomen, voor
+ * het optionele geluidssignaal. Zelfde aanpak als het meldkamersysteem.
+ */
+function get_hoogste_actieve_melding_ids(PDO $pdo): array
+{
+    $actieve_sleutels = statussen_sleutels(get_actieve_statussen($pdo));
+    if (!$actieve_sleutels) {
+        return ['hoogste' => 0, 'hoogste_attentie' => 0];
+    }
+
+    $plekhouders = [];
+    $params = [];
+    foreach ($actieve_sleutels as $i => $sleutel) {
+        $plekhouders[] = ':s' . $i;
+        $params['s' . $i] = $sleutel;
+    }
+    $in_clausule = implode(',', $plekhouders);
+
+    $stmt = $pdo->prepare("SELECT COALESCE(MAX(id), 0) FROM meldingen WHERE status IN ($in_clausule)");
+    $stmt->execute($params);
+    $hoogste = (int) $stmt->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT COALESCE(MAX(id), 0) FROM meldingen WHERE attentie = 1 AND status IN ($in_clausule)");
+    $stmt->execute($params);
+    $hoogste_attentie = (int) $stmt->fetchColumn();
+
+    return ['hoogste' => $hoogste, 'hoogste_attentie' => $hoogste_attentie];
 }
 
 /* =========================================================================

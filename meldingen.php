@@ -14,7 +14,10 @@ foreach ($meldingen as $m) {
     }
 }
 
-$auto_refresh_seconden = huidige_gebruiker_auto_refresh($pdo);
+$mijn_instellingen = huidige_gebruiker_instellingen($pdo);
+$auto_refresh_seconden = (int) $mijn_instellingen['auto_refresh_seconden'];
+$geluid_aan = (bool) $mijn_instellingen['geluid_nieuwe_melding'];
+$hoogste_ids = get_hoogste_actieve_melding_ids($pdo);
 
 $actief = 'meldingen';
 $paginatitel = 'Meldingen';
@@ -117,6 +120,72 @@ include __DIR__ . '/includes/header.php';
             window.location.reload();
         }
     }, <?= $auto_refresh_seconden * 1000 ?>);
+})();
+</script>
+<?php endif; ?>
+
+<?php if ($geluid_aan): ?>
+<script>
+(function () {
+    // Speelt een geluidje bij een nieuwe melding (of een nieuwe attentie-
+    // melding) t.o.v. wat we hier eerder al zagen -- puur clientside via
+    // localStorage, geen serveraanroep nodig. In te stellen bij "Mijn
+    // instellingen". Zelfde aanpak als het meldkamersysteem.
+    var hoogste_id = <?= (int) $hoogste_ids['hoogste'] ?>;
+    var hoogste_attentie_id = <?= (int) $hoogste_ids['hoogste_attentie'] ?>;
+    var OPSLAG_SLEUTEL = 'mkintranet_laatste_gezien_id';
+    var OPSLAG_SLEUTEL_ATTENTIE = 'mkintranet_laatste_gezien_attentie_id';
+
+    function speel_meldingsgeluid() {
+        try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            [880, 660].forEach(function (freq, i) {
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.15);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.25);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(ctx.currentTime + i * 0.15);
+                osc.stop(ctx.currentTime + i * 0.15 + 0.3);
+            });
+        } catch (e) {
+            // Geluid kan geblokkeerd zijn door de browser (autoplay-beleid);
+            // negeer dat dan stil, de melding zelf is al zichtbaar.
+        }
+    }
+
+    function speel_attentiegeluid() {
+        try {
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            [0, 0.35].forEach(function (vertraging) {
+                var osc = ctx.createOscillator();
+                var gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 1046;
+                gain.gain.setValueAtTime(0.001, ctx.currentTime + vertraging);
+                gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + vertraging + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + vertraging + 0.5);
+                osc.connect(gain).connect(ctx.destination);
+                osc.start(ctx.currentTime + vertraging);
+                osc.stop(ctx.currentTime + vertraging + 0.55);
+            });
+        } catch (e) {
+            // Geluid kan geblokkeerd zijn door de browser, negeer dan stil.
+        }
+    }
+
+    var opgeslagen = localStorage.getItem(OPSLAG_SLEUTEL);
+    if (opgeslagen !== null && hoogste_id > parseInt(opgeslagen, 10)) {
+        speel_meldingsgeluid();
+    }
+    var opgeslagen_attentie = localStorage.getItem(OPSLAG_SLEUTEL_ATTENTIE);
+    if (opgeslagen_attentie !== null && hoogste_attentie_id > parseInt(opgeslagen_attentie, 10)) {
+        speel_attentiegeluid();
+    }
+    localStorage.setItem(OPSLAG_SLEUTEL, String(hoogste_id));
+    localStorage.setItem(OPSLAG_SLEUTEL_ATTENTIE, String(hoogste_attentie_id));
 })();
 </script>
 <?php endif; ?>
