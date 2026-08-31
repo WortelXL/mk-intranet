@@ -303,6 +303,20 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 }
 .input-small { width: 130px; }
 
+.toegang-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+    cursor: pointer;
+}
+.toegang-checkbox input[type=checkbox] { width: 14px; height: 14px; }
+.toegang-form { gap: 10px; }
+.toegang-vinkjes { display: flex; gap: 16px; margin-top: 4px; }
+.toegang-vinkjes .toegang-checkbox { font-size: 13.5px; color: var(--text); }
+
 .section-note {
     color: var(--muted);
     font-size: 13px;

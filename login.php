@@ -19,6 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($gebruiker && !$gebruiker['actief']) {
         $fout = 'Dit account is gedeactiveerd. Neem contact op met een beheerder.';
+    } elseif ($gebruiker && !gebruiker_mag_inloggen($gebruiker, 'mag_inloggen_mkintranet')) {
+        $fout = 'Dit account heeft geen toegang tot MK Intranet. Neem contact op met een beheerder.';
     } elseif ($gebruiker && password_verify($wachtwoord, $gebruiker['wachtwoord_hash'])) {
         session_regenerate_id(true);
         $_SESSION['gebruiker_id']   = $gebruiker['id'];

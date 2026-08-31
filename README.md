@@ -41,8 +41,9 @@ productie draait deze app dus tegen de bestaande, echte database.
     bewerken en verwijderen, met tot 5 eigen links (knoptekst + URL)
     per bericht, net als bij een protocol in het meldkamersysteem.
   - **Gebruikers beheren** (`gebruikers.php`) — accounts aanmaken, rol/
-    functie/wachtwoord wijzigen, activeren/deactiveren. Werkt op dezelfde
-    gedeelde `gebruikers`-tabel als het meldkamersysteem zelf.
+    functie/wachtwoord wijzigen, activeren/deactiveren, en per app (MK /
+    MK Intranet) toegang aan- of uitzetten. Werkt op dezelfde gedeelde
+    `gebruikers`-tabel als het meldkamersysteem zelf.
 - **Mijn instellingen** (`instellingen.php`) — persoonlijke instellingen,
   te openen via je naam rechtsboven, net als in het meldkamersysteem. Zie
   hieronder.
@@ -230,6 +231,15 @@ schemawijziging, alleen de wijzigingenlog-regel:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.5_instellingen.sql
 ```
 
+**V0.1.6** voegt toegang-per-applicatie toe (`mag_inloggen_mkapp` /
+`mag_inloggen_mkintranet`). **Belangrijk:** deze kolommen zelf zijn
+aangemaakt vanuit het meldkamersysteem-project, niet vanuit dit project —
+draai die migratie daar eerst. Deze migratie hier voegt alleen de
+wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.6_toegang_per_app.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -278,6 +288,15 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   minstens één actieve beheerder over, en je kunt je eigen account niet
   verwijderen. Let op: dit werkt op de live, gedeelde inlogtabel — een
   wijziging hier is ook meteen een wijziging in het meldkamersysteem.
+- **Toegang per applicatie (V0.1.6):** de kolommen `mag_inloggen_mkapp`
+  en `mag_inloggen_mkintranet` zijn aangemaakt vanuit het
+  meldkamersysteem-project — MK Intranet leest/schrijft hier alleen
+  dezelfde kolomnamen op dezelfde gedeelde tabel. Een lege/NULL-waarde
+  (nog niet ingesteld) telt als **toegestaan**; alleen een expliciete 0
+  blokkeert het inloggen. Zo kan niemand per ongeluk buitengesloten
+  worden door deze functie. Deze check zit alleen in `login.php` (het
+  moment van inloggen) — een lopende sessie wordt niet automatisch
+  beëindigd als de toegang tijdens het gebruik wordt ingetrokken.
 - **Meldingenoverzicht:** toont alle meldingen met een status uit de
   categorie "actief" (zelfde definitie als het dashboard/Overview van
   `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,

@@ -25,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $wachtwoord     = $_POST['wachtwoord'] ?? '';
         $rol            = $_POST['rol'] ?? 'medewerker';
         $functie        = trim($_POST['functie'] ?? '');
+        $mag_mkapp      = isset($_POST['mag_mkapp']) ? 1 : 0;
+        $mag_mkintranet = isset($_POST['mag_mkintranet']) ? 1 : 0;
 
         if ($naam === '' || $gebruikersnaam === '' || $wachtwoord === '') {
             $fout = 'Vul naam, gebruikersnaam en wachtwoord in.';
@@ -35,14 +37,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             try {
                 $stmt = $pdo->prepare(
-                    'INSERT INTO gebruikers (gebruikersnaam, wachtwoord_hash, naam, rol, functie) VALUES (:u, :p, :n, :r, :f)'
+                    'INSERT INTO gebruikers (gebruikersnaam, wachtwoord_hash, naam, rol, functie, mag_inloggen_mkapp, mag_inloggen_mkintranet) VALUES (:u, :p, :n, :r, :f, :ma, :mi)'
                 );
                 $stmt->execute([
-                    'u' => $gebruikersnaam,
-                    'p' => password_hash($wachtwoord, PASSWORD_DEFAULT),
-                    'n' => $naam,
-                    'r' => $rol,
-                    'f' => $functie ?: null,
+                    'u'  => $gebruikersnaam,
+                    'p'  => password_hash($wachtwoord, PASSWORD_DEFAULT),
+                    'n'  => $naam,
+                    'r'  => $rol,
+                    'f'  => $functie ?: null,
+                    'ma' => $mag_mkapp,
+                    'mi' => $mag_mkintranet,
                 ]);
                 $succes = 'Gebruiker "' . $naam . '" is aangemaakt.';
             } catch (PDOException $e) {
@@ -93,6 +97,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare('UPDATE gebruikers SET functie = :f WHERE id = :id');
         $stmt->execute(['f' => $functie ?: null, 'id' => $id]);
         $succes = 'Functie bijgewerkt.';
+    }
+
+    if ($actie === 'toegang_wijzigen') {
+        $id             = (int) ($_POST['id'] ?? 0);
+        $mag_mkapp      = isset($_POST['mag_mkapp']) ? 1 : 0;
+        $mag_mkintranet = isset($_POST['mag_mkintranet']) ? 1 : 0;
+        $stmt = $pdo->prepare('UPDATE gebruikers SET mag_inloggen_mkapp = :a, mag_inloggen_mkintranet = :i WHERE id = :id');
+        $stmt->execute(['a' => $mag_mkapp, 'i' => $mag_mkintranet, 'id' => $id]);
+        $succes = 'Toegang bijgewerkt.';
     }
 
     if ($actie === 'wachtwoord_wijzigen') {
@@ -171,6 +184,17 @@ include __DIR__ . '/includes/header.php';
             <label for="functie">Functie (optioneel)</label>
             <input type="text" id="functie" name="functie" placeholder="bv. Centralist, Hoofd EHBO">
         </div>
+        <div class="field field-full">
+            <label style="text-transform:none; font-size:13px; color:var(--text); font-weight:500;">Mag inloggen in</label>
+            <div class="toegang-vinkjes">
+                <label class="toegang-checkbox">
+                    <input type="checkbox" name="mag_mkapp" value="1" checked> het meldkamersysteem (MK)
+                </label>
+                <label class="toegang-checkbox">
+                    <input type="checkbox" name="mag_mkintranet" value="1" checked> MK Intranet
+                </label>
+            </div>
+        </div>
         <div class="actions full">
             <button type="submit" class="btn btn-primary">Gebruiker aanmaken</button>
         </div>
@@ -182,7 +206,7 @@ include __DIR__ . '/includes/header.php';
     <div class="tabel-scroll">
     <table class="admin-table">
         <thead>
-            <tr><th>Naam</th><th>Gebruikersnaam</th><th>Rol</th><th>Functie</th><th>Status</th><th>Wachtwoord</th><th></th></tr>
+            <tr><th>Naam</th><th>Gebruikersnaam</th><th>Rol</th><th>Functie</th><th>Status</th><th>Toegang</th><th>Wachtwoord</th><th></th></tr>
         </thead>
         <tbody>
         <?php foreach ($gebruikers as $g): ?>
@@ -214,6 +238,18 @@ include __DIR__ . '/includes/header.php';
                     </span>
                 </td>
                 <td class="nowrap">
+                    <form method="post" class="inline-form toegang-form">
+                        <input type="hidden" name="actie" value="toegang_wijzigen">
+                        <input type="hidden" name="id" value="<?= $g['id'] ?>">
+                        <label class="toegang-checkbox" title="Mag inloggen in het meldkamersysteem">
+                            <input type="checkbox" name="mag_mkapp" value="1" <?= gebruiker_mag_inloggen($g, 'mag_inloggen_mkapp') ? 'checked' : '' ?> onchange="this.form.submit()"> MK
+                        </label>
+                        <label class="toegang-checkbox" title="Mag inloggen in MK Intranet">
+                            <input type="checkbox" name="mag_mkintranet" value="1" <?= gebruiker_mag_inloggen($g, 'mag_inloggen_mkintranet') ? 'checked' : '' ?> onchange="this.form.submit()"> Intranet
+                        </label>
+                    </form>
+                </td>
+                <td class="nowrap">
                     <form method="post" class="inline-form" onsubmit="return confirm('Wachtwoord van \'<?= e($g['naam']) ?>\' wijzigen naar het ingevulde wachtwoord?');">
                         <input type="hidden" name="actie" value="wachtwoord_wijzigen">
                         <input type="hidden" name="id" value="<?= $g['id'] ?>">
@@ -238,7 +274,7 @@ include __DIR__ . '/includes/header.php';
         </tbody>
     </table>
     </div>
-    <p class="section-note">Er blijft altijd minstens één actieve beheerder over — rol wijzigen, deactiveren en verwijderen worden geweigerd als dat de laatste zou zijn. Je eigen account kun je hier niet verwijderen.</p>
+    <p class="section-note">Er blijft altijd minstens één actieve beheerder over — rol wijzigen, deactiveren en verwijderen worden geweigerd als dat de laatste zou zijn. Je eigen account kun je hier niet verwijderen. De kolom "Toegang" bepaalt of iemand mag inloggen in het meldkamersysteem (MK) en/of MK Intranet — let op dat je jezelf of de laatste beheerder niet per ongeluk overal buitensluit.</p>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

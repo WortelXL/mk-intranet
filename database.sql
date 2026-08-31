@@ -549,4 +549,7 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Wachtwoord wijzigen kan nu ook vanuit MK Intranet zelf, zonder tussenkomst van een beheerder.
 
 ## Gewijzigd
-- Automatisch verversen is verplaatst van de navigatiebalk naar "Mijn instellingen". De instelling zelf is ongewijzigd en blijft gedeeld met het meldkamersysteem.');
+- Automatisch verversen is verplaatst van de navigatiebalk naar "Mijn instellingen". De instelling zelf is ongewijzigd en blijft gedeeld met het meldkamersysteem.'),
+('V0.1.6', '31 augustus 2026', '## Nieuw
+- Toegang per applicatie: een account kan nu apart toegang hebben tot het meldkamersysteem en/of MK Intranet, in te stellen bij Beheer -> Gebruikers ("Toegang"-kolom, ook bij een nieuwe gebruiker aanmaken).
+- Inloggen op MK Intranet wordt geweigerd met een duidelijke melding als een account daar geen toegang toe heeft.');

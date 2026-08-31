@@ -1,0 +1,6 @@
+MK Intranet - V0.1.6
+31 augustus 2026
+
+Nieuw
+- Toegang per applicatie: een account kan nu apart toegang hebben tot het meldkamersysteem en/of MK Intranet, in te stellen bij Beheer -> Gebruikers ("Toegang"-kolom, ook bij een nieuwe gebruiker aanmaken).
+- Inloggen op MK Intranet wordt geweigerd met een duidelijke melding als een account daar geen toegang toe heeft.

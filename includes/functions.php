@@ -76,6 +76,20 @@ function huidige_gebruiker_instellingen(PDO $pdo): array
     return $cache;
 }
 
+/**
+ * Mag deze gebruiker inloggen in een van de twee gekoppelde applicaties?
+ * Kolom (mag_inloggen_mkapp / mag_inloggen_mkintranet) staat op de
+ * gedeelde `gebruikers`-tabel, aangemaakt vanuit het meldkamersysteem.
+ * Ontbrekend/NULL telt als toegestaan (bv. nog niet ingesteld) -- alleen
+ * een expliciete 0 blokkeert, zodat niemand per ongeluk buitengesloten
+ * wordt.
+ */
+function gebruiker_mag_inloggen(array $gebruiker, string $kolom): bool
+{
+    $waarde = $gebruiker[$kolom] ?? null;
+    return $waarde === null || (int) $waarde !== 0;
+}
+
 function rol_label(string $rol): string
 {
     return [
