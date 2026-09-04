@@ -20,9 +20,10 @@ productie draait deze app dus tegen de bestaande, echte database.
 - **Dashboard** (`index.php`) — de laatste mededelingen (incl. eventuele
   links).
 - **Meldingen** — submenu in de navigatie (sinds V0.1.7) met twee pagina's:
-  - **Overview** (`meldingen.php`) — lopende meldingen (alleen-lezen).
-    Per melding kan het logboek (de notities) in-/uitgeklapt worden via
-    het vinkje "Laat log zien"; die staat blijft open na een ververste
+  - **Overview** (`meldingen.php`) — lopende meldingen (alleen-lezen),
+    optioneel te filteren op hoofdclassificatie (sinds V0.1.8). Per
+    melding kan het logboek (de notities) in-/uitgeklapt worden via het
+    vinkje "Laat log zien"; die staat blijft open na een ververste
     pagina (handmatig of automatisch), tot je 'm zelf weer dichtklikt.
     Ververst automatisch als de gebruiker dat zo heeft ingesteld (zie
     hieronder).
@@ -45,18 +46,59 @@ productie draait deze app dus tegen de bestaande, echte database.
   selectie via de aanvinkvakjes per melding — de PDF bevat dezelfde
   uitgebreide inhoud als de detailpagina. Toegankelijk voor elke
   ingelogde gebruiker.
-- **Beheer** (`beheer.php`) — hub met twee kaarten, alleen zichtbaar/
-  toegankelijk voor gebruikers met de rol `beheerder`:
+- **Mijn rol** (`mijn-rol.php`, sinds V0.1.8) — alleen relevant voor wie
+  een rol heeft met een gekoppelde hoofdclassificatie actief staat; stuurt
+  automatisch door naar Overview met dat classificatiefilter al
+  ingesteld. Zie "Rollen" hieronder.
+- **Beheer** (`beheer.php`) — hub, alleen zichtbaar/toegankelijk voor
+  gebruikers met de rol `beheerder`:
   - **Berichten beheren** (`berichten.php`) — mededelingen aanmaken,
     bewerken en verwijderen, met tot 5 eigen links (knoptekst + URL)
     per bericht, net als bij een protocol in het meldkamersysteem.
   - **Gebruikers beheren** (`gebruikers.php`) — accounts aanmaken, rol/
-    functie/wachtwoord wijzigen, activeren/deactiveren, en per app (MK /
-    MK Intranet) toegang aan- of uitzetten. Werkt op dezelfde gedeelde
-    `gebruikers`-tabel als het meldkamersysteem zelf.
+    functie/wachtwoord wijzigen, activeren/deactiveren, rollen toewijzen
+    (zie hieronder), en per app (MK / MK Intranet) toegang aan- of
+    uitzetten. Werkt op dezelfde gedeelde `gebruikers`-tabel als het
+    meldkamersysteem zelf.
+  - **Rollen beheren** (`rollen.php`, sinds V0.1.8) — rollen aanmaken,
+    naam/niveau wijzigen en optioneel koppelen aan een hoofdclassificatie.
+    Zie hieronder.
 - **Mijn instellingen** (`instellingen.php`) — persoonlijke instellingen,
   te openen via je naam rechtsboven, net als in het meldkamersysteem. Zie
   hieronder.
+
+## Rollen (V0.1.8)
+
+Overgenomen van het meldkamersysteem, precies dezelfde opzet: naast de
+klassieke rol op een account (beheerder/medewerker/view — de kolom `rol`
+op `gebruikers`, hierboven al genoemd) kan een account 0 of meer benoemde
+**rollen** toegewezen krijgen (tabellen `rollen`/`gebruiker_rollen`,
+gedeeld met en beheerd via `mkapp` net zo goed als vanuit MK Intranet).
+
+- **Rollen beheren** (`rollen.php`, Beheer-only) — een rol heeft een naam,
+  een niveau (Beheerder/Medewerker/Viewer, dat de rechten bepaalt zodra
+  die rol actief staat) en optioneel een gekoppelde hoofdclassificatie.
+  De drie kernrollen (Admin/Centralist/Viewer, aangemaakt vanuit
+  `mkapp`) zijn niet te verwijderen, om te voorkomen dat er ooit 0 rollen
+  met niveau Beheerder overblijven.
+- **Rollen toewijzen** — bij Beheer > Gebruikers, kolom "Rollen": een
+  vinkjesgrid per account, los van de klassieke rolkolom ernaast.
+- **Actieve rol & wisselen** — heeft een account 2 of meer rollen
+  toegewezen, dan verschijnt rechtsboven in de navigatie (naast je naam)
+  een keuzelijst om de actieve rol te wisselen. De actieve rol bepaalt
+  vanaf dat moment je rechten (niveau) — ook als je account zelf
+  beheerder is, maar de actieve rol niveau Viewer heeft, gelden de
+  Viewer-beperkingen. Bij inloggen wordt automatisch de eerst toegewezen
+  rol actief (of de rol die al actief stond in een lopende sessie).
+- **Gefilterde weergave** — heeft de actieve rol een gekoppelde
+  hoofdclassificatie, dan is de navigatie beperkt tot alleen "Mijn rol"
+  (stuurt door naar Overview, gefilterd op die classificatie) en de eigen
+  instellingen/uitloggen — geen Dashboard, Statistieken, Archief, Crew of
+  Beheer meer, ook niet via een directe link (afgedwongen server-side,
+  niet alleen in de navigatie verstopt). Een melding uit het archief is
+  in die situatie alleen bereikbaar als hij zelf tot de eigen
+  hoofdclassificatie behoort. Wissel je naar een rol zonder koppeling
+  (of heb je er maar 1), dan geldt deze beperking niet.
 
 ## Mijn instellingen
 
@@ -257,6 +299,15 @@ schemawijziging, alleen de wijzigingenlog-regel:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.7_statistieken.sql
 ```
 
+**V0.1.8** voegt het rollensysteem toe (rollenbeheer, rol-wisselaar,
+rollen toewijzen bij Gebruikers, gefilterde weergave). **Belangrijk:** de
+tabellen `rollen` en `gebruiker_rollen` zelf zijn aangemaakt vanuit het
+meldkamersysteem-project, niet vanuit dit project — draai die migratie
+daar eerst. Deze migratie hier voegt alleen de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.8_rollen.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -324,10 +375,31 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   dagfilters hier automatisch mee. Het blok "Meldingen per evenementdag"
   negeert het eigen dagfilter bewust (laat alle dagen naast elkaar zien
   om ze te kunnen vergelijken); classificatiefilters gelden daar wel.
+- **Rollen (V0.1.8):** één-op-één overgenomen van het meldkamersysteem,
+  inclusief de gefilterde weergave. De tabellen `rollen` en
+  `gebruiker_rollen` zijn aangemaakt vanuit het meldkamersysteem-project
+  (net als bij "Toegang per applicatie" hierboven) — MK Intranet
+  leest/schrijft hier alleen dezelfde tabellen. Waar het meldkamersysteem
+  bij een gekoppelde hoofdclassificatie doorstuurt naar zijn eigen
+  `ehbo.php` (dat op zijn beurt naar het dashboard met filter
+  doorstuurt), heeft MK Intranet daarvoor een eigen `mijn-rol.php`
+  gekregen dat naar `meldingen.php?hoofd=<id>` doorstuurt — functioneel
+  identiek, alleen aangepast aan de eigen paginanamen (geen `ehbo.php`/
+  `index.php`-dashboardfilter zoals het meldkamersysteem, wel een
+  vergelijkbare Overview-pagina met hetzelfde soort `?hoofd=`-filter). Een
+  gefilterde gebruiker kan bij Archief of Statistieken niet uitwijken naar
+  andere classificaties — die pagina's staan (samen met Dashboard en
+  Crew) helemaal niet in de uitzonderingslijst van de beperking, dus die
+  blokkeert die pagina's volledig, net zoals het meldkamersysteem
+  Dashboard/Meldingen/Incidenten/Beheer volledig blokkeert. Rollen
+  toewijzen kan zowel hier (Beheer > Gebruikers) als vanuit het
+  meldkamersysteem — beide werken op dezelfde `gebruiker_rollen`-tabel.
 - **Meldingenoverzicht:** toont alle meldingen met een status uit de
   categorie "actief" (zelfde definitie als het dashboard/Overview van
   `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,
-  passief overzicht.
+  passief overzicht. Sinds V0.1.8 wel filterbaar op hoofdclassificatie
+  (`?hoofd=<id>`), zowel handmatig via het filter als (verplicht)
+  wanneer je actieve rol een gekoppelde classificatie heeft.
 - **Archief:** toont meldingen met een status uit de categorie "afgerond",
   met filters op hoofdclassificatie, subclassificatie, prioriteit en label
   (geen zoekveld/-commando zoals in `mkapp`'s eigen archief). Gecapped op

@@ -3,7 +3,27 @@ require_once __DIR__ . '/includes/functions.php';
 vereis_login();
 $pdo = get_pdo();
 
-$meldingen = get_actieve_meldingen($pdo);
+// V0.1.8: optioneel filter op hoofdclassificatie. Voor een gebruiker
+// wiens actieve rol een gekoppelde hoofdclassificatie heeft, staat dit
+// filter altijd al vast op die classificatie (afgedwongen door
+// vereis_rol_beperking(), aangeroepen via vereis_login() hierboven) --
+// zie mijn-rol.php, dat hier met dit filter al ingesteld naartoe stuurt.
+$hoofdclassificaties = get_hoofdclassificaties($pdo);
+$gekozen_hoofd_id = isset($_GET['hoofd']) && $_GET['hoofd'] !== '' ? (int) $_GET['hoofd'] : null;
+
+$mijn_actieve_rol = actieve_rol($pdo);
+$rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !== null;
+$gekozen_hoofd_naam = null;
+if ($gekozen_hoofd_id) {
+    foreach ($hoofdclassificaties as $h) {
+        if ((int) $h['id'] === $gekozen_hoofd_id) {
+            $gekozen_hoofd_naam = $h['naam'];
+            break;
+        }
+    }
+}
+
+$meldingen = get_actieve_meldingen($pdo, $gekozen_hoofd_id);
 $actieve_statussen = get_actieve_statussen($pdo);
 $tellingen = get_status_tellingen($pdo);
 $notities_per_melding = get_notities_per_melding($pdo, array_column($meldingen, 'id'));
@@ -19,7 +39,7 @@ $auto_refresh_seconden = (int) $mijn_instellingen['auto_refresh_seconden'];
 $geluid_aan = (bool) $mijn_instellingen['geluid_nieuwe_melding'];
 $hoogste_ids = get_hoogste_actieve_melding_ids($pdo);
 
-$actief = 'meldingen';
+$actief = $rol_beperkt ? 'mijn-rol' : 'meldingen';
 $paginatitel = 'Overview';
 include __DIR__ . '/includes/header.php';
 ?>
@@ -32,6 +52,30 @@ include __DIR__ . '/includes/header.php';
     </div>
     <a href="#" onclick="location.reload(); return false;" class="btn">Vernieuwen</a>
 </div>
+
+<?php if ($rol_beperkt): ?>
+    <div class="empty">Gefilterd op <strong><?= e($gekozen_hoofd_naam ?? $mijn_actieve_rol['naam']) ?></strong> — jouw actieve rol (<?= e($mijn_actieve_rol['naam']) ?>) toont alleen deze classificatie.</div>
+<?php else: ?>
+<div class="panel">
+    <form method="get" class="form-grid">
+        <div class="field">
+            <label for="hoofd">Hoofdclassificatie</label>
+            <select id="hoofd" name="hoofd">
+                <option value="">Alle classificaties</option>
+                <?php foreach ($hoofdclassificaties as $h): ?>
+                    <option value="<?= $h['id'] ?>" <?= $gekozen_hoofd_id === (int) $h['id'] ? 'selected' : '' ?>><?= e($h['naam']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="actions full">
+            <button type="submit" class="btn btn-primary">Filteren</button>
+            <?php if ($gekozen_hoofd_id): ?>
+                <a href="/meldingen.php" class="btn">Wis filter</a>
+            <?php endif; ?>
+        </div>
+    </form>
+</div>
+<?php endif; ?>
 
 <section class="section">
     <div class="board">
@@ -49,7 +93,7 @@ include __DIR__ . '/includes/header.php';
 
     <div class="melding-list">
         <?php if (!$meldingen): ?>
-            <div class="empty">Geen actieve meldingen.</div>
+            <div class="empty">Geen actieve meldingen<?= $gekozen_hoofd_id ? ' voor deze classificatie' : '' ?>.</div>
         <?php endif; ?>
         <?php foreach ($meldingen as $m): ?>
             <div class="melding-block">
@@ -106,7 +150,8 @@ include __DIR__ . '/includes/header.php';
     // Ververst de pagina automatisch op het ingestelde interval -- net als
     // het dashboard van het meldkamersysteem: blijft doorlopen (niet één
     // keer), pauzeert vanzelf zodra dit tabblad niet actief in beeld is, en
-    // onthoudt de scrollpositie zodat de pagina niet steeds naar boven springt.
+    // onthoudt de scrollpositie zodat de pagina niet steeds naar boven
+    // springt.
     var SCROLL_SLEUTEL = 'mkintranet_scroll_' + location.pathname;
     var opgeslagen_scroll = sessionStorage.getItem(SCROLL_SLEUTEL);
     if (opgeslagen_scroll !== null) {

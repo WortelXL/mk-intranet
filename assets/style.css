@@ -193,6 +193,41 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 .rol-badge.rol-medewerker { background: rgba(59,130,246,0.15); color: #8ab4f8; }
 .rol-badge.rol-view { background: rgba(107,114,128,0.2); color: var(--muted); }
 
+/* ---- Rol-wisselaar (V0.1.8) ---------------------------------------- */
+.rol-wisselaar-form {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 2px;
+}
+
+.rol-tekst {
+    font-size: 12.5px;
+    color: var(--muted);
+    font-family: var(--font-body);
+}
+
+select.rol-tekst.rol-tekst-klikbaar {
+    background: transparent;
+    border: none;
+    padding: 4px 2px;
+    cursor: pointer;
+}
+select.rol-tekst.rol-tekst-klikbaar:hover { color: var(--text); }
+select.rol-tekst.rol-tekst-klikbaar:focus {
+    outline: 1px solid var(--teal);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.rol-wisselaar-hint {
+    font-size: 10.5px;
+    color: var(--muted);
+    font-style: italic;
+    margin-left: 5px;
+    white-space: nowrap;
+    cursor: help;
+}
+
 /* ---- Page head ---------------------------------------------------- */
 .page-head {
     display: flex;
@@ -367,6 +402,25 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 .toegang-form { gap: 10px; }
 .toegang-vinkjes { display: flex; gap: 16px; margin-top: 4px; }
 .toegang-vinkjes .toegang-checkbox { font-size: 13.5px; color: var(--text); }
+
+/* ---- Rollen-toewijzing (V0.1.8, Gebruikers beheren) ------------------ */
+.rollen-grid {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 2px 10px;
+    align-items: center;
+}
+.rollen-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--text);
+    white-space: nowrap;
+    cursor: pointer;
+}
+.rollen-checkbox input[type=checkbox] { width: 13px; height: 13px; }
 
 .section-note {
     color: var(--muted);

@@ -148,6 +148,7 @@ function vereis_login(): void
         header('Location: /login.php');
         exit;
     }
+    vereis_rol_beperking();
 }
 
 function is_beheerder(): bool
@@ -169,6 +170,185 @@ function vereis_beheerder(): void
         include __DIR__ . '/footer.php';
         exit;
     }
+}
+
+/* =========================================================================
+ * Rollen (V0.1.8) -- overgenomen van het meldkamersysteem: een gebruiker
+ * kan naast de klassieke rol (beheerder/medewerker/view op de
+ * gebruikers-tabel zelf) ook 0 of meer benoemde rollen toegewezen krijgen
+ * (tabellen 'rollen'/'gebruiker_rollen', al aangemaakt door het
+ * meldkamersysteem op de gedeelde database). Eén daarvan is de "actieve"
+ * rol (sessiegebonden); die bepaalt de rechten (niveau) en, als er een
+ * hoofdclassificatie aan gekoppeld is, beperkt 'm de navigatie tot een
+ * eigen gefilterde weergave (zie vereis_rol_beperking() hieronder).
+ * ========================================================================= */
+
+/** Alle rollen die aan deze gebruiker zijn toegewezen, alfabetisch op naam. */
+function gebruiker_rollen(PDO $pdo, int $gebruiker_id): array
+{
+    $stmt = $pdo->prepare(
+        'SELECT rn.* FROM rollen rn
+         INNER JOIN gebruiker_rollen gr ON gr.rol_id = rn.id
+         WHERE gr.gebruiker_id = :id
+         ORDER BY rn.naam ASC'
+    );
+    $stmt->execute(['id' => $gebruiker_id]);
+    return $stmt->fetchAll();
+}
+
+/** Alle beschikbare rollen, alfabetisch op naam. */
+function alle_rollen(PDO $pdo): array
+{
+    return $pdo->query('SELECT * FROM rollen ORDER BY naam ASC')->fetchAll();
+}
+
+/**
+ * De actieve rol van de ingelogde gebruiker (sessiegebonden via
+ * $_SESSION['actieve_rol_id']). Heeft iemand geen (geldige) actieve rol
+ * meer in de sessie staan, dan wordt de eerst toegewezen rol de nieuwe
+ * standaard. Geeft null als de gebruiker geen enkele rol toegewezen
+ * heeft (dan gelden alleen de klassieke rechten op de gebruikers-tabel).
+ */
+function actieve_rol(PDO $pdo): ?array
+{
+    if (!is_ingelogd()) {
+        return null;
+    }
+
+    $mijn_rollen = gebruiker_rollen($pdo, (int) $_SESSION['gebruiker_id']);
+    if (!$mijn_rollen) {
+        unset($_SESSION['actieve_rol_id']);
+        return null;
+    }
+
+    $huidige_id = $_SESSION['actieve_rol_id'] ?? null;
+    foreach ($mijn_rollen as $rol) {
+        if ((int) $rol['id'] === (int) $huidige_id) {
+            return $rol;
+        }
+    }
+
+    // Nog geen (geldige) actieve rol in de sessie: pak de eerst
+    // toegewezen rol als standaard.
+    $stmt = $pdo->prepare(
+        'SELECT rn.* FROM rollen rn
+         INNER JOIN gebruiker_rollen gr ON gr.rol_id = rn.id
+         WHERE gr.gebruiker_id = :id
+         ORDER BY gr.toegewezen_op ASC, rn.id ASC
+         LIMIT 1'
+    );
+    $stmt->execute(['id' => (int) $_SESSION['gebruiker_id']]);
+    $standaard = $stmt->fetch();
+    if ($standaard) {
+        $_SESSION['actieve_rol_id'] = (int) $standaard['id'];
+    }
+    return $standaard ?: null;
+}
+
+/**
+ * De rol waarvan de gekoppelde hoofdclassificatie bepaalt welke
+ * gefilterde weergave iemand ziet. Geeft bij voorkeur de actieve rol
+ * terug als die zelf een koppeling heeft; heeft de actieve rol geen
+ * koppeling, dan de eerste toegewezen rol die er wel een heeft. Gebruikt
+ * door mijn-rol.php (het intranet-equivalent van mkapp's ehbo.php).
+ */
+function mijn_gefilterde_rol(PDO $pdo): ?array
+{
+    if (!is_ingelogd()) {
+        return null;
+    }
+
+    $actief = actieve_rol($pdo);
+    if ($actief && $actief['hoofdclassificatie_id'] !== null) {
+        return $actief;
+    }
+
+    foreach (gebruiker_rollen($pdo, (int) $_SESSION['gebruiker_id']) as $rol) {
+        if ($rol['hoofdclassificatie_id'] !== null) {
+            return $rol;
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Heeft iemands actieve rol een gekoppelde hoofdclassificatie, dan mag
+ * die verder alleen nog de eigen gefilterde weergave zien -- geen
+ * Dashboard, Meldingen/Statistieken, Archief, Crew of Beheer meer, ook
+ * niet via een directe link. Wisselt iemand naar een rol zonder
+ * koppeling, dan geldt deze beperking niet meer. Wordt aangeroepen
+ * vanuit vereis_login(), dus geldt automatisch voor elke pagina die
+ * daar (of via vereis_beheerder(), die vereis_login() zelf al aanroept)
+ * doorheen gaat -- geen losse aanroep per pagina nodig.
+ *
+ * Uitzonderingen, anders zou iemand er nooit meer weg kunnen komen of
+ * zou de gefilterde weergave zelf onbruikbaar zijn:
+ * - mijn-rol.php, instellingen.php, de uitlogpagina en de rol-wisselaar zelf.
+ * - meldingen.php ("Overview"), maar ALLEEN met het eigen
+ *   classificatiefilter erbij (?hoofd=<eigen classificatie-id>) -- dat is
+ *   precies de weergave waar mijn-rol.php zelf naar doorstuurt.
+ * - melding.php (archiefdetail), maar ALLEEN als de opgevraagde melding
+ *   zelf tot de eigen hoofdclassificatie behoort.
+ *
+ * Overgenomen van (en functioneel identiek aan) mkapp's
+ * vereis_rol_beperking() -- alleen de paginanamen zijn aangepast aan de
+ * eigen paginaset van MK Intranet (die geen ehbo.php/index.php-filter
+ * kent, maar mijn-rol.php/meldingen.php).
+ */
+function vereis_rol_beperking(): void
+{
+    if (!is_ingelogd()) {
+        return;
+    }
+
+    $uitgezonderd = ['mijn-rol.php', 'instellingen.php', 'logout.php', 'wissel_rol.php'];
+    $huidige_pagina = basename((string) parse_url($_SERVER['SCRIPT_NAME'] ?? '', PHP_URL_PATH));
+    if (in_array($huidige_pagina, $uitgezonderd, true)) {
+        return;
+    }
+
+    $pdo = get_pdo();
+    $rol = actieve_rol($pdo);
+    if (!$rol || $rol['hoofdclassificatie_id'] === null) {
+        return;
+    }
+
+    $eigen_classificatie_id = (int) $rol['hoofdclassificatie_id'];
+
+    if ($huidige_pagina === 'meldingen.php') {
+        $gevraagd = isset($_GET['hoofd']) && ctype_digit((string) $_GET['hoofd']) ? (int) $_GET['hoofd'] : null;
+        if ($gevraagd === $eigen_classificatie_id) {
+            return;
+        }
+    }
+
+    if ($huidige_pagina === 'melding.php') {
+        $melding_id = (int) ($_GET['id'] ?? 0);
+        if ($melding_id > 0) {
+            $stmt = $pdo->prepare('SELECT hoofdclassificatie_id FROM meldingen WHERE id = :id');
+            $stmt->execute(['id' => $melding_id]);
+            $gevonden = $stmt->fetchColumn();
+            if ($gevonden !== false && $gevonden !== null && (int) $gevonden === $eigen_classificatie_id) {
+                return;
+            }
+        }
+    }
+
+    header('Location: /mijn-rol.php');
+    exit;
+}
+
+/**
+ * Aantal rollen (in de tabel `rollen`, dus onafhankelijk van hoeveel
+ * gebruikers eraan gekoppeld zijn) met niveau 'beheerder'. Gebruikt in
+ * Beheer > Rollen om te voorkomen dat de laatste beheerdersrol wordt
+ * omgezet naar een ander niveau of verwijderd -- zonder deze controle
+ * zou niemand meer bij Beheer kunnen komen via de rol-wisselaar.
+ */
+function aantal_rollen_niveau_beheerder(PDO $pdo): int
+{
+    return (int) $pdo->query("SELECT COUNT(*) FROM rollen WHERE niveau = 'beheerder'")->fetchColumn();
 }
 
 /* =========================================================================
@@ -250,9 +430,11 @@ function prioriteit_kleur(string $prioriteit): string
 /**
  * Alle actieve meldingen (zelfde definitie als het dashboard/Overview van
  * het hoofdsysteem: elke status met categorie 'actief'), met classificatie
- * erbij. Alleen-lezen — wordt hier nergens gewijzigd.
+ * erbij. Optioneel gefilterd op hoofdclassificatie (V0.1.8, o.a. gebruikt
+ * door de gefilterde weergave voor een classificatie-gekoppelde rol).
+ * Alleen-lezen — wordt hier nergens gewijzigd.
  */
-function get_actieve_meldingen(PDO $pdo): array
+function get_actieve_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null): array
 {
     $actieve_sleutels = statussen_sleutels(get_actieve_statussen($pdo));
     if (!$actieve_sleutels) {
@@ -266,11 +448,17 @@ function get_actieve_meldingen(PDO $pdo): array
         $params['s' . $i] = $sleutel;
     }
 
+    $where = 'm.status IN (' . implode(',', $plekhouders) . ')';
+    if ($hoofdclassificatie_id) {
+        $where .= ' AND m.hoofdclassificatie_id = :hoofd_id';
+        $params['hoofd_id'] = $hoofdclassificatie_id;
+    }
+
     $sql = 'SELECT m.*, h.naam AS hoofd_naam, h.kleur AS hoofd_kleur, s.naam AS sub_naam
             FROM meldingen m
             LEFT JOIN hoofdclassificaties h ON h.id = m.hoofdclassificatie_id
             LEFT JOIN subclassificaties s ON s.id = m.subclassificatie_id
-            WHERE m.status IN (' . implode(',', $plekhouders) . ')
+            WHERE ' . $where . '
             ORDER BY FIELD(m.prioriteit,"kritiek","hoog","normaal","laag"), m.aangemaakt_op DESC';
 
     $stmt = $pdo->prepare($sql);

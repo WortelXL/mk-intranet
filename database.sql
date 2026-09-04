@@ -557,4 +557,8 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Nieuwe pagina Statistieken, te vinden onder Meldingen in de navigatie: aantal meldingen per (sub)classificatie, verdeling per prioriteit en status, meldingen per evenementdag en gemiddelde doorlooptijd -- filterbaar op classificatie en evenementdag.
 
 ## Gewijzigd
-- "Meldingen" in de navigatie is nu een submenu: Overview (de bestaande pagina, ongewijzigd) en Statistieken (nieuw).');
+- "Meldingen" in de navigatie is nu een submenu: Overview (de bestaande pagina, ongewijzigd) en Statistieken (nieuw).'),
+('V0.1.8', '4 september 2026', '## Nieuw
+- Rollen overgenomen van het meldkamersysteem: onder Beheer -> Rollen kunnen benoemde rollen aangemaakt worden, elk met een niveau (Beheerder/Medewerker/Viewer) en optioneel een gekoppelde hoofdclassificatie.
+- Heeft een account 2 of meer rollen toegewezen gekregen, dan verschijnt rechtsboven in de navigatie een keuzelijst om de actieve rol te wisselen -- die bepaalt de rechten, en bij een gekoppelde hoofdclassificatie een eigen gefilterde weergave (alleen die classificatie op Overview, verder geen toegang tot Dashboard, Statistieken, Archief, Crew of Beheer).
+- Beheer -> Gebruikers heeft een kolom "Rollen" gekregen om deze (nieuwe) rollen per account toe te wijzen, naast de bestaande klassieke rol.');

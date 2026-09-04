@@ -26,6 +26,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['gebruiker_id']   = $gebruiker['id'];
         $_SESSION['gebruiker_naam'] = $gebruiker['naam'];
         $_SESSION['gebruiker_rol']  = $gebruiker['rol'];
+
+        // V0.1.8: heeft deze gebruiker (nieuwe) rollen toegewezen gekregen,
+        // dan bepaalt de actieve rol voortaan de rechten -- net als in het
+        // meldkamersysteem. Zonder toegewezen rollen verandert er niets
+        // t.o.v. de klassieke rol hierboven.
+        $rol = actieve_rol($pdo);
+        if ($rol) {
+            $_SESSION['gebruiker_rol'] = $rol['niveau'];
+        }
+
         header('Location: /index.php');
         exit;
     } else {

@@ -25,6 +25,10 @@ include __DIR__ . '/includes/header.php';
         <h3>Gebruikers beheren</h3>
         <p>Accounts aanmaken, rol en wachtwoord wijzigen, activeren of deactiveren. Zelfde gedeelde inlogtabel als het meldkamersysteem.</p>
     </a>
+    <a href="/rollen.php" class="beheer-card">
+        <h3>Rollen beheren</h3>
+        <p>Benoemde rollen aanmaken, niveau instellen en optioneel koppelen aan een hoofdclassificatie voor een gefilterde weergave. Zelfde rollensysteem als het meldkamersysteem.</p>
+    </a>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

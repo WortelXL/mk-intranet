@@ -75,6 +75,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($actie === 'rollen_wijzigen') {
+        $id = (int) ($_POST['id'] ?? 0);
+        $gekozen_rol_ids = array_map('intval', $_POST['rollen'] ?? []);
+        $geldige_rol_ids = array_column($pdo->query('SELECT id FROM rollen')->fetchAll(), 'id');
+        $gekozen_rol_ids = array_values(array_intersect($gekozen_rol_ids, $geldige_rol_ids));
+
+        $pdo->beginTransaction();
+        $pdo->prepare('DELETE FROM gebruiker_rollen WHERE gebruiker_id = :id')->execute(['id' => $id]);
+        if ($gekozen_rol_ids) {
+            $insert = $pdo->prepare('INSERT INTO gebruiker_rollen (gebruiker_id, rol_id) VALUES (:g, :r)');
+            foreach ($gekozen_rol_ids as $rid) {
+                $insert->execute(['g' => $id, 'r' => $rid]);
+            }
+        }
+        $pdo->commit();
+        $succes = 'Rollen bijgewerkt.';
+    }
+
     if ($actie === 'actief_wisselen') {
         $id = (int) ($_POST['id'] ?? 0);
         $rij_stmt = $pdo->prepare('SELECT rol, actief FROM gebruikers WHERE id = :id');
@@ -140,6 +158,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $gebruikers = $pdo->query('SELECT * FROM gebruikers ORDER BY actief DESC, naam ASC')->fetchAll();
 
+// V0.1.8: rollen (het meldkamersysteem-rollensysteem) per gebruiker, voor
+// de checkbox-kolom hieronder.
+$alle_rollen = alle_rollen($pdo);
+$rollen_per_gebruiker = [];
+foreach ($gebruikers as $g) {
+    $rollen_per_gebruiker[$g['id']] = [];
+}
+foreach ($pdo->query('SELECT gebruiker_id, rol_id FROM gebruiker_rollen')->fetchAll() as $koppeling) {
+    $rollen_per_gebruiker[$koppeling['gebruiker_id']][] = (int) $koppeling['rol_id'];
+}
+
 $actief = 'beheer';
 $paginatitel = 'Gebruikers beheren';
 include __DIR__ . '/includes/header.php';
@@ -199,6 +228,7 @@ include __DIR__ . '/includes/header.php';
             <button type="submit" class="btn btn-primary">Gebruiker aanmaken</button>
         </div>
     </form>
+    <p class="section-note">Rollen (het meldkamersysteem-rollensysteem, kolom "Rollen" hieronder) wijs je toe nadat de gebruiker is aangemaakt.</p>
 </div>
 
 <div class="panel">
@@ -206,7 +236,7 @@ include __DIR__ . '/includes/header.php';
     <div class="tabel-scroll">
     <table class="admin-table">
         <thead>
-            <tr><th>Naam</th><th>Gebruikersnaam</th><th>Rol</th><th>Functie</th><th>Status</th><th>Toegang</th><th>Wachtwoord</th><th></th></tr>
+            <tr><th>Naam</th><th>Gebruikersnaam</th><th>Rol</th><th>Rollen</th><th>Functie</th><th>Status</th><th>Toegang</th><th>Wachtwoord</th><th></th></tr>
         </thead>
         <tbody>
         <?php foreach ($gebruikers as $g): ?>
@@ -223,6 +253,22 @@ include __DIR__ . '/includes/header.php';
                             <option value="view" <?= $g['rol'] === 'view' ? 'selected' : '' ?>>Viewer</option>
                         </select>
                     </form>
+                </td>
+                <td>
+                    <?php if (!$alle_rollen): ?>
+                        <span class="muted">Nog geen rollen aangemaakt</span>
+                    <?php else: ?>
+                    <form method="post" class="inline-form rollen-grid">
+                        <input type="hidden" name="actie" value="rollen_wijzigen">
+                        <input type="hidden" name="id" value="<?= $g['id'] ?>">
+                        <?php foreach ($alle_rollen as $rol): ?>
+                            <label class="rollen-checkbox">
+                                <input type="checkbox" name="rollen[]" value="<?= $rol['id'] ?>" <?= in_array($rol['id'], $rollen_per_gebruiker[$g['id']], true) ? 'checked' : '' ?> onchange="this.form.submit()">
+                                <?= e($rol['naam']) ?>
+                            </label>
+                        <?php endforeach; ?>
+                    </form>
+                    <?php endif; ?>
                 </td>
                 <td>
                     <form method="post" class="inline-form">
@@ -274,7 +320,7 @@ include __DIR__ . '/includes/header.php';
         </tbody>
     </table>
     </div>
-    <p class="section-note">Er blijft altijd minstens één actieve beheerder over — rol wijzigen, deactiveren en verwijderen worden geweigerd als dat de laatste zou zijn. Je eigen account kun je hier niet verwijderen. De kolom "Toegang" bepaalt of iemand mag inloggen in het meldkamersysteem (MK) en/of MK Intranet — let op dat je jezelf of de laatste beheerder niet per ongeluk overal buitensluit.</p>
+    <p class="section-note">Er blijft altijd minstens één actieve beheerder over — rol wijzigen, deactiveren en verwijderen worden geweigerd als dat de laatste zou zijn. Je eigen account kun je hier niet verwijderen. De kolom "Rol" is de klassieke rol; de kolom "Rollen" is het (nieuwe) rollensysteem van het meldkamersysteem — heeft iemand daarin 2 of meer rollen, dan bepaalt de actieve rol (te wisselen rechtsboven in de navigatie) voortaan de rechten, en kan een gekoppelde hoofdclassificatie de weergave beperken (zie <a href="/rollen.php">Beheer &gt; Rollen</a>). De kolom "Toegang" bepaalt of iemand mag inloggen in het meldkamersysteem (MK) en/of MK Intranet — let op dat je jezelf of de laatste beheerder niet per ongeluk overal buitensluit.</p>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
