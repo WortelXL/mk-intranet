@@ -35,5 +35,31 @@
         </div>
     </dialog>
 </div>
+<script>
+// Navbalk-submenu (Meldingen, V0.1.7): sluit een open submenu zodra er
+// ergens anders op de pagina geklikt wordt -- net als in het
+// meldkamersysteem.
+(function () {
+    var menus = document.querySelectorAll('.nav-dropdown details');
+    menus.forEach(function (menu) {
+        menu.addEventListener('toggle', function () {
+            if (menu.open) {
+                menus.forEach(function (ander) {
+                    if (ander !== menu) {
+                        ander.open = false;
+                    }
+                });
+            }
+        });
+    });
+    document.addEventListener('click', function (e) {
+        menus.forEach(function (menu) {
+            if (menu.open && !menu.contains(e.target)) {
+                menu.open = false;
+            }
+        });
+    });
+})();
+</script>
 </body>
 </html>

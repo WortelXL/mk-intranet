@@ -2,6 +2,7 @@
 /** Verwacht optioneel: $paginatitel (string), $actief (string) */
 $paginatitel = $paginatitel ?? 'Intranet';
 $actief = $actief ?? '';
+$in_meldingen_menu = in_array($actief, ['meldingen', 'statistieken'], true);
 ?>
 <!doctype html>
 <html lang="nl">
@@ -24,7 +25,15 @@ $actief = $actief ?? '';
         <nav class="mainnav">
             <?php if (is_ingelogd()): ?>
                 <a href="/index.php" class="<?= $actief === 'dashboard' ? 'active' : '' ?>">Dashboard</a>
-                <a href="/meldingen.php" class="<?= $actief === 'meldingen' ? 'active' : '' ?>">Meldingen</a>
+                <div class="nav-dropdown">
+                    <details>
+                        <summary class="<?= $in_meldingen_menu ? 'active' : '' ?>">Meldingen</summary>
+                        <div class="nav-dropdown-menu">
+                            <a href="/meldingen.php" class="<?= $actief === 'meldingen' ? 'active' : '' ?>">Overview</a>
+                            <a href="/statistieken.php" class="<?= $actief === 'statistieken' ? 'active' : '' ?>">Statistieken</a>
+                        </div>
+                    </details>
+                </div>
                 <a href="/crew.php" class="<?= $actief === 'crew' ? 'active' : '' ?>">Crew</a>
                 <a href="/archief.php" class="<?= $actief === 'archief' ? 'active' : '' ?>">Archief</a>
                 <?php if (is_beheerder()): ?>

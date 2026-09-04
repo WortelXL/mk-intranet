@@ -114,6 +114,57 @@ nav.mainnav a {
 nav.mainnav a:hover { color: var(--text); background: var(--panel-2); }
 nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 
+.nav-dropdown { position: relative; display: inline-flex; }
+.nav-dropdown details { position: relative; }
+.nav-dropdown summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    color: var(--muted);
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 7px 12px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+}
+.nav-dropdown summary::-webkit-details-marker { display: none; }
+.nav-dropdown summary::marker { content: ""; }
+.nav-dropdown summary::after {
+    content: "▾";
+    font-size: 9px;
+    margin-left: 5px;
+    opacity: 0.7;
+}
+.nav-dropdown summary:hover { color: var(--text); background: var(--panel-2); }
+.nav-dropdown summary.active { color: var(--bg); background: var(--teal); }
+.nav-dropdown details[open] summary { color: var(--text); background: var(--panel-2); }
+.nav-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px;
+    min-width: 170px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 60;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+.nav-dropdown-menu a {
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 7px 10px;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s;
+}
+.nav-dropdown-menu a:hover { color: var(--text); background: var(--panel-2); }
+.nav-dropdown-menu a.active { color: var(--bg); background: var(--teal); }
+
 .user-chip {
     display: inline-flex;
     align-items: center;
@@ -363,6 +414,31 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
+
+/* ---- Statistieken: eenvoudige staafdiagrammen -------------------------- */
+.stat-balken { display: flex; flex-direction: column; gap: 9px; }
+.stat-balk-rij {
+    display: grid;
+    grid-template-columns: minmax(90px, 160px) 1fr 38px;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+.stat-balk-label {
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.stat-balk-track {
+    background: var(--panel-2);
+    border-radius: 6px;
+    height: 10px;
+    overflow: hidden;
+}
+.stat-balk-vulling { display: block; height: 100%; border-radius: 6px; }
+.stat-balk-aantal { text-align: right; color: var(--muted); font-family: var(--font-mono); font-size: 12.5px; }
+.stat-leeg { color: var(--muted); font-size: 13px; padding: 8px 0; }
 
 /* ---- Melding list ---------------------------------------------------- */
 .melding-list {

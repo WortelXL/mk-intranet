@@ -19,11 +19,21 @@ productie draait deze app dus tegen de bestaande, echte database.
 
 - **Dashboard** (`index.php`) — de laatste mededelingen (incl. eventuele
   links).
-- **Meldingen** (`meldingen.php`) — lopende meldingen (alleen-lezen).
-  Per melding kan het logboek (de notities) in-/uitgeklapt worden via het
-  vinkje "Laat log zien"; die staat blijft open na een ververste pagina
-  (handmatig of automatisch), tot je 'm zelf weer dichtklikt. Ververst
-  automatisch als de gebruiker dat zo heeft ingesteld (zie hieronder).
+- **Meldingen** — submenu in de navigatie (sinds V0.1.7) met twee pagina's:
+  - **Overview** (`meldingen.php`) — lopende meldingen (alleen-lezen).
+    Per melding kan het logboek (de notities) in-/uitgeklapt worden via
+    het vinkje "Laat log zien"; die staat blijft open na een ververste
+    pagina (handmatig of automatisch), tot je 'm zelf weer dichtklikt.
+    Ververst automatisch als de gebruiker dat zo heeft ingesteld (zie
+    hieronder).
+  - **Statistieken** (`statistieken.php`) — cijfers over alle meldingen
+    (actief + afgerond): aantal per (sub)classificatie, verdeling per
+    prioriteit en status, aantal per evenementdag, en gemiddelde
+    doorlooptijd (alleen over afgeronde meldingen). Filterbaar op
+    hoofd-/subclassificatie en evenementdag. Evenementdag wordt bepaald
+    via dezelfde `instellingen`-sleutels (`event_start_datum`,
+    `event_aantal_dagen`) als het meldkamersysteem gebruikt voor de
+    dagnummering in het meld-ID.
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
 - **Archief** (`archief.php`) — afgeronde meldingen bekijken (alleen-lezen),
@@ -121,6 +131,132 @@ cp .env.example .env
 wachtwoord (aanbevolen, zie de opmerking hieronder), dan pas je alleen
 `.env` aan -- daar hoef je nooit iets voor te committen.
 
+**Dit wachtwoord stond eerder wél in git.** De eerste versies (V0.0.1 en
+V0.0.2) van dit project hadden het wachtwoord nog gewoon leesbaar in
+`docker-compose.yml` staan, en zijn al naar een publieke GitHub-repo
+gepusht. Beschouw dat wachtwoord als gecompromitteerd: wijzig het
+`phpserver`-account op de database zelf (`ALTER USER 'phpserver'@'...'
+IDENTIFIED BY '...';` of het equivalent via je hostingpaneel) en zet het
+nieuwe wachtwoord alleen in je lokale `.env`. Gebruikt `mkapp` hetzelfde
+account/wachtwoord, dan moet die stack ook bijgewerkt worden. Wil je ook
+de oude, publieke git-geschiedenis opschonen (het wachtwoord staat nog in
+de V0.0.1/V0.0.2-commits), dan kan dat met `git filter-repo` of BFG
+Repo-Cleaner -- vraag het gerust, dat is een aparte, ingrijpendere
+operatie (herschrijft geschiedenis, vereist force-push).
+
+## Database-migratie
+
+Migratiescripts staan in de map `migratie/`, één bestand per versie die een databasewijziging nodig heeft (niet elke versie heeft er een).
+
+**V0.0.5** voegt twee nieuwe tabellen toe: `berichten` (mededelingen) en
+`intranet_versies` (het wijzigingenlog hieronder). Draai dit één keer tegen
+de bestaande, live database voordat je V0.0.5 in gebruik neemt:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.5_berichten_en_versies.sql
+```
+Beide tabellen zijn nieuw en alleen voor MK Intranet — `mkapp` gebruikt ze
+niet en wordt hier niet door geraakt. Zet je in plaats daarvan een verse
+database op, dan staan deze tabellen ook gewoon al in `database.sql`.
+
+**V0.0.6** wijzigt alleen rechten in de PHP-code (geen nieuwe kolommen),
+maar voegt wel een wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.6_crew_rechten.sql
+```
+
+**V0.0.7** verplaatst alleen de migratiescripts zelf naar deze map (geen
+databasewijziging), en voegt de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.7_changelog.sql
+```
+
+**V0.0.8** voegt de archiefpagina toe (leest alleen bestaande tabellen,
+geen schemawijziging), en voegt de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.8_changelog.sql
+```
+
+**V0.0.9** voegt het labelfilter en de PDF-export toe aan het archief
+(labels/melding_labels bestonden al in de gedeelde database — geen
+schemawijziging), en voegt de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.9_changelog.sql
+```
+
+**V0.0.9.1** voegt selectie-export toe aan het archief (geen
+schemawijziging), en voegt de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.0.9.1_changelog.sql
+```
+
+**V0.1.0** voegt het logboek toe aan het dashboard (leest de bestaande
+tabel `melding_notities`, geen schemawijziging), en voegt de
+wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.0_changelog.sql
+```
+
+**V0.1.1** voegt een `url`-kolom toe aan `berichten` (wél een
+schemawijziging dit keer) en de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.1_beheer_en_url.sql
+```
+
+**V0.1.2** voegt de subclassificatie-filter, de melding-detailpagina en de
+uitgebreide PDF-export toe (leest alleen bestaande tabellen, geen
+schemawijziging), en de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.2_changelog.sql
+```
+
+**V0.1.3** vervangt het url-veld van een bericht door een eigen
+links-tabel (`bericht_links`, max. 5 per bericht). De migratie zet
+bestaande url-waarden automatisch over voordat de oude kolom verdwijnt --
+**belangrijk: draai deze migratie vóórdat je de nieuwe code live zet**,
+anders verwijst de oude code nog naar een kolom die niet meer bestaat:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.3_bericht_links.sql
+```
+
+**V0.1.4** voegt de instelling voor automatisch verversen en de nieuwe
+Meldingen-pagina toe (leest een bestaande kolom, geen schemawijziging), en
+de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.4_changelog.sql
+```
+
+**V0.1.4.2** trekt het automatisch verversen gelijk met het meldkamersysteem
+(zelfde intervallen, blijft doorlopen, pauzeert bij een niet-actief
+tabblad, scrollpositie onthouden). Geen schemawijziging, alleen de
+wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.4.2_changelog.sql
+```
+
+**V0.1.5** voegt de pagina "Mijn instellingen" toe (geluid bij een nieuwe
+melding en wachtwoord wijzigen, naast het al bestaande automatisch
+verversen dat nu hiernaartoe verhuisd is). Leest bestaande kolommen, geen
+schemawijziging, alleen de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.5_instellingen.sql
+```
+
+**V0.1.6** voegt toegang-per-applicatie toe (`mag_inloggen_mkapp` /
+`mag_inloggen_mkintranet`). **Belangrijk:** deze kolommen zelf zijn
+aangemaakt vanuit het meldkamersysteem-project, niet vanuit dit project —
+draai die migratie daar eerst. Deze migratie hier voegt alleen de
+wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.6_toegang_per_app.sql
+```
+
+**V0.1.7** voegt de Statistieken-pagina toe onder het nieuwe
+Meldingen-submenu. Leest alleen bestaande tabellen/instellingen, geen
+schemawijziging, alleen de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.7_statistieken.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -178,6 +314,16 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   worden door deze functie. Deze check zit alleen in `login.php` (het
   moment van inloggen) — een lopende sessie wordt niet automatisch
   beëindigd als de toegang tijdens het gebruik wordt ingetrokken.
+- **Statistieken (V0.1.7):** telt bewust alle meldingen mee (actief +
+  afgerond), behalve bij "Gemiddelde doorlooptijd" — daar tellen alleen
+  afgeronde meldingen mee, want een nog lopende melding heeft geen
+  eindpunt om een duur mee te berekenen. De evenementdag-grenzen komen
+  uit dezelfde `instellingen`-sleutels die het meldkamersysteem al
+  gebruikt voor de dagnummering in het meld-ID (`event_start_datum`,
+  `event_aantal_dagen`) — wijzig je die daar, dan verschuiven de
+  dagfilters hier automatisch mee. Het blok "Meldingen per evenementdag"
+  negeert het eigen dagfilter bewust (laat alle dagen naast elkaar zien
+  om ze te kunnen vergelijken); classificatiefilters gelden daar wel.
 - **Meldingenoverzicht:** toont alle meldingen met een status uit de
   categorie "actief" (zelfde definitie als het dashboard/Overview van
   `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,

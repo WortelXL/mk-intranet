@@ -20,14 +20,14 @@ $geluid_aan = (bool) $mijn_instellingen['geluid_nieuwe_melding'];
 $hoogste_ids = get_hoogste_actieve_melding_ids($pdo);
 
 $actief = 'meldingen';
-$paginatitel = 'Meldingen';
+$paginatitel = 'Overview';
 include __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-head">
     <div>
-        <p class="eyebrow">Live overzicht</p>
-        <h1>Meldingen</h1>
+        <p class="eyebrow">Dag <?= bepaal_evenement_dag($pdo) ?> van <?= event_aantal_dagen($pdo) ?></p>
+        <h1>Overview</h1>
         <p>Lopende meldingen van het meldkamersysteem, alleen-lezen.</p>
     </div>
     <a href="#" onclick="location.reload(); return false;" class="btn">Vernieuwen</a>

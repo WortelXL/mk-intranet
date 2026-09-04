@@ -30,6 +30,48 @@ function event_naam(PDO $pdo): string
     return get_instelling($pdo, 'event_naam', 'Meldkamer');
 }
 
+/**
+ * Startdatum (evenementdag 1) en aantal evenementdagen -- zelfde
+ * instellingen-sleutels als het meldkamersysteem gebruikt om het meld-ID
+ * (bv. MK-D2-014) te bepalen. Gebruikt hier voor het dagfilter op de
+ * statistiekenpagina.
+ */
+function event_start_datum(PDO $pdo): string
+{
+    return get_instelling($pdo, 'event_start_datum', '2026-08-14');
+}
+
+function event_aantal_dagen(PDO $pdo): int
+{
+    return (int) get_instelling($pdo, 'event_aantal_dagen', '3');
+}
+
+/** Start (inclusief) en eind (exclusief) van evenementdag $dag (1-based) */
+function evenement_dag_bereik(PDO $pdo, int $dag): array
+{
+    $start = new DateTime(event_start_datum($pdo));
+    $start->modify('+' . ($dag - 1) . ' days')->setTime(0, 0, 0);
+    $eind = (clone $start)->modify('+1 day');
+    return [$start, $eind];
+}
+
+/** Bepaalt op welke evenementdag (1, 2, 3...) een tijdstip valt -- zelfde berekening als het meldkamersysteem */
+function bepaal_evenement_dag(PDO $pdo, ?DateTime $moment = null): int
+{
+    $moment = $moment ?? new DateTime();
+    $start  = new DateTime(event_start_datum($pdo));
+    $totaal = event_aantal_dagen($pdo);
+    $diff   = (int) $start->diff($moment)->format('%r%a');
+    $dag    = $diff + 1;
+    if ($dag < 1) {
+        $dag = 1;
+    }
+    if ($dag > $totaal) {
+        $dag = $totaal;
+    }
+    return $dag;
+}
+
 /* =========================================================================
  * Login / sessie
  * ========================================================================= */
@@ -615,6 +657,37 @@ function huidige_intranet_versie(PDO $pdo): string
 {
     $nieuwste = $pdo->query('SELECT versienummer FROM intranet_versies ORDER BY id DESC LIMIT 1')->fetchColumn();
     return $nieuwste ?: APP_VERSION;
+}
+
+/**
+ * Rendert een simpele, dependency-vrije staafdiagram (CSS-only) voor de
+ * statistiekenpagina. $items is een lijst van ['label'=>string,
+ * 'aantal'=>int, 'kleur'=>?string, 'aantal_tekst'=>?string], al
+ * gesorteerd zoals gewenst. Balken zijn relatief aan het hoogste aantal
+ * in de lijst; 'aantal' bepaalt de balkbreedte, 'aantal_tekst' (optioneel)
+ * overschrijft alleen het getoonde getal -- handig voor bv. een
+ * gemiddelde duur, waar 'aantal' de ruwe seconden is (voor de balkbreedte)
+ * maar de tekst een leesbare duur moet tonen (bv. "1u 30m").
+ */
+function render_stat_balken(array $items, string $standaardkleur = 'var(--teal)'): string
+{
+    if (!$items) {
+        return '<p class="stat-leeg">Geen gegevens voor deze selectie.</p>';
+    }
+    $max = max(1, max(array_column($items, 'aantal')));
+    $html = '<div class="stat-balken">';
+    foreach ($items as $item) {
+        $kleur = $item['kleur'] ?? $standaardkleur;
+        $pct = (int) round(((int) $item['aantal']) / $max * 100);
+        $tekst = $item['aantal_tekst'] ?? (string) (int) $item['aantal'];
+        $html .= '<div class="stat-balk-rij">'
+            . '<span class="stat-balk-label">' . e($item['label']) . '</span>'
+            . '<span class="stat-balk-track"><span class="stat-balk-vulling" style="width:' . $pct . '%; background:' . e($kleur) . ';"></span></span>'
+            . '<span class="stat-balk-aantal">' . e($tekst) . '</span>'
+            . '</div>';
+    }
+    $html .= '</div>';
+    return $html;
 }
 
 /**

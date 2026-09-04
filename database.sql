@@ -552,4 +552,9 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Automatisch verversen is verplaatst van de navigatiebalk naar "Mijn instellingen". De instelling zelf is ongewijzigd en blijft gedeeld met het meldkamersysteem.'),
 ('V0.1.6', '31 augustus 2026', '## Nieuw
 - Toegang per applicatie: een account kan nu apart toegang hebben tot het meldkamersysteem en/of MK Intranet, in te stellen bij Beheer -> Gebruikers ("Toegang"-kolom, ook bij een nieuwe gebruiker aanmaken).
-- Inloggen op MK Intranet wordt geweigerd met een duidelijke melding als een account daar geen toegang toe heeft.');
+- Inloggen op MK Intranet wordt geweigerd met een duidelijke melding als een account daar geen toegang toe heeft.'),
+('V0.1.7', '4 september 2026', '## Nieuw
+- Nieuwe pagina Statistieken, te vinden onder Meldingen in de navigatie: aantal meldingen per (sub)classificatie, verdeling per prioriteit en status, meldingen per evenementdag en gemiddelde doorlooptijd -- filterbaar op classificatie en evenementdag.
+
+## Gewijzigd
+- "Meldingen" in de navigatie is nu een submenu: Overview (de bestaande pagina, ongewijzigd) en Statistieken (nieuw).');
