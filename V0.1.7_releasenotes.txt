@@ -1,8 +1,0 @@
-MK Intranet - V0.1.7
-4 september 2026
-
-Nieuw
-- Nieuwe pagina Statistieken, te vinden onder Meldingen in de navigatie: aantal meldingen per (sub)classificatie, verdeling per prioriteit en status, meldingen per evenementdag en gemiddelde doorlooptijd -- filterbaar op classificatie en evenementdag.
-
-Gewijzigd
-- "Meldingen" in de navigatie is nu een submenu: Overview (de bestaande pagina, ongewijzigd) en Statistieken (nieuw).
