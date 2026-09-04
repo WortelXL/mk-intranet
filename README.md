@@ -84,8 +84,10 @@ gedeeld met en beheerd via `mkapp` net zo goed als vanuit MK Intranet).
 - **Rollen toewijzen** — bij Beheer > Gebruikers, kolom "Rollen": een
   vinkjesgrid per account, los van de klassieke rolkolom ernaast.
 - **Actieve rol & wisselen** — heeft een account 2 of meer rollen
-  toegewezen, dan verschijnt rechtsboven in de navigatie (naast je naam)
-  een keuzelijst om de actieve rol te wisselen. De actieve rol bepaalt
+  toegewezen, dan is de rol-badge rechtsboven in de navigatie (naast je
+  naam) zelf een keuzelijst geworden om de actieve rol te wisselen (sinds
+  V0.1.9 — daarvoor stond er een losse, niet-klikbare badge mét daarnaast
+  nog een aparte wisselaar; dat is nu één control). De actieve rol bepaalt
   vanaf dat moment je rechten (niveau) — ook als je account zelf
   beheerder is, maar de actieve rol niveau Viewer heeft, gelden de
   Viewer-beperkingen. Bij inloggen wordt automatisch de eerst toegewezen
@@ -306,6 +308,12 @@ meldkamersysteem-project, niet vanuit dit project — draai die migratie
 daar eerst. Deze migratie hier voegt alleen de wijzigingenlog-regel toe:
 ```bash
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.8_rollen.sql
+```
+
+**V0.1.9** past alleen de weergave van de rol-wisselaar aan (CSS/HTML,
+geen schemawijziging), en voegt de wijzigingenlog-regel toe:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.9_rol_wisselaar.sql
 ```
 
 ## Handmatig (zonder Docker)

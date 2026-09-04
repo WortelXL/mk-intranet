@@ -61,12 +61,15 @@ $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !
                 <?php endif; ?>
                 <a href="/instellingen.php" class="user-chip" title="Mijn instellingen">
                     <?= e(huidige_gebruiker_naam()) ?>
-                    <span class="rol-badge rol-<?= e(huidige_gebruiker_rol()) ?>"><?= e(rol_label(huidige_gebruiker_rol())) ?></span>
                 </a>
                 <?php if (count($mijn_rollen_navbar) > 1): ?>
+                <!-- V0.1.9: de rol-tekst (voorheen een losse, niet-klikbare
+                     badge) is zelf de rol-wisselaar geworden, i.p.v. een
+                     badge mét daarnaast nog een aparte wisselaar -- één
+                     control, geen dubbele weergave van dezelfde rol. -->
                 <form method="post" action="/wissel_rol.php" class="rol-wisselaar-form">
                     <input type="hidden" name="terug" value="<?= e($_SERVER['REQUEST_URI']) ?>">
-                    <select name="rol_id" onchange="this.form.submit()" class="rol-tekst rol-tekst-klikbaar" title="Actieve rol — klik om te wisselen. Bepaalt je rechten en, bij een gekoppelde classificatie, een eigen gefilterde weergave">
+                    <select name="rol_id" onchange="this.form.submit()" class="rol-badge rol-<?= e(huidige_gebruiker_rol()) ?> rol-badge-wisselaar" title="Actieve rol — klik om te wisselen. Bepaalt je rechten en, bij een gekoppelde classificatie, een eigen gefilterde weergave">
                         <?php foreach ($mijn_rollen_navbar as $r): ?>
                             <option value="<?= $r['id'] ?>" <?= $mijn_actieve_rol && (int) $mijn_actieve_rol['id'] === (int) $r['id'] ? 'selected' : '' ?>><?= e($r['naam']) ?> (<?= e(rol_label($r['niveau'])) ?>)</option>
                         <?php endforeach; ?>
@@ -75,6 +78,8 @@ $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !
                     <span class="rol-wisselaar-hint" title="Actieve rol — bepaalt je rechten en, bij een gekoppelde classificatie, een eigen gefilterde weergave">(beperkte weergave)</span>
                     <?php endif; ?>
                 </form>
+                <?php else: ?>
+                <span class="rol-badge rol-<?= e(huidige_gebruiker_rol()) ?>"><?= e(rol_label(huidige_gebruiker_rol())) ?></span>
                 <?php endif; ?>
                 <a href="/logout.php">Uitloggen</a>
             <?php else: ?>

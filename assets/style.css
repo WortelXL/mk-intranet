@@ -193,30 +193,26 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
 .rol-badge.rol-medewerker { background: rgba(59,130,246,0.15); color: #8ab4f8; }
 .rol-badge.rol-view { background: rgba(107,114,128,0.2); color: var(--muted); }
 
-/* ---- Rol-wisselaar (V0.1.8) ---------------------------------------- */
+/* ---- Rol-wisselaar (V0.1.8; sinds V0.1.9 is de rol-badge zelf de
+   wisselaar, i.p.v. een badge mét een aparte wisselaar ernaast) --------- */
 .rol-wisselaar-form {
     display: inline-flex;
     align-items: center;
     margin-left: 2px;
 }
 
-.rol-tekst {
-    font-size: 12.5px;
-    color: var(--muted);
-    font-family: var(--font-body);
-}
-
-select.rol-tekst.rol-tekst-klikbaar {
-    background: transparent;
+select.rol-badge.rol-badge-wisselaar {
+    -webkit-appearance: none;
+    appearance: none;
     border: none;
-    padding: 4px 2px;
     cursor: pointer;
+    font-family: var(--font-mono);
+    transition: filter 0.15s;
 }
-select.rol-tekst.rol-tekst-klikbaar:hover { color: var(--text); }
-select.rol-tekst.rol-tekst-klikbaar:focus {
+select.rol-badge.rol-badge-wisselaar:hover { filter: brightness(1.2); }
+select.rol-badge.rol-badge-wisselaar:focus {
     outline: 1px solid var(--teal);
     outline-offset: 2px;
-    border-radius: 4px;
 }
 
 .rol-wisselaar-hint {

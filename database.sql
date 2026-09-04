@@ -561,4 +561,6 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 ('V0.1.8', '4 september 2026', '## Nieuw
 - Rollen overgenomen van het meldkamersysteem: onder Beheer -> Rollen kunnen benoemde rollen aangemaakt worden, elk met een niveau (Beheerder/Medewerker/Viewer) en optioneel een gekoppelde hoofdclassificatie.
 - Heeft een account 2 of meer rollen toegewezen gekregen, dan verschijnt rechtsboven in de navigatie een keuzelijst om de actieve rol te wisselen -- die bepaalt de rechten, en bij een gekoppelde hoofdclassificatie een eigen gefilterde weergave (alleen die classificatie op Overview, verder geen toegang tot Dashboard, Statistieken, Archief, Crew of Beheer).
-- Beheer -> Gebruikers heeft een kolom "Rollen" gekregen om deze (nieuwe) rollen per account toe te wijzen, naast de bestaande klassieke rol.');
+- Beheer -> Gebruikers heeft een kolom "Rollen" gekregen om deze (nieuwe) rollen per account toe te wijzen, naast de bestaande klassieke rol.'),
+('V0.1.9', '4 september 2026', '## Gewijzigd
+- Rol-wisselaar in de navigatie: de rol-badge naast je naam is nu zelf de wisselaar (bij 2 of meer toegewezen rollen), in plaats van een badge met daarnaast nog een aparte keuzelijst.');

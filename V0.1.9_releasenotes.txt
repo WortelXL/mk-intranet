@@ -1,0 +1,5 @@
+MK Intranet - V0.1.9
+4 september 2026
+
+Gewijzigd
+- Rol-wisselaar in de navigatie: de rol-badge naast je naam is nu zelf de wisselaar (bij 2 of meer toegewezen rollen), in plaats van een badge met daarnaast nog een aparte keuzelijst.
