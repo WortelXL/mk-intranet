@@ -27,6 +27,12 @@ $meldingen = get_actieve_meldingen($pdo, $gekozen_hoofd_id);
 $actieve_statussen = get_actieve_statussen($pdo);
 $tellingen = get_status_tellingen($pdo);
 $notities_per_melding = get_notities_per_melding($pdo, array_column($meldingen, 'id'));
+// V0.1.10: gekoppelde meldingen (bv. een EHBO-inzet met een gekoppelde
+// AMBU-inzet) -- zelfde 🔗-icoon als het dashboard van het
+// meldkamersysteem, met de gekoppelde meldingen zelf in het uitklapbare
+// logboekblok hieronder.
+$gekoppelde_per_melding = get_gekoppelde_meldingen_per_melding($pdo, array_column($meldingen, 'id'));
+$afgeronde_sleutels = statussen_sleutels(get_afgeronde_statussen($pdo));
 $kritiek_open = 0;
 foreach ($meldingen as $m) {
     if ($m['prioriteit'] === 'kritiek') {
@@ -98,7 +104,7 @@ include __DIR__ . '/includes/header.php';
         <?php foreach ($meldingen as $m): ?>
             <div class="melding-block">
                 <div class="melding-row dashboard-row">
-                    <span class="melding-id"><?= $m['attentie'] ? '⚠️ ' : '' ?><?= e($m['meld_id']) ?></span>
+                    <span class="melding-id"><?= $m['attentie'] ? '⚠️ ' : '' ?><?= $m['heeft_koppeling'] ? '🔗 ' : '' ?><?= e($m['meld_id']) ?></span>
                     <span class="melding-main">
                         <span class="titel"><?= e($m['titel']) ?></span>
                         <span class="meta">
@@ -119,13 +125,29 @@ include __DIR__ . '/includes/header.php';
                     <span class="tag" style="background:<?= e(status_kleur($pdo, $m['status'])) ?>22; color:<?= e(status_kleur($pdo, $m['status'])) ?>;">
                         <?= e(status_label($pdo, $m['status'])) ?>
                     </span>
-                    <label for="log-toggle-<?= $m['id'] ?>" class="log-toggle-wrap" title="Logboek in-/uitklappen">
+                    <label for="log-toggle-<?= $m['id'] ?>" class="log-toggle-wrap" title="Details in-/uitklappen">
                         <span class="log-toggle-switch"></span>
-                        <span class="log-toggle-tekst">Laat log zien</span>
+                        <span class="log-toggle-tekst">Laat details zien</span>
                     </label>
                 </div>
                 <input type="checkbox" id="log-toggle-<?= $m['id'] ?>" class="log-toggle-checkbox" data-melding-id="<?= $m['id'] ?>">
                 <div class="row-log">
+                    <?php if (!empty($gekoppelde_per_melding[$m['id']])): ?>
+                        <div class="koppeling-lijst">
+                            <p class="koppeling-lijst-kop">🔗 Gekoppelde meldingen</p>
+                            <?php foreach ($gekoppelde_per_melding[$m['id']] as $g): ?>
+                                <p class="koppeling-regel">
+                                    <span class="muted"><?= e($g['label']) ?>:</span>
+                                    <?php if (in_array($g['status'], $afgeronde_sleutels, true)): ?>
+                                        <a href="/melding.php?id=<?= (int) $g['melding_id'] ?>" class="melding-link"><?= e($g['meld_id']) ?></a>
+                                    <?php else: ?>
+                                        <?= e($g['meld_id']) ?>
+                                    <?php endif; ?>
+                                    &middot; <?= e($g['titel']) ?>
+                                </p>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                     <?php if (!empty($notities_per_melding[$m['id']])): ?>
                         <?php foreach ($notities_per_melding[$m['id']] as $n): ?>
                             <p class="melding-log-regel">

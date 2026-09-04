@@ -454,7 +454,8 @@ function get_actieve_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null): ar
         $params['hoofd_id'] = $hoofdclassificatie_id;
     }
 
-    $sql = 'SELECT m.*, h.naam AS hoofd_naam, h.kleur AS hoofd_kleur, s.naam AS sub_naam
+    $sql = 'SELECT m.*, h.naam AS hoofd_naam, h.kleur AS hoofd_kleur, s.naam AS sub_naam,
+                   EXISTS(SELECT 1 FROM melding_koppelingen k WHERE k.melding_id = m.id OR k.gekoppelde_melding_id = m.id) AS heeft_koppeling
             FROM meldingen m
             LEFT JOIN hoofdclassificaties h ON h.id = m.hoofdclassificatie_id
             LEFT JOIN subclassificaties s ON s.id = m.subclassificatie_id
@@ -464,6 +465,73 @@ function get_actieve_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null): ar
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     return $stmt->fetchAll();
+}
+
+/**
+ * Beschikbare koppelingstypes tussen meldingen (overgenomen van het
+ * meldkamersysteem). "label" is het label zoals getoond op de melding
+ * die de koppeling aangemaakt heeft (bv. "Vervolg van: MK-D2-011"),
+ * "omgekeerd" is het label op de andere kant van diezelfde koppeling
+ * (bv. "Vervolgmelding: MK-D2-014"). Koppelingen zelf worden alleen in
+ * het meldkamersysteem aangemaakt/verwijderd -- MK Intranet toont ze
+ * hier alleen-lezen.
+ */
+function koppeling_types(): array
+{
+    return [
+        'vervolg'     => ['label' => 'Vervolg van', 'omgekeerd' => 'Vervolgmelding'],
+        'gerelateerd' => ['label' => 'Gerelateerd aan', 'omgekeerd' => 'Gerelateerd aan'],
+    ];
+}
+
+/**
+ * Gekoppelde meldingen per melding-id (V0.1.10), voor een gegeven lijst
+ * van melding-ids (bv. de actieve meldingen op Overview) -- beide
+ * richtingen van de koppeling meegenomen, net als
+ * get_gekoppelde_meldingen() in het meldkamersysteem doet voor 1 melding
+ * tegelijk, maar hier gebatched voor een hele lijst (zelfde aanpak als
+ * get_notities_per_melding()/get_labels_per_melding() hieronder).
+ * Resultaat: [melding_id => [['meld_id'=>.., 'titel'=>.., 'status'=>..,
+ * 'label'=>..], ...]].
+ */
+function get_gekoppelde_meldingen_per_melding(PDO $pdo, array $melding_ids): array
+{
+    $gekoppeld_per_melding = [];
+    if (!$melding_ids) {
+        return $gekoppeld_per_melding;
+    }
+    $types = koppeling_types();
+    $plekhouders = implode(',', array_fill(0, count($melding_ids), '?'));
+
+    // Eigen kant van de koppeling (deze melding_id staat als "melding_id"
+    // in melding_koppelingen) -- toont het "label"-label.
+    $stmt = $pdo->prepare(
+        "SELECT k.melding_id AS bron_id, k.type, m.id AS melding_id, m.meld_id, m.titel, m.status
+         FROM melding_koppelingen k
+         JOIN meldingen m ON m.id = k.gekoppelde_melding_id
+         WHERE k.melding_id IN ($plekhouders)"
+    );
+    $stmt->execute($melding_ids);
+    foreach ($stmt->fetchAll() as $rij) {
+        $rij['label'] = $types[$rij['type']]['label'] ?? $rij['type'];
+        $gekoppeld_per_melding[$rij['bron_id']][] = $rij;
+    }
+
+    // Omgekeerde kant (deze melding_id staat als "gekoppelde_melding_id")
+    // -- toont het "omgekeerd"-label.
+    $stmt = $pdo->prepare(
+        "SELECT k.gekoppelde_melding_id AS bron_id, k.type, m.id AS melding_id, m.meld_id, m.titel, m.status
+         FROM melding_koppelingen k
+         JOIN meldingen m ON m.id = k.melding_id
+         WHERE k.gekoppelde_melding_id IN ($plekhouders)"
+    );
+    $stmt->execute($melding_ids);
+    foreach ($stmt->fetchAll() as $rij) {
+        $rij['label'] = $types[$rij['type']]['omgekeerd'] ?? $rij['type'];
+        $gekoppeld_per_melding[$rij['bron_id']][] = $rij;
+    }
+
+    return $gekoppeld_per_melding;
 }
 
 /** Aantal actieve meldingen per status, voor de statistiektegels */

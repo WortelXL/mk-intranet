@@ -19,14 +19,28 @@ productie draait deze app dus tegen de bestaande, echte database.
 
 - **Dashboard** (`index.php`) — de laatste mededelingen (incl. eventuele
   links).
-- **Meldingen** — submenu in de navigatie (sinds V0.1.7) met twee pagina's:
+- **Meldingen** — submenu in de navigatie (sinds V0.1.7) met drie
+  pagina's:
   - **Overview** (`meldingen.php`) — lopende meldingen (alleen-lezen),
     optioneel te filteren op hoofdclassificatie (sinds V0.1.8). Per
-    melding kan het logboek (de notities) in-/uitgeklapt worden via het
-    vinkje "Laat log zien"; die staat blijft open na een ververste
-    pagina (handmatig of automatisch), tot je 'm zelf weer dichtklikt.
-    Ververst automatisch als de gebruiker dat zo heeft ingesteld (zie
-    hieronder).
+    melding kan het logboek in-/uitgeklapt worden via het vinkje "Laat
+    details zien"; die staat blijft open na een ververste pagina
+    (handmatig of automatisch), tot je 'm zelf weer dichtklikt. Is een
+    melding gekoppeld aan een andere (bv. een EHBO-inzet met een
+    gekoppelde AMBU-inzet), dan staat er een 🔗-icoon bij het meld-ID en
+    staan de gekoppelde melding(en) zelf ook onder "Laat details zien"
+    (sinds V0.1.10). Ververst automatisch als de gebruiker dat zo heeft
+    ingesteld (zie hieronder).
+  - **Archief** (`archief.php`) — afgeronde meldingen bekijken
+    (alleen-lezen), met filters op hoofdclassificatie, subclassificatie,
+    prioriteit en label. Elke melding is aanklikbaar en opent een
+    detailpagina (`melding.php`) met logboek, gekoppelde
+    protocollen/subtaken, losse taken en het volledige statusverloop met
+    doorlooptijd. Exporteren naar PDF (`export.php`) kan op twee
+    manieren: alles binnen de huidige filters, of een handmatige selectie
+    via de aanvinkvakjes per melding — de PDF bevat dezelfde uitgebreide
+    inhoud als de detailpagina. Tot en met V0.1.9 stond dit als los item
+    "Archief" in de hoofdnavigatie; sinds V0.1.10 zit het in dit submenu.
   - **Statistieken** (`statistieken.php`) — cijfers over alle meldingen
     (actief + afgerond): aantal per (sub)classificatie, verdeling per
     prioriteit en status, aantal per evenementdag, en gemiddelde
@@ -35,17 +49,9 @@ productie draait deze app dus tegen de bestaande, echte database.
     via dezelfde `instellingen`-sleutels (`event_start_datum`,
     `event_aantal_dagen`) als het meldkamersysteem gebruikt voor de
     dagnummering in het meld-ID.
+  Alle drie zijn toegankelijk voor elke ingelogde gebruiker.
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
-- **Archief** (`archief.php`) — afgeronde meldingen bekijken (alleen-lezen),
-  met filters op hoofdclassificatie, subclassificatie, prioriteit en label.
-  Elke melding is aanklikbaar en opent een detailpagina (`melding.php`) met
-  logboek, gekoppelde protocollen/subtaken, losse taken en het volledige
-  statusverloop met doorlooptijd. Exporteren naar PDF (`export.php`) kan
-  op twee manieren: alles binnen de huidige filters, of een handmatige
-  selectie via de aanvinkvakjes per melding — de PDF bevat dezelfde
-  uitgebreide inhoud als de detailpagina. Toegankelijk voor elke
-  ingelogde gebruiker.
 - **Mijn rol** (`mijn-rol.php`, sinds V0.1.8) — alleen relevant voor wie
   een rol heeft met een gekoppelde hoofdclassificatie actief staat; stuurt
   automatisch door naar Overview met dat classificatiefilter al
@@ -316,6 +322,14 @@ geen schemawijziging), en voegt de wijzigingenlog-regel toe:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.9_rol_wisselaar.sql
 ```
 
+**V0.1.10** voegt het 🔗-icoon en de gekoppelde-meldingenlijst op Overview
+toe (leest de al bestaande tabel `melding_koppelingen`, geen
+schemawijziging) en verplaatst Archief naar het Meldingen-submenu (puur
+navigatie). Alleen de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.10_koppelingen_en_archief_submenu.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -404,10 +418,18 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   meldkamersysteem — beide werken op dezelfde `gebruiker_rollen`-tabel.
 - **Meldingenoverzicht:** toont alle meldingen met een status uit de
   categorie "actief" (zelfde definitie als het dashboard/Overview van
-  `mkapp`), zonder logboek, zoeken of doorklikken — bewust een simpel,
-  passief overzicht. Sinds V0.1.8 wel filterbaar op hoofdclassificatie
-  (`?hoofd=<id>`), zowel handmatig via het filter als (verplicht)
-  wanneer je actieve rol een gekoppelde classificatie heeft.
+  `mkapp`), zonder zoeken of doorklikken — bewust een simpel, passief
+  overzicht. Sinds V0.1.8 wel filterbaar op hoofdclassificatie
+  (`?hoofd=<id>`), zowel handmatig via het filter als (verplicht) wanneer
+  je actieve rol een gekoppelde classificatie heeft.
+- **Gekoppelde meldingen (V0.1.10):** het 🔗-icoon en de lijst onder
+  "Laat details zien" zijn alleen-lezen — koppelingen zelf (aanmaken,
+  type kiezen, verwijderen) blijven een taak van het meldkamersysteem
+  (`admin/samengevoegd.php` daar). Een gekoppelde melding die zelf nog
+  actief is, staat als platte tekst in de lijst (geen detailpagina voor
+  actieve meldingen in MK Intranet, zie "Meldingenoverzicht" hierboven);
+  is de gekoppelde melding al afgerond, dan is de naam wel aanklikbaar en
+  opent 'm de archief-detailpagina.
 - **Archief:** toont meldingen met een status uit de categorie "afgerond",
   met filters op hoofdclassificatie, subclassificatie, prioriteit en label
   (geen zoekveld/-commando zoals in `mkapp`'s eigen archief). Gecapped op

@@ -563,4 +563,9 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 - Heeft een account 2 of meer rollen toegewezen gekregen, dan verschijnt rechtsboven in de navigatie een keuzelijst om de actieve rol te wisselen -- die bepaalt de rechten, en bij een gekoppelde hoofdclassificatie een eigen gefilterde weergave (alleen die classificatie op Overview, verder geen toegang tot Dashboard, Statistieken, Archief, Crew of Beheer).
 - Beheer -> Gebruikers heeft een kolom "Rollen" gekregen om deze (nieuwe) rollen per account toe te wijzen, naast de bestaande klassieke rol.'),
 ('V0.1.9', '4 september 2026', '## Gewijzigd
-- Rol-wisselaar in de navigatie: de rol-badge naast je naam is nu zelf de wisselaar (bij 2 of meer toegewezen rollen), in plaats van een badge met daarnaast nog een aparte keuzelijst.');
+- Rol-wisselaar in de navigatie: de rol-badge naast je naam is nu zelf de wisselaar (bij 2 of meer toegewezen rollen), in plaats van een badge met daarnaast nog een aparte keuzelijst.'),
+('V0.1.10', '4 september 2026', '## Nieuw
+- Gekoppelde meldingen zijn nu zichtbaar op Overview: een 🔗-icoon bij het meld-ID, en de gekoppelde melding(en) zelf onder "Laat details zien" (samen met het logboek).
+
+## Gewijzigd
+- Archief is verplaatst naar het submenu "Meldingen" in de navigatie, naast Overview en Statistieken.');
