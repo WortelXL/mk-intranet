@@ -485,14 +485,29 @@ function koppeling_types(): array
 }
 
 /**
- * Gekoppelde meldingen per melding-id (V0.1.10), voor een gegeven lijst
- * van melding-ids (bv. de actieve meldingen op Overview) -- beide
- * richtingen van de koppeling meegenomen, net als
- * get_gekoppelde_meldingen() in het meldkamersysteem doet voor 1 melding
- * tegelijk, maar hier gebatched voor een hele lijst (zelfde aanpak als
+ * Vaste, herkenbare accentkleur voor 1 specifieke koppeling tussen twee
+ * meldingen (V0.1.11) -- deterministisch bepaald uit het (gesorteerde)
+ * paar melding-id's, zodat beide kanten van dezelfde koppeling altijd
+ * dezelfde kleur tonen (op Overview: het chipje en de rand van de rij),
+ * zonder dat de kleur ergens apart opgeslagen hoeft te worden.
+ */
+function koppeling_kleur(int $melding_id_a, int $melding_id_b): string
+{
+    $palet = ['#2dd4bf', '#60a5fa', '#c084fc', '#f472b6', '#facc15', '#4ade80', '#fb923c', '#38bdf8'];
+    $sleutel = min($melding_id_a, $melding_id_b) . '-' . max($melding_id_a, $melding_id_b);
+    return $palet[crc32($sleutel) % count($palet)];
+}
+
+/**
+ * Gekoppelde meldingen per melding-id (V0.1.10, kleuraccent sinds
+ * V0.1.11), voor een gegeven lijst van melding-ids (bv. de actieve
+ * meldingen op Overview) -- beide richtingen van de koppeling
+ * meegenomen, net als get_gekoppelde_meldingen() in het
+ * meldkamersysteem doet voor 1 melding tegelijk, maar hier gebatched
+ * voor een hele lijst (zelfde aanpak als
  * get_notities_per_melding()/get_labels_per_melding() hieronder).
  * Resultaat: [melding_id => [['meld_id'=>.., 'titel'=>.., 'status'=>..,
- * 'label'=>..], ...]].
+ * 'label'=>.., 'kleur'=>..], ...]].
  */
 function get_gekoppelde_meldingen_per_melding(PDO $pdo, array $melding_ids): array
 {
@@ -514,6 +529,7 @@ function get_gekoppelde_meldingen_per_melding(PDO $pdo, array $melding_ids): arr
     $stmt->execute($melding_ids);
     foreach ($stmt->fetchAll() as $rij) {
         $rij['label'] = $types[$rij['type']]['label'] ?? $rij['type'];
+        $rij['kleur'] = koppeling_kleur((int) $rij['bron_id'], (int) $rij['melding_id']);
         $gekoppeld_per_melding[$rij['bron_id']][] = $rij;
     }
 
@@ -528,6 +544,7 @@ function get_gekoppelde_meldingen_per_melding(PDO $pdo, array $melding_ids): arr
     $stmt->execute($melding_ids);
     foreach ($stmt->fetchAll() as $rij) {
         $rij['label'] = $types[$rij['type']]['omgekeerd'] ?? $rij['type'];
+        $rij['kleur'] = koppeling_kleur((int) $rij['bron_id'], (int) $rij['melding_id']);
         $gekoppeld_per_melding[$rij['bron_id']][] = $rij;
     }
 

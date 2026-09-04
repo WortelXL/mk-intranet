@@ -24,13 +24,17 @@ productie draait deze app dus tegen de bestaande, echte database.
   - **Overview** (`meldingen.php`) — lopende meldingen (alleen-lezen),
     optioneel te filteren op hoofdclassificatie (sinds V0.1.8). Per
     melding kan het logboek in-/uitgeklapt worden via het vinkje "Laat
-    details zien"; die staat blijft open na een ververste pagina
-    (handmatig of automatisch), tot je 'm zelf weer dichtklikt. Is een
-    melding gekoppeld aan een andere (bv. een EHBO-inzet met een
-    gekoppelde AMBU-inzet), dan staat er een 🔗-icoon bij het meld-ID en
-    staan de gekoppelde melding(en) zelf ook onder "Laat details zien"
-    (sinds V0.1.10). Ververst automatisch als de gebruiker dat zo heeft
-    ingesteld (zie hieronder).
+    log zien"; die staat blijft open na een ververste pagina (handmatig
+    of automatisch), tot je 'm zelf weer dichtklikt. Is een melding
+    gekoppeld aan een andere (bv. een EHBO-inzet met een gekoppelde
+    AMBU-inzet, sinds V0.1.10), dan is dat direct in de rij zelf te zien
+    (sinds V0.1.11, geen los uitklapblok meer nodig): een 🔗-telling bij
+    het meld-ID, een gekleurde rand om de hele rij, en de gekoppelde
+    melding(en) zelf als klikbare chips — klik je op zo'n chip, dan
+    springt de pagina naar die andere melding (als die ook in de huidige
+    lijst staat) en licht die rij even op. Beide kanten van dezelfde
+    koppeling delen altijd dezelfde kleur. Ververst automatisch als de
+    gebruiker dat zo heeft ingesteld (zie hieronder).
   - **Archief** (`archief.php`) — afgeronde meldingen bekijken
     (alleen-lezen), met filters op hoofdclassificatie, subclassificatie,
     prioriteit en label. Elke melding is aanklikbaar en opent een
@@ -330,6 +334,14 @@ navigatie). Alleen de wijzigingenlog-regel:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.10_koppelingen_en_archief_submenu.sql
 ```
 
+**V0.1.11** past alleen de weergave van gekoppelde meldingen op Overview
+aan (kleuraccent, klikbare chips i.p.v. het uitklapblok) — leest nog
+steeds dezelfde tabel `melding_koppelingen`, geen schemawijziging.
+Alleen de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.11_koppelingen_zichtbaarder.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -422,14 +434,22 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   overzicht. Sinds V0.1.8 wel filterbaar op hoofdclassificatie
   (`?hoofd=<id>`), zowel handmatig via het filter als (verplicht) wanneer
   je actieve rol een gekoppelde classificatie heeft.
-- **Gekoppelde meldingen (V0.1.10):** het 🔗-icoon en de lijst onder
-  "Laat details zien" zijn alleen-lezen — koppelingen zelf (aanmaken,
-  type kiezen, verwijderen) blijven een taak van het meldkamersysteem
-  (`admin/samengevoegd.php` daar). Een gekoppelde melding die zelf nog
-  actief is, staat als platte tekst in de lijst (geen detailpagina voor
-  actieve meldingen in MK Intranet, zie "Meldingenoverzicht" hierboven);
-  is de gekoppelde melding al afgerond, dan is de naam wel aanklikbaar en
-  opent 'm de archief-detailpagina.
+- **Gekoppelde meldingen (V0.1.10, chips sinds V0.1.11):** alleen-lezen —
+  koppelingen zelf (aanmaken, type kiezen, verwijderen) blijven een taak
+  van het meldkamersysteem (`admin/samengevoegd.php` daar). Sinds V0.1.11
+  staan gekoppelde meldingen direct als chips in de rij zelf (geen los
+  uitklapblok meer), met drie gedragingen per chip, afhankelijk van waar
+  de gekoppelde melding zich bevindt: staat hij ook in de huidige
+  (gefilterde) lijst met actieve meldingen, dan is de chip een knop die
+  naar die rij toe scrollt en 'm even laat oplichten; is hij al afgerond,
+  dan is de chip een link naar de archief-detailpagina (`melding.php`);
+  is hij nog actief maar (door een classificatiefilter) niet in de
+  huidige lijst zichtbaar, dan is de chip statisch (niet-klikbaar, met
+  gestippelde rand) — er is immers geen detailpagina voor een actieve
+  melding om naartoe te linken. De kleur van de rand/badge/chip wordt
+  deterministisch berekend uit de twee gekoppelde meld-ID's (geen extra
+  kolom nodig), zodat beide kanten van dezelfde koppeling altijd exact
+  dezelfde kleur tonen.
 - **Archief:** toont meldingen met een status uit de categorie "afgerond",
   met filters op hoofdclassificatie, subclassificatie, prioriteit en label
   (geen zoekveld/-commando zoals in `mkapp`'s eigen archief). Gecapped op

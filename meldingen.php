@@ -28,9 +28,10 @@ $actieve_statussen = get_actieve_statussen($pdo);
 $tellingen = get_status_tellingen($pdo);
 $notities_per_melding = get_notities_per_melding($pdo, array_column($meldingen, 'id'));
 // V0.1.10: gekoppelde meldingen (bv. een EHBO-inzet met een gekoppelde
-// AMBU-inzet) -- zelfde 🔗-icoon als het dashboard van het
-// meldkamersysteem, met de gekoppelde meldingen zelf in het uitklapbare
-// logboekblok hieronder.
+// AMBU-inzet). Sinds V0.1.11 direct zichtbaar in de rij zelf: een
+// 🔗-telling bij het meld-ID, een gekleurde rand (dezelfde kleur voor
+// beide kanten van 1 koppeling) en klikbare chips die naar de andere
+// melding springen als die ook in de huidige lijst staat.
 $gekoppelde_per_melding = get_gekoppelde_meldingen_per_melding($pdo, array_column($meldingen, 'id'));
 $afgeronde_sleutels = statussen_sleutels(get_afgeronde_statussen($pdo));
 $kritiek_open = 0;
@@ -101,16 +102,45 @@ include __DIR__ . '/includes/header.php';
         <?php if (!$meldingen): ?>
             <div class="empty">Geen actieve meldingen<?= $gekozen_hoofd_id ? ' voor deze classificatie' : '' ?>.</div>
         <?php endif; ?>
-        <?php foreach ($meldingen as $m): ?>
-            <div class="melding-block">
-                <div class="melding-row dashboard-row">
-                    <span class="melding-id"><?= $m['attentie'] ? '⚠️ ' : '' ?><?= $m['heeft_koppeling'] ? '🔗 ' : '' ?><?= e($m['meld_id']) ?></span>
+        <?php
+        $actieve_melding_ids = array_column($meldingen, 'id');
+        foreach ($meldingen as $m):
+            $koppelingen = $gekoppelde_per_melding[$m['id']] ?? [];
+            $rand_kleur = $koppelingen ? $koppelingen[0]['kleur'] : null;
+        ?>
+            <div class="melding-block" id="melding-rij-<?= (int) $m['id'] ?>">
+                <div class="melding-row dashboard-row" <?= $rand_kleur ? 'style="border-left-color:' . e($rand_kleur) . ';"' : '' ?>>
+                    <span class="melding-id">
+                        <?= $m['attentie'] ? '⚠️ ' : '' ?><?= e($m['meld_id']) ?>
+                        <?php if ($koppelingen): ?>
+                            <span class="koppel-badge" style="background:<?= e($rand_kleur) ?>22; color:<?= e($rand_kleur) ?>;" title="<?= count($koppelingen) ?> gekoppelde melding(en)">🔗 <?= count($koppelingen) ?></span>
+                        <?php endif; ?>
+                    </span>
                     <span class="melding-main">
                         <span class="titel"><?= e($m['titel']) ?></span>
                         <span class="meta">
                             <?= e($m['locatie'] ?: 'Geen locatie opgegeven') ?>
                             &middot; <?= (new DateTime($m['aangemaakt_op']))->format('d-m H:i') ?>
                         </span>
+                        <?php if ($koppelingen): ?>
+                            <span class="koppel-chips">
+                                <?php foreach ($koppelingen as $g): ?>
+                                    <?php if (in_array($g['melding_id'], $actieve_melding_ids, true)): ?>
+                                        <button type="button" class="koppel-chip" style="border-color:<?= e($g['kleur']) ?>; color:<?= e($g['kleur']) ?>;" data-scroll-naar="melding-rij-<?= (int) $g['melding_id'] ?>" title="<?= e($g['label']) ?>: <?= e($g['titel']) ?> — klik om naar deze melding te springen">
+                                            <?= e($g['label']) ?>: <?= e($g['meld_id']) ?>
+                                        </button>
+                                    <?php elseif (in_array($g['status'], $afgeronde_sleutels, true)): ?>
+                                        <a href="/melding.php?id=<?= (int) $g['melding_id'] ?>" class="koppel-chip" style="border-color:<?= e($g['kleur']) ?>; color:<?= e($g['kleur']) ?>;" title="<?= e($g['label']) ?>: <?= e($g['titel']) ?>">
+                                            <?= e($g['label']) ?>: <?= e($g['meld_id']) ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="koppel-chip koppel-chip-statisch" style="border-color:<?= e($g['kleur']) ?>; color:<?= e($g['kleur']) ?>;" title="<?= e($g['titel']) ?> (niet in huidige weergave)">
+                                            <?= e($g['label']) ?>: <?= e($g['meld_id']) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </span>
+                        <?php endif; ?>
                     </span>
                     <?php if ($m['hoofd_naam']): ?>
                         <span class="cat-chip" style="background: <?= e($m['hoofd_kleur']) ?>22; color: <?= e($m['hoofd_kleur']) ?>;">
@@ -125,29 +155,13 @@ include __DIR__ . '/includes/header.php';
                     <span class="tag" style="background:<?= e(status_kleur($pdo, $m['status'])) ?>22; color:<?= e(status_kleur($pdo, $m['status'])) ?>;">
                         <?= e(status_label($pdo, $m['status'])) ?>
                     </span>
-                    <label for="log-toggle-<?= $m['id'] ?>" class="log-toggle-wrap" title="Details in-/uitklappen">
+                    <label for="log-toggle-<?= $m['id'] ?>" class="log-toggle-wrap" title="Logboek in-/uitklappen">
                         <span class="log-toggle-switch"></span>
-                        <span class="log-toggle-tekst">Laat details zien</span>
+                        <span class="log-toggle-tekst">Laat log zien</span>
                     </label>
                 </div>
                 <input type="checkbox" id="log-toggle-<?= $m['id'] ?>" class="log-toggle-checkbox" data-melding-id="<?= $m['id'] ?>">
                 <div class="row-log">
-                    <?php if (!empty($gekoppelde_per_melding[$m['id']])): ?>
-                        <div class="koppeling-lijst">
-                            <p class="koppeling-lijst-kop">🔗 Gekoppelde meldingen</p>
-                            <?php foreach ($gekoppelde_per_melding[$m['id']] as $g): ?>
-                                <p class="koppeling-regel">
-                                    <span class="muted"><?= e($g['label']) ?>:</span>
-                                    <?php if (in_array($g['status'], $afgeronde_sleutels, true)): ?>
-                                        <a href="/melding.php?id=<?= (int) $g['melding_id'] ?>" class="melding-link"><?= e($g['meld_id']) ?></a>
-                                    <?php else: ?>
-                                        <?= e($g['meld_id']) ?>
-                                    <?php endif; ?>
-                                    &middot; <?= e($g['titel']) ?>
-                                </p>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
                     <?php if (!empty($notities_per_melding[$m['id']])): ?>
                         <?php foreach ($notities_per_melding[$m['id']] as $n): ?>
                             <p class="melding-log-regel">
@@ -295,6 +309,27 @@ include __DIR__ . '/includes/header.php';
                 huidige.delete(id);
             }
             open_logs_opslaan(huidige);
+        });
+    });
+})();
+</script>
+
+<script>
+(function () {
+    // Koppel-chips (V0.1.11): springt naar de gekoppelde melding als die
+    // ook in de huidige lijst staat, en licht die rij even op zodat
+    // duidelijk is welke rij het is -- puur clientside, geen paginaverfrissing.
+    document.querySelectorAll('.koppel-chip[data-scroll-naar]').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            var doel = document.getElementById(chip.getAttribute('data-scroll-naar'));
+            if (!doel) {
+                return;
+            }
+            doel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            doel.classList.add('melding-block-oplichten');
+            setTimeout(function () {
+                doel.classList.remove('melding-block-oplichten');
+            }, 1600);
         });
     });
 })();

@@ -1,0 +1,5 @@
+MK Intranet - V0.1.11
+4 september 2026
+
+Gewijzigd
+- Gekoppelde meldingen op Overview zijn nu duidelijker: naast het 🔗-icoon (nu met een telling) krijgt de rij een gekleurde rand, en staan de gekoppelde meldingen als klikbare chips direct in de rij zelf -- klik je erop, dan springt de pagina naar de gekoppelde melding (als die ook in de huidige lijst staat) en licht die rij even op. Beide kanten van dezelfde koppeling delen altijd dezelfde kleur.
