@@ -364,6 +364,12 @@ wijzigingenlog-regel:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.12_plotbord.sql
 ```
 
+**V0.1.13** past alleen de teamkaartjes op het Plotbord aan (kleiner,
+puur CSS). Geen schemawijziging. Alleen de wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.13_plotbord_compacter.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -485,7 +491,11 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   zelf instellen/wijzigen kan alleen vanuit MDT, en statussen/teams zelf
   beheren blijft een taak van het meldkamersysteem (`admin/
   eenheidsstatussen.php`, `admin/teams.php` daar) — hier is dit puur een
-  live weergave.
+  live weergave. Sinds V0.1.13 zijn de teamkaartjes compacter (minimale
+  breedte 150px i.p.v. 200px, kleinere padding en tekst) — op de volle
+  breedte van de app (1100px) passen er zo 6 naast elkaar in plaats van
+  5; op een smallere weergave (mobiel, of een kleiner browservenster)
+  worden het er vanzelf minder, tot 1 kolom op een telefoon.
 - **Archief:** toont meldingen met een status uit de categorie "afgerond",
   met filters op hoofdclassificatie, subclassificatie, prioriteit en label
   (geen zoekveld/-commando zoals in `mkapp`'s eigen archief). Gecapped op

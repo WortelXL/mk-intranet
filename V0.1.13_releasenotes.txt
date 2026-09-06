@@ -1,0 +1,5 @@
+MK Intranet - V0.1.13
+6 september 2026
+
+Gewijzigd
+- Teamkaartjes op het Plotbord zijn compacter: kleinere kaartjes en kleinere tekst, zodat er meer teams naast elkaar passen op 1 rij (6 in plaats van 5 op een volle breedte).
