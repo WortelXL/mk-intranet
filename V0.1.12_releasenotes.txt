@@ -1,0 +1,5 @@
+MK Intranet - V0.1.12
+6 september 2026
+
+Nieuw
+- Plotbord toegevoegd aan het submenu "Meldingen": alle teams en losse MDT-gebruikers in 1 oogopslag, met hun actuele eenheidsstatus en (indien van toepassing) de melding waar ze nu aan werken. Teams staan als kaartjes, net als in het meldkamersysteem; losse MDT-gebruikers staan als een uitklapbare lijst -- klik op een naam voor de actieve melding.

@@ -997,3 +997,77 @@ function render_wijzigingen_html(string $tekst): string
     }
     return $html;
 }
+
+/**
+ * Plotbord (V0.1.12): teams met hun gekoppelde MDT-gebruiker, actuele
+ * eenheidsstatus en (indien aanwezig) de actieve melding die aan dat
+ * team is toegewezen. Alleen-lezen, 1-op-1 gelijk aan mkapp's eigen
+ * plotbord_teams() -- eenheidsstatussen/teams zijn tabellen die vanuit
+ * het meldkamersysteem-project zijn aangemaakt, MK Intranet leest hier
+ * alleen dezelfde tabellen.
+ */
+function plotbord_teams(PDO $pdo): array
+{
+    $teams = $pdo->query(
+        "SELECT t.id, t.naam, g.id AS gebruiker_id, g.naam AS gebruiker_naam,
+                es.naam AS status_naam, es.afkorting AS status_afkorting
+         FROM teams t
+         LEFT JOIN gebruikers g ON g.id = t.gekoppelde_gebruiker_id
+         LEFT JOIN eenheidsstatussen es ON es.id = g.huidige_eenheidsstatus_id
+         ORDER BY t.naam ASC"
+    )->fetchAll();
+
+    // "Actief" = dezelfde, zelf te beheren statuscategorie als Overview
+    // gebruikt (niet hardcoded op open/in_behandeling, want die lijst
+    // is aanpasbaar via het meldkamersysteem).
+    $actieve_sleutels = statussen_sleutels(get_actieve_statussen($pdo));
+    $plekhouders = implode(',', array_fill(0, count($actieve_sleutels), '?'));
+    $melding_stmt = $pdo->prepare(
+        "SELECT meld_id, titel FROM meldingen
+         WHERE toegewezen_aan_team_id = ?" . ($actieve_sleutels ? " AND status IN ($plekhouders)" : ' AND 1 = 0') . "
+         ORDER BY aangemaakt_op DESC LIMIT 1"
+    );
+    foreach ($teams as &$team) {
+        $melding_stmt->execute(array_merge([$team['id']], $actieve_sleutels));
+        $team['actieve_melding'] = $melding_stmt->fetch() ?: null;
+    }
+    unset($team);
+
+    return $teams;
+}
+
+/**
+ * Plotbord (V0.1.12): losse MDT-gebruikers die niet als vaste bezetting
+ * aan een team gekoppeld zijn (die staan al op hun teamkaart) -- elk met
+ * hun huidige eenheidsstatus en, indien aanwezig, de actieve melding die
+ * rechtstreeks (niet via een team) aan hen is toegewezen. 1-op-1 gelijk
+ * aan mkapp's eigen plotbord_individueel().
+ */
+function plotbord_individueel(PDO $pdo): array
+{
+    $gebruikers = $pdo->query(
+        "SELECT g.id, g.naam,
+                es.naam AS status_naam, es.afkorting AS status_afkorting
+         FROM mdt_gebruikers m
+         JOIN gebruikers g ON g.id = m.gebruiker_id
+         LEFT JOIN eenheidsstatussen es ON es.id = g.huidige_eenheidsstatus_id
+         WHERE m.actief = 1 AND g.actief = 1
+           AND g.id NOT IN (SELECT gekoppelde_gebruiker_id FROM teams WHERE gekoppelde_gebruiker_id IS NOT NULL)
+         ORDER BY g.naam ASC"
+    )->fetchAll();
+
+    $actieve_sleutels = statussen_sleutels(get_actieve_statussen($pdo));
+    $plekhouders = implode(',', array_fill(0, count($actieve_sleutels), '?'));
+    $melding_stmt = $pdo->prepare(
+        "SELECT meld_id, titel FROM meldingen
+         WHERE toegewezen_aan_gebruiker_id = ?" . ($actieve_sleutels ? " AND status IN ($plekhouders)" : ' AND 1 = 0') . "
+         ORDER BY aangemaakt_op DESC LIMIT 1"
+    );
+    foreach ($gebruikers as &$gebruiker) {
+        $melding_stmt->execute(array_merge([$gebruiker['id']], $actieve_sleutels));
+        $gebruiker['actieve_melding'] = $melding_stmt->fetch() ?: null;
+    }
+    unset($gebruiker);
+
+    return $gebruikers;
+}

@@ -19,7 +19,7 @@ productie draait deze app dus tegen de bestaande, echte database.
 
 - **Dashboard** (`index.php`) — de laatste mededelingen (incl. eventuele
   links).
-- **Meldingen** — submenu in de navigatie (sinds V0.1.7) met drie
+- **Meldingen** — submenu in de navigatie (sinds V0.1.7) met vier
   pagina's:
   - **Overview** (`meldingen.php`) — lopende meldingen (alleen-lezen),
     optioneel te filteren op hoofdclassificatie (sinds V0.1.8). Per
@@ -53,7 +53,19 @@ productie draait deze app dus tegen de bestaande, echte database.
     via dezelfde `instellingen`-sleutels (`event_start_datum`,
     `event_aantal_dagen`) als het meldkamersysteem gebruikt voor de
     dagnummering in het meld-ID.
-  Alle drie zijn toegankelijk voor elke ingelogde gebruiker.
+  - **Plotbord** (`plotbord.php`, sinds V0.1.12) — alle teams en losse
+    MDT-gebruikers in 1 oogopslag (alleen-lezen), met hun actuele
+    eenheidsstatus en, indien van toepassing, de melding waar ze nu aan
+    werken. Teams staan als een vaste kaartjes-grid, precies zoals in het
+    meldkamersysteem zelf. Losse MDT-gebruikers (niet aan een team
+    gekoppeld) staan hier als een uitklapbare lijst in plaats van
+    kaartjes: naam en status zijn altijd zichtbaar, klik op een rij en de
+    actieve melding (of "geen actieve melding") klapt open — hetzelfde
+    in-/uitklappatroon als het logboek op Overview en het wijzigingenlog
+    onderaan elke pagina. Ververst automatisch als de gebruiker dat zo
+    heeft ingesteld (zie hieronder), geen geluid.
+  Alle vier zijn toegankelijk voor elke ingelogde gebruiker (zonder een
+  gekoppelde rol-classificatie, zie "Rollen" hieronder).
 - **Crew** (`crew.php`) — crewlijst bekijken, toevoegen, bewerken,
   verwijderen. Toegankelijk voor elke ingelogde gebruiker.
 - **Mijn rol** (`mijn-rol.php`, sinds V0.1.8) — alleen relevant voor wie
@@ -122,8 +134,9 @@ wijzig je iets hier, dan verandert het ook daar (en andersom).
 
 - **Automatisch verversen** — Uit, 10s, 15s, 20s, 30s of 60s, dezelfde
   intervallen als in het meldkamersysteem
-  (`gebruikers.auto_refresh_seconden`). Alleen de **Meldingen**-pagina
-  ververst automatisch; de andere pagina's (Dashboard, Crew, Archief,
+  (`gebruikers.auto_refresh_seconden`). Alleen de passieve
+  overzichtspagina's **Overview** en **Plotbord** (sinds V0.1.12)
+  verversen automatisch; de andere pagina's (Dashboard, Crew, Archief,
   Beheer) niet, om te voorkomen dat je halverwege het invullen van een
   formulier onderuitgehaald wordt door een automatische ververs. Het
   verversen zelf werkt net als het dashboard van het meldkamersysteem: het
@@ -342,6 +355,15 @@ Alleen de wijzigingenlog-regel:
 mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.11_koppelingen_zichtbaarder.sql
 ```
 
+**V0.1.12** voegt de pagina Plotbord toe (leest de al bestaande tabellen
+`teams`, `mdt_gebruikers` en `eenheidsstatussen` — aangemaakt vanuit het
+meldkamersysteem-project, draai die migraties daar eerst als dat nog niet
+gebeurd is). Geen schemawijziging vanuit dit project. Alleen de
+wijzigingenlog-regel:
+```bash
+mysql -h 192.168.60.199 -P 3306 -u phpserver -pmkappwachtwoord2026 mkapp < migratie/V0.1.12_plotbord.sql
+```
+
 ## Handmatig (zonder Docker)
 
 Vereist: PHP 8.0+ met `pdo_mysql`, en netwerktoegang tot dezelfde database
@@ -450,6 +472,20 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   deterministisch berekend uit de twee gekoppelde meld-ID's (geen extra
   kolom nodig), zodat beide kanten van dezelfde koppeling altijd exact
   dezelfde kleur tonen.
+- **Plotbord (V0.1.12):** overgenomen van mkapp's eigen `plotbord.php` en
+  de bijbehorende `plotbord_teams()`/`plotbord_individueel()` — dezelfde
+  query's, dezelfde definitie van "actief" (via `get_actieve_statussen()`,
+  niet hardcoded), alleen-lezen. Eén bewuste afwijking: waar mkapp losse
+  MDT-gebruikers als kaartjes toont, staan ze hier als een uitklapbare
+  lijst (zelfde toggle-patroon als het logboek/wijzigingenlog elders in
+  deze app) — de naam en status blijven altijd zichtbaar, de actieve
+  melding klapt pas open na een klik. Bij veel losse MDT-gebruikers blijft
+  het overzicht zo compact; bij weinig gebruikers scheelt het verder
+  niets. Teams blijven ongewijzigd een vaste kaartjes-grid. Eenheidsstatus
+  zelf instellen/wijzigen kan alleen vanuit MDT, en statussen/teams zelf
+  beheren blijft een taak van het meldkamersysteem (`admin/
+  eenheidsstatussen.php`, `admin/teams.php` daar) — hier is dit puur een
+  live weergave.
 - **Archief:** toont meldingen met een status uit de categorie "afgerond",
   met filters op hoofdclassificatie, subclassificatie, prioriteit en label
   (geen zoekveld/-commando zoals in `mkapp`'s eigen archief). Gecapped op

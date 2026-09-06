@@ -976,6 +976,91 @@ button.koppel-chip:hover {
     background: var(--teal);
 }
 
+/* ---- Plotbord (V0.1.12): teams + losse MDT-gebruikers met live status,
+   overgenomen van mkapp's eigen plotbord.php. Teams blijven een vaste
+   kaartjes-grid; losse MDT-gebruikers zijn hier -- anders dan bij mkapp --
+   een uitklapbare lijst (zelfde toggle-patroon als het logboek/
+   wijzigingenlog elders in deze app), zodat een lange lijst compact
+   blijft totdat je een naam openklikt. --------------------------------- */
+.plotbord-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+.plotbord-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--green);
+}
+.plotbord-card.plotbord-card-leeg { border-left-color: var(--border); }
+.plotbord-naam { font-weight: 600; font-size: 14.5px; }
+.plotbord-persoon { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.plotbord-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(34,197,94,0.14);
+    color: var(--green);
+    font-size: 12.5px;
+}
+.plotbord-status .afk { font-family: var(--font-mono); font-weight: 700; }
+.plotbord-status-onbekend {
+    background: transparent;
+    color: var(--muted);
+    padding-left: 0;
+}
+.plotbord-melding {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--text);
+    font-family: var(--font-mono);
+}
+.plotbord-melding-leeg { color: var(--muted); font-family: inherit; }
+
+/* Losse MDT-gebruikers als uitklapbare rijen i.p.v. kaarten (V0.1.12) */
+.plotbord-lijst {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.plotbord-rij {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--green);
+    border-radius: 10px;
+    padding: 10px 16px;
+}
+.plotbord-rij.plotbord-card-leeg { border-left-color: var(--border); }
+.plotbord-rij-kop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+}
+.plotbord-rij-links {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+}
+.plotbord-rij .plotbord-naam { white-space: nowrap; }
+.plotbord-rij .plotbord-status { margin-top: 0; }
+.plotbord-rij .row-log { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+.plotbord-rij:has(.log-toggle-checkbox:checked) .log-toggle-switch {
+    background: var(--teal-dim);
+    border-color: var(--teal);
+}
+.plotbord-rij:has(.log-toggle-checkbox:checked) .log-toggle-switch::after {
+    transform: translateX(13px);
+    background: var(--teal);
+}
+
 /* ---- Responsive ---------------------------------------------------- */
 @media (max-width: 720px) {
     .melding-row,
@@ -985,4 +1070,6 @@ button.koppel-chip:hover {
         gap: 6px;
     }
     .page-head { padding-top: 28px; }
+    .plotbord-grid { grid-template-columns: 1fr; }
+    .plotbord-rij-kop { flex-wrap: wrap; }
 }

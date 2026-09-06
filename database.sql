@@ -570,4 +570,6 @@ INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 ## Gewijzigd
 - Archief is verplaatst naar het submenu "Meldingen" in de navigatie, naast Overview en Statistieken.'),
 ('V0.1.11', '4 september 2026', '## Gewijzigd
-- Gekoppelde meldingen op Overview zijn nu duidelijker: naast het 🔗-icoon (nu met een telling) krijgt de rij een gekleurde rand, en staan de gekoppelde meldingen als klikbare chips direct in de rij zelf -- klik je erop, dan springt de pagina naar de gekoppelde melding (als die ook in de huidige lijst staat) en licht die rij even op. Beide kanten van dezelfde koppeling delen altijd dezelfde kleur.');
+- Gekoppelde meldingen op Overview zijn nu duidelijker: naast het 🔗-icoon (nu met een telling) krijgt de rij een gekleurde rand, en staan de gekoppelde meldingen als klikbare chips direct in de rij zelf -- klik je erop, dan springt de pagina naar de gekoppelde melding (als die ook in de huidige lijst staat) en licht die rij even op. Beide kanten van dezelfde koppeling delen altijd dezelfde kleur.'),
+('V0.1.12', '6 september 2026', '## Nieuw
+- Plotbord toegevoegd aan het submenu "Meldingen": alle teams en losse MDT-gebruikers in 1 oogopslag, met hun actuele eenheidsstatus en (indien van toepassing) de melding waar ze nu aan werken. Teams staan als kaartjes, net als in het meldkamersysteem; losse MDT-gebruikers staan als een uitklapbare lijst -- klik op een naam voor de actieve melding.');
