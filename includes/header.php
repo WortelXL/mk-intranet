@@ -2,7 +2,7 @@
 /** Verwacht optioneel: $paginatitel (string), $actief (string) */
 $paginatitel = $paginatitel ?? 'Intranet';
 $actief = $actief ?? '';
-$in_meldingen_menu = in_array($actief, ['meldingen', 'archief', 'statistieken', 'plotbord'], true);
+$in_meldingen_menu = in_array($actief, ['meldingen', 'archief', 'statistieken', 'plotbord', 'plattegrond'], true);
 
 // V0.1.8: rollen (het meldkamersysteem-rollensysteem). Heeft de actieve
 // rol een gekoppelde hoofdclassificatie, dan beperkt dat de navigatie tot
@@ -52,6 +52,7 @@ $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !
                                 <a href="/archief.php" class="<?= $actief === 'archief' ? 'active' : '' ?>">Archief</a>
                                 <a href="/statistieken.php" class="<?= $actief === 'statistieken' ? 'active' : '' ?>">Statistieken</a>
                                 <a href="/plotbord.php" class="<?= $actief === 'plotbord' ? 'active' : '' ?>">Plotbord</a>
+                                <a href="/plattegrond.php" class="<?= $actief === 'plattegrond' ? 'active' : '' ?>">Plattegrond</a>
                             </div>
                         </details>
                     </div>

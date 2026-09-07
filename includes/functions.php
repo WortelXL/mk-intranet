@@ -601,6 +601,12 @@ function get_hoofdclassificaties(PDO $pdo): array
     return $pdo->query('SELECT * FROM hoofdclassificaties ORDER BY naam ASC')->fetchAll();
 }
 
+/** Haalt alle vooraf ingestelde locaties op uit het meldkamersysteem (alleen-lezen, incl. plattegrond-positie), alfabetisch */
+function get_locaties(PDO $pdo): array
+{
+    return $pdo->query('SELECT * FROM locaties ORDER BY naam ASC')->fetchAll();
+}
+
 /** Alle labels (zelfde labels-tabel als het meldkamersysteem) */
 function get_labels(PDO $pdo): array
 {

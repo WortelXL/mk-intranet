@@ -1,0 +1,7 @@
+MK Intranet - V0.1.14
+7 september 2026
+
+Nieuw
+- Nieuwe pagina "Plattegrond" (bij Meldingen): actieve meldingen als pins op de plattegrond van het plein, gekoppeld aan de locatie van de melding.
+- Een pin toont bij hover/tik de meld-ID's en titels op die locatie; meerdere actieve meldingen op dezelfde locatie krijgen 1 pin met een aantal erop.
+- Vereist de nieuwe migratie in mkapp (locaties krijgen daar een positie op de kaart, via Beheer > Locaties).

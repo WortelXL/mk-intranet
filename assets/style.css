@@ -1073,3 +1073,69 @@ button.koppel-chip:hover {
     .plotbord-grid { grid-template-columns: 1fr; }
     .plotbord-rij-kop { flex-wrap: wrap; }
 }
+
+/* ---- Plattegrond (V0.1.14) ---- */
+.kaart-layout { display: grid; grid-template-columns: 1fr 260px; gap: 16px; align-items: start; }
+.kaart-frame {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    aspect-ratio: 2100 / 1112;
+    background: var(--bg);
+}
+.kaart-frame img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(0.35) brightness(0.62) contrast(1.08) saturate(0.9);
+}
+.kaart-frame::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(10,13,19,0.35) 0%, rgba(10,13,19,0.08) 30%, rgba(10,13,19,0.08) 70%, rgba(10,13,19,0.5) 100%);
+    pointer-events: none;
+}
+
+.pin {
+    position: absolute; transform: translate(-50%, -100%); z-index: 4;
+    display: flex; flex-direction: column; align-items: center;
+}
+.pin-dot {
+    width: 26px; height: 26px; border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.55);
+    border: 2px solid rgba(10,13,19,0.6);
+}
+.pin-dot span { transform: rotate(45deg); font-family: var(--font-mono); font-weight: 700; font-size: 9.5px; color: #0a0d13; }
+.pin.actief .pin-dot { animation: pin-pulse 1.8s ease-in-out infinite; }
+@keyframes pin-pulse {
+    0%, 100% { box-shadow: 0 3px 10px rgba(0,0,0,0.55), 0 0 0 0 rgba(239,68,68,0.5); }
+    50% { box-shadow: 0 3px 10px rgba(0,0,0,0.55), 0 0 0 8px rgba(239,68,68,0); }
+}
+
+.pin-tooltip {
+    position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+    background: var(--panel-2); border: 1px solid var(--teal); border-radius: 8px;
+    padding: 10px 12px; width: 200px; text-align: left; z-index: 5;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+    opacity: 0; pointer-events: none; transition: opacity 0.12s ease;
+}
+.pin:hover .pin-tooltip, .pin:focus-within .pin-tooltip { opacity: 1; pointer-events: auto; }
+.pin-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 6px solid transparent; border-top-color: var(--teal);
+}
+.pin-tooltip-locatie { font-family: var(--font-mono); font-size: 10.5px; color: var(--teal); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.03em; }
+.pin-tooltip-melding { margin-bottom: 5px; }
+.pin-tooltip-melding .meld-id { display: block; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); }
+.pin-tooltip-melding .titel { display: block; font-size: 12.5px; font-weight: 600; }
+.pin-tooltip-meer { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.kaart-legenda { display: flex; flex-direction: column; gap: 14px; }
+.legenda-blok h4 { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+.legenda-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; margin-bottom: 7px; }
+.legenda-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.legenda-note { font-size: 11.5px; color: var(--muted); line-height: 1.5; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+
+@media (max-width: 720px) {
+    .kaart-layout { grid-template-columns: 1fr; }
+}
