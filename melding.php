@@ -14,7 +14,12 @@ $tijdvakken = [];
 
 if ($melding) {
     $labels = get_labels_per_melding($pdo, [$melding['id']])[$melding['id']] ?? [];
-    $notities = get_notities_voor_melding($pdo, $melding['id']);
+    // V0.1.17: logboek samengevoegd over de hele koppelketen (ook indirect,
+    // via melding_koppelingen) -- elke regel weet welke melding 'm
+    // oorspronkelijk geschreven heeft, zie melding_notities_samengevoegd()
+    // in functions.php.
+    $notities = melding_notities_samengevoegd($pdo, [$melding['id']])[$melding['id']] ?? [];
+    $aantal_gekoppelde_regels = count(array_filter($notities, fn($n) => !$n['is_eigen']));
     $protocollen = get_protocollen_voor_melding($pdo, $melding['id']);
     $losse_taken = get_losse_taken_voor_melding($pdo, $melding['id']);
 
@@ -100,12 +105,18 @@ include __DIR__ . '/includes/header.php';
 
     <div class="panel">
         <h3>Logboek <span class="count-badge"><?= count($notities) ?></span></h3>
+        <?php if ($aantal_gekoppelde_regels > 0): ?>
+            <p class="melding-log-leeg" style="margin-bottom:10px;">Inclusief <?= $aantal_gekoppelde_regels ?> regel<?= $aantal_gekoppelde_regels === 1 ? '' : 's' ?> uit gekoppelde meldingen (🔗).</p>
+        <?php endif; ?>
         <?php if (!$notities): ?>
             <p class="melding-log-leeg">Nog geen logboekregels voor deze melding.</p>
         <?php else: ?>
             <?php foreach ($notities as $n): ?>
                 <p class="melding-log-regel">
                     <span class="melding-log-tijd"><?= (new DateTime($n['aangemaakt_op']))->format('d-m-Y H:i') ?></span>
+                    <?php if (!$n['is_eigen']): ?>
+                        <a href="/melding.php?id=<?= (int) $n['melding_id'] ?>" class="melding-log-bron" title="Regel van gekoppelde melding <?= e($n['bron_meld_id']) ?> — <?= e($n['bron_titel']) ?>">🔗 <?= e($n['bron_meld_id']) ?></a>
+                    <?php endif; ?>
                     <span class="melding-log-auteur"><?= e($n['auteur'] ?: 'Onbekend') ?>:</span>
                     <?= nl2br(e($n['notitie'])) ?>
                 </p>

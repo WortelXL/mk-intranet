@@ -16,6 +16,11 @@ $gekozen_label_id = isset($_GET['label']) && $_GET['label'] !== '' ? (int) $_GET
 $meldingen = get_archief_meldingen($pdo, $gekozen_hoofd_id, $gekozen_prioriteit, $gekozen_label_id, $gekozen_sub_id);
 $labels_per_melding = get_labels_per_melding($pdo, array_column($meldingen, 'id'));
 
+// Logboek, in-/uitklapbaar per rij zoals op Overview (V0.1.17) --
+// samengevoegd over de hele koppelketen, zie melding_notities_samengevoegd()
+// in functions.php.
+$notities_per_melding = melding_notities_samengevoegd($pdo, array_column($meldingen, 'id'));
+
 // Query-string voor de exportlink: precies dezelfde filters als hierboven.
 $export_query = http_build_query(array_filter([
     'hoofd'      => $gekozen_hoofd_id,
@@ -111,6 +116,8 @@ include __DIR__ . '/includes/header.php';
         <?php endif; ?>
 
         <?php foreach ($meldingen as $m): ?>
+            <?php $notities = $notities_per_melding[$m['id']] ?? []; ?>
+            <div class="melding-block">
             <div class="melding-row archief-row">
                 <input type="checkbox" name="ids[]" value="<?= (int) $m['id'] ?>" class="export-checkbox">
                 <a href="/melding.php?id=<?= (int) $m['id'] ?>" class="melding-id melding-link"><?= e($m['meld_id']) ?></a>
@@ -125,6 +132,10 @@ include __DIR__ . '/includes/header.php';
                                 <span class="label-chip" style="background: <?= e($l['kleur']) ?>22; color: <?= e($l['kleur']) ?>;"><?= e($l['naam']) ?></span>
                             <?php endforeach; ?>
                         <?php endif; ?>
+                        <label for="archief-log-toggle-<?= (int) $m['id'] ?>" class="log-toggle-wrap" title="Logboek in-/uitklappen">
+                            <span class="log-toggle-switch"></span>
+                            <span class="log-toggle-tekst">Laat log zien</span>
+                        </label>
                     </span>
                 </span>
                 <?php if ($m['hoofd_naam']): ?>
@@ -140,6 +151,24 @@ include __DIR__ . '/includes/header.php';
                 <span class="tag" style="background:<?= e(status_kleur($pdo, $m['status'])) ?>22; color:<?= e(status_kleur($pdo, $m['status'])) ?>;">
                     <?= e(status_label($pdo, $m['status'])) ?>
                 </span>
+            </div>
+            <input type="checkbox" id="archief-log-toggle-<?= (int) $m['id'] ?>" class="log-toggle-checkbox">
+            <div class="row-log">
+                <?php if (!$notities): ?>
+                    <p class="melding-log-leeg">Nog geen logboekregels voor deze melding.</p>
+                <?php else: ?>
+                    <?php foreach ($notities as $n): ?>
+                        <p class="melding-log-regel">
+                            <span class="melding-log-tijd"><?= (new DateTime($n['aangemaakt_op']))->format('d-m-Y H:i') ?></span>
+                            <?php if (!$n['is_eigen']): ?>
+                                <a href="/melding.php?id=<?= (int) $n['melding_id'] ?>" class="melding-log-bron" title="Regel van gekoppelde melding <?= e($n['bron_meld_id']) ?> — <?= e($n['bron_titel']) ?>">🔗 <?= e($n['bron_meld_id']) ?></a>
+                            <?php endif; ?>
+                            <span class="melding-log-auteur"><?= e($n['auteur'] ?: 'Onbekend') ?>:</span>
+                            <?= nl2br(e($n['notitie'])) ?>
+                        </p>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
             </div>
         <?php endforeach; ?>
     </div>

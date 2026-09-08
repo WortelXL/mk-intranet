@@ -508,12 +508,19 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
   uitgevinkt worden (dat blijft in het meldkamersysteem). Protocol-links
   (de externe verwijzingen bij een protocol in `mkapp`) worden niet
   getoond — bewust simpel gehouden.
-- **Logboek op dashboard:** alleen bij de actieve meldingen op het
-  dashboard, niet in het archief. Puur alleen-lezen (dezelfde notities als
-  in het meldkamersysteem, zonder daar zelf een notitie toe te kunnen
-  voegen) en klapt in/uit zonder pagina-herlaad (CSS-only, net als het
-  wijzigingenlog onderaan de pagina). De in-/uitgeklapte staat onthoudt
-  niet over een ververste pagina heen.
+- **Logboek op dashboard, archief-detail en archief (V0.1.17):**
+  alleen-lezen (dezelfde notities als in het meldkamersysteem, zonder
+  daar zelf een notitie toe te kunnen voegen), klapt in/uit zonder
+  pagina-herlaad (CSS-only, net als het wijzigingenlog onderaan de
+  pagina). Op Overview en het archief-lijstscherm onthoudt de
+  in-/uitgeklapte staat niet over een ververste pagina heen. Sinds
+  V0.1.17 samengevoegd over de hele koppelketen (ook indirect/
+  transitief, via `melding_koppelingen`): het logboek van een melding
+  toont ook de regels van alle (ook indirect) gekoppelde meldingen,
+  chronologisch door elkaar, met een klein 🔗 MK-xxxx-label op elke
+  regel die niet van de melding zelf komt. Zie `melding_koppel_ketens()`
+  en `melding_notities_samengevoegd()` in `includes/functions.php` --
+  zelfde aanpak als mkapp (V2.0.2.21).
 - **PDF-export archief:** neemt dezelfde filters mee als op het scherm
   staan (of alles, zonder filters), en toont per melding meld-ID, titel,
   classificatie, prioriteit, status, locatie, labels, aanmaakdatum en

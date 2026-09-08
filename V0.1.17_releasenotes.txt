@@ -1,0 +1,6 @@
+MK Intranet - V0.1.17
+8 september 2026
+
+Nieuw
+- Het logboek van een melding toont nu ook de regels van gekoppelde meldingen (ook indirect, via een keten van koppelingen) -- elke regel heeft een klein label welke melding hem geschreven heeft.
+- Zichtbaar op Overview, de archief-detailpagina en voortaan ook in Archief zelf (nieuw: in-/uitklapbaar logboek per rij, net als op Overview).

@@ -544,6 +544,15 @@ select.rol-badge.rol-badge-wisselaar:focus {
 }
 .melding-log-auteur { font-weight: 600; margin-right: 4px; }
 .melding-log-leeg { font-size: 12.5px; color: var(--muted); margin: 0; }
+/* Bronlabel op een logboekregel die van een gekoppelde melding komt
+   (V0.1.17, samengevoegd logboek) -- zelfde blauw als de koppel-chips. */
+.melding-log-bron {
+    color: #3b82f6;
+    text-decoration: none;
+    font-weight: 600;
+    margin-right: 4px;
+}
+.melding-log-bron:hover { text-decoration: underline; }
 
 /* ---- Gekoppelde meldingen (V0.1.10; chips/kleuraccent sinds V0.1.11) -- */
 .koppel-badge {

@@ -166,6 +166,9 @@ include __DIR__ . '/includes/header.php';
                         <?php foreach ($notities_per_melding[$m['id']] as $n): ?>
                             <p class="melding-log-regel">
                                 <span class="melding-log-tijd"><?= (new DateTime($n['aangemaakt_op']))->format('d-m H:i') ?></span>
+                                <?php if (!$n['is_eigen']): ?>
+                                    <a href="/melding.php?id=<?= (int) $n['melding_id'] ?>" class="melding-log-bron" title="Regel van gekoppelde melding <?= e($n['bron_meld_id']) ?> — <?= e($n['bron_titel']) ?>">🔗 <?= e($n['bron_meld_id']) ?></a>
+                                <?php endif; ?>
                                 <span class="melding-log-auteur"><?= e($n['auteur'] ?: 'Onbekend') ?>:</span>
                                 <?= nl2br(e($n['notitie'])) ?>
                             </p>
