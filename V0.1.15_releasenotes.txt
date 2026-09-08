@@ -1,0 +1,5 @@
+MK Intranet - V0.1.15
+8 september 2026
+
+Gewijzigd
+- De Plattegrond-pagina ververst nu automatisch, met dezelfde persoonlijke instelling als Overview en Plotbord (standaard elke 20 seconden, alleen als het tabblad in beeld is).

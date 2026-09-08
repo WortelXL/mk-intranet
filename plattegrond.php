@@ -7,6 +7,7 @@ $pdo = get_pdo();
 // (Beheer > Locaties > "Positie op kaart"), meldingen zelf ook.
 $locaties = get_locaties($pdo);
 $meldingen = get_actieve_meldingen($pdo);
+$mijn_instellingen = huidige_gebruiker_instellingen($pdo);
 
 // Groepeer actieve meldingen per locatienaam (exacte match -- sinds
 // V2.0.2.13 is de locatie bij een nieuwe melding een verplichte keuze uit
@@ -101,5 +102,20 @@ include __DIR__ . '/includes/header.php';
         <p style="color:var(--muted); margin-top:14px;">Nog geen enkele locatie heeft een positie op de kaart. Stel dit in bij Beheer &gt; Locaties in het meldkamersysteem.</p>
     <?php endif; ?>
 </div>
+
+<script>
+// Simpele auto-refresh, zelfde persoonlijke instelling als Overview/Plotbord --
+// geen geluid hier, dit is een passief overzichtsscherm zonder formulieren.
+(function () {
+    const ververs_seconden = <?= (int) $mijn_instellingen['auto_refresh_seconden'] ?>;
+    if (ververs_seconden > 0) {
+        setInterval(function () {
+            if (document.visibilityState === 'visible') {
+                window.location.reload();
+            }
+        }, ververs_seconden * 1000);
+    }
+})();
+</script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
