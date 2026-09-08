@@ -110,6 +110,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->prepare('UPDATE crew SET zichtbaar_in_mdt = NOT zichtbaar_in_mdt WHERE id = :id')
                 ->execute(['id' => $id]);
         }
+    } elseif ($actie === 'zichtbaar_op_plotbord_wisselen') {
+        // Alleen MDT-gebruikers staan (evt.) op het Plotbord -- kale
+        // crew-contacten (geen MDT-login) hebben hier niets om te wisselen.
+        $id   = (int) ($_POST['id'] ?? 0);
+        $type = $_POST['type'] ?? 'crew';
+
+        if ($type === 'mdt') {
+            $pdo->prepare('UPDATE mdt_gebruikers SET zichtbaar_op_plotbord = NOT zichtbaar_op_plotbord WHERE gebruiker_id = :id')
+                ->execute(['id' => $id]);
+        }
     } elseif ($actie === 'verwijderen') {
         $id   = (int) ($_POST['id'] ?? 0);
         $type = $_POST['type'] ?? 'crew';
@@ -252,7 +262,7 @@ include __DIR__ . '/includes/header.php';
     <?php else: ?>
     <table class="admin-table">
         <thead>
-            <tr><th>Naam</th><th>Functie</th><th>Telefoonnummer</th><th>Type</th><?php if (is_beheerder()): ?><th>Zichtbaar in MDT</th><th></th><?php endif; ?></tr>
+            <tr><th>Naam</th><th>Functie</th><th>Telefoonnummer</th><th>Type</th><?php if (is_beheerder()): ?><th>Zichtbaar in MDT</th><th>Zichtbaar op plotbord</th><th></th><?php endif; ?></tr>
         </thead>
         <tbody>
         <?php foreach ($personen as $p): ?>
@@ -279,6 +289,20 @@ include __DIR__ . '/includes/header.php';
                             <input type="checkbox" <?= $p['zichtbaar_in_mdt'] ? 'checked' : '' ?> onchange="this.form.submit()" style="width:13px; height:13px; margin:0;">
                         </label>
                     </form>
+                </td>
+                <td>
+                    <?php if ($p['type'] === 'mdt'): ?>
+                        <form method="post">
+                            <input type="hidden" name="actie" value="zichtbaar_op_plotbord_wisselen">
+                            <input type="hidden" name="id" value="<?= $p['id'] ?>">
+                            <input type="hidden" name="type" value="<?= $p['type'] ?>">
+                            <label style="display:flex; align-items:center; gap:4px; font-size:11.5px; font-weight:400; text-transform:none; color:var(--text); margin:0;" title="Staat deze persoon (los of als teamlid) op het Plotbord?">
+                                <input type="checkbox" <?= $p['zichtbaar_op_plotbord'] ? 'checked' : '' ?> onchange="this.form.submit()" style="width:13px; height:13px; margin:0;">
+                            </label>
+                        </form>
+                    <?php else: ?>
+                        <span class="muted" style="font-size:12px;">—</span>
+                    <?php endif; ?>
                 </td>
                 <td class="nowrap">
                     <a href="/crew.php?bewerk=<?= $p['id'] ?>&type=<?= $p['type'] ?>" class="btn btn-small">Bewerken</a>

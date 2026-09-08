@@ -383,7 +383,7 @@ function alle_crew_personen(PDO $pdo): array
 
     $mdt = $pdo->query(
         "SELECT m.id AS mdt_id, g.id AS gebruiker_id, g.naam, g.functie, g.gebruikersnaam, g.actief,
-                g.mag_inloggen_mkapp, m.telefoonnummer, m.zichtbaar_in_mdt
+                g.mag_inloggen_mkapp, m.telefoonnummer, m.zichtbaar_in_mdt, m.zichtbaar_op_plotbord
          FROM mdt_gebruikers m
          JOIN gebruikers g ON g.id = m.gebruiker_id"
     )->fetchAll();
@@ -398,6 +398,7 @@ function alle_crew_personen(PDO $pdo): array
             'actief' => (int) $m['actief'],
             'mag_inloggen_mkapp' => (int) $m['mag_inloggen_mkapp'],
             'zichtbaar_in_mdt' => (int) $m['zichtbaar_in_mdt'],
+            'zichtbaar_op_plotbord' => (int) $m['zichtbaar_op_plotbord'],
         ];
     }
 
@@ -1166,7 +1167,7 @@ function render_wijzigingen_html(string $tekst): string
  */
 function plotbord_teams(PDO $pdo): array
 {
-    $teams = $pdo->query('SELECT id, naam FROM teams ORDER BY naam ASC')->fetchAll();
+    $teams = $pdo->query('SELECT id, naam FROM teams WHERE zichtbaar_op_plotbord = 1 ORDER BY naam ASC')->fetchAll();
 
     $leden_stmt = $pdo->prepare(
         "SELECT g.id, g.naam, es.naam AS status_naam, es.afkorting AS status_afkorting
@@ -1276,7 +1277,7 @@ function plotbord_individueel(PDO $pdo): array
          FROM mdt_gebruikers m
          JOIN gebruikers g ON g.id = m.gebruiker_id
          LEFT JOIN eenheidsstatussen es ON es.id = g.huidige_eenheidsstatus_id
-         WHERE m.actief = 1 AND g.actief = 1
+         WHERE m.actief = 1 AND g.actief = 1 AND m.zichtbaar_op_plotbord = 1
            AND g.id NOT IN (SELECT gebruiker_id FROM team_leden)
          ORDER BY g.naam ASC"
     )->fetchAll();

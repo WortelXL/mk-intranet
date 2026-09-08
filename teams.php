@@ -27,6 +27,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             team_lid_verwijderen($pdo, $id, $gebruiker_id);
             $succes = 'Lid verwijderd.';
         }
+    } elseif ($actie === 'zichtbaar_op_plotbord_wisselen') {
+        if ($id) {
+            $pdo->prepare('UPDATE teams SET zichtbaar_op_plotbord = NOT zichtbaar_op_plotbord WHERE id = :id')
+                ->execute(['id' => $id]);
+        }
     }
 }
 
@@ -57,7 +62,7 @@ include __DIR__ . '/includes/header.php';
     <?php if ($teams): ?>
     <table class="admin-table">
         <thead>
-            <tr><th>Naam</th><th>Leden</th></tr>
+            <tr><th>Naam</th><th>Leden</th><th>Zichtbaar op plotbord</th></tr>
         </thead>
         <tbody>
         <?php foreach ($teams as $team): ?>
@@ -99,6 +104,15 @@ include __DIR__ . '/includes/header.php';
                     <?php elseif (!$mdt_gebruikers): ?>
                         <span style="color:var(--muted); font-size:12px;">Nog geen accounts met MDT-toegang (Beheer &rarr; Gebruikers).</span>
                     <?php endif; ?>
+                </td>
+                <td>
+                    <form method="post">
+                        <input type="hidden" name="actie" value="zichtbaar_op_plotbord_wisselen">
+                        <input type="hidden" name="id" value="<?= $team['id'] ?>">
+                        <label style="display:flex; align-items:center; gap:4px; font-size:11.5px; font-weight:400; text-transform:none; color:var(--text); margin:0;" title="Staat dit team op het Plotbord?">
+                            <input type="checkbox" <?= $team['zichtbaar_op_plotbord'] ? 'checked' : '' ?> onchange="this.form.submit()" style="width:13px; height:13px; margin:0;">
+                        </label>
+                    </form>
                 </td>
             </tr>
         <?php endforeach; ?>

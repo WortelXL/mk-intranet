@@ -1,0 +1,19 @@
+MK Intranet V0.1.19 -- Zichtbaar op plotbord
+=============================================
+
+Nieuw:
+- Elk team (Beheer > Teams) en elke MDT-gebruiker (Crew) heeft nu een
+  vinkje "Zichtbaar op plotbord", los van het bestaande vinkje
+  "Zichtbaar in MDT". Staat een team of persoon uit, dan verdwijnt de
+  kaart van het Plotbord -- handig om het overzicht schoon te houden
+  zonder een team te verwijderen of iemands MDT-toegang in te trekken.
+- Staat standaard AAN voor alle bestaande teams en MDT-gebruikers -- er
+  verandert dus niets aan het huidige Plotbord totdat er bewust iets
+  wordt uitgevinkt.
+- Zelfde functie, overgenomen uit mkapp V2.0.2.23. De kolommen
+  (teams.zichtbaar_op_plotbord, mdt_gebruikers.zichtbaar_op_plotbord)
+  zitten in de gedeelde database, dus een wijziging in de ene app is
+  meteen zichtbaar in de andere.
+
+Vereist: mkapp's migratie migraties/migratie_zichtbaar_op_plotbord.sql
+(V2.0.2.23) moet al gedraaid zijn -- die zet de kolommen zelf neer.
