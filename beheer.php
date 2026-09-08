@@ -29,6 +29,10 @@ include __DIR__ . '/includes/header.php';
         <h3>Rollen beheren</h3>
         <p>Benoemde rollen aanmaken, niveau instellen en optioneel koppelen aan een hoofdclassificatie voor een gefilterde weergave. Zelfde rollensysteem als het meldkamersysteem.</p>
     </a>
+    <a href="/teams.php" class="beheer-card">
+        <h3>Teams beheren</h3>
+        <p>Leden toevoegen aan of verwijderen uit een team voor het Plotbord. Teams zelf aanmaken of verwijderen blijft een taak van het meldkamersysteem.</p>
+    </a>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

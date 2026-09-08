@@ -1156,23 +1156,26 @@ function render_wijzigingen_html(string $tekst): string
 }
 
 /**
- * Plotbord (V0.1.12): teams met hun gekoppelde MDT-gebruiker, actuele
- * eenheidsstatus en (indien aanwezig) de actieve melding die aan dat
- * team is toegewezen. Alleen-lezen, 1-op-1 gelijk aan mkapp's eigen
- * plotbord_teams() -- eenheidsstatussen/teams zijn tabellen die vanuit
- * het meldkamersysteem-project zijn aangemaakt, MK Intranet leest hier
- * alleen dezelfde tabellen.
+ * Plotbord (V0.1.12): teams met hun leden (sinds V0.1.18: 0 of
+ * meerdere, via team_leden), actuele eenheidsstatus per lid en (indien
+ * aanwezig) de actieve melding die aan dat team is toegewezen. 1-op-1
+ * gelijk aan mkapp's eigen plotbord_teams(). De bezetting van een team
+ * kun je hier ook wijzigen (Beheer > Teams, teams.php) -- teams zelf
+ * (aanmaken/hernoemen/verwijderen) blijven een taak van het
+ * meldkamersysteem.
  */
 function plotbord_teams(PDO $pdo): array
 {
-    $teams = $pdo->query(
-        "SELECT t.id, t.naam, g.id AS gebruiker_id, g.naam AS gebruiker_naam,
-                es.naam AS status_naam, es.afkorting AS status_afkorting
-         FROM teams t
-         LEFT JOIN gebruikers g ON g.id = t.gekoppelde_gebruiker_id
+    $teams = $pdo->query('SELECT id, naam FROM teams ORDER BY naam ASC')->fetchAll();
+
+    $leden_stmt = $pdo->prepare(
+        "SELECT g.id, g.naam, es.naam AS status_naam, es.afkorting AS status_afkorting
+         FROM team_leden tl
+         JOIN gebruikers g ON g.id = tl.gebruiker_id
          LEFT JOIN eenheidsstatussen es ON es.id = g.huidige_eenheidsstatus_id
-         ORDER BY t.naam ASC"
-    )->fetchAll();
+         WHERE tl.team_id = ?
+         ORDER BY g.naam ASC"
+    );
 
     // "Actief" = dezelfde, zelf te beheren statuscategorie als Overview
     // gebruikt (niet hardcoded op open/in_behandeling, want die lijst
@@ -1185,12 +1188,77 @@ function plotbord_teams(PDO $pdo): array
          ORDER BY aangemaakt_op DESC LIMIT 1"
     );
     foreach ($teams as &$team) {
+        $leden_stmt->execute([$team['id']]);
+        $team['leden'] = $leden_stmt->fetchAll();
         $melding_stmt->execute(array_merge([$team['id']], $actieve_sleutels));
         $team['actieve_melding'] = $melding_stmt->fetch() ?: null;
     }
     unset($team);
 
     return $teams;
+}
+
+/**
+ * Alle teams met hun volledige ledenlijst (V0.1.18), voor de
+ * teams-beheerpagina hier -- zelfde query-vorm als mkapp's alle_teams().
+ */
+function alle_teams(PDO $pdo): array
+{
+    $teams = $pdo->query('SELECT * FROM teams ORDER BY naam ASC')->fetchAll();
+    if (!$teams) {
+        return [];
+    }
+    $ids = array_column($teams, 'id');
+    $plekhouders = implode(',', array_fill(0, count($ids), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT tl.team_id, g.id, g.naam, g.functie
+         FROM team_leden tl
+         JOIN gebruikers g ON g.id = tl.gebruiker_id
+         WHERE tl.team_id IN ($plekhouders)
+         ORDER BY g.naam ASC"
+    );
+    $stmt->execute($ids);
+    $leden_per_team = [];
+    foreach ($stmt->fetchAll() as $rij) {
+        $leden_per_team[(int) $rij['team_id']][] = $rij;
+    }
+    foreach ($teams as &$team) {
+        $team['leden'] = $leden_per_team[(int) $team['id']] ?? [];
+    }
+    unset($team);
+    return $teams;
+}
+
+/**
+ * Voegt iemand toe aan een team (V0.1.18) -- schrijft naar de gedeelde
+ * tabel team_leden, net als mkapp's Beheer > Teams. Teams zelf
+ * (aanmaken/hernoemen/verwijderen) blijven een taak van het
+ * meldkamersysteem; hier kun je alleen de bezetting van een bestaand
+ * team wijzigen.
+ */
+function team_lid_toevoegen(PDO $pdo, int $team_id, int $gebruiker_id): void
+{
+    $stmt = $pdo->prepare('INSERT IGNORE INTO team_leden (team_id, gebruiker_id) VALUES (:t, :g)');
+    $stmt->execute(['t' => $team_id, 'g' => $gebruiker_id]);
+}
+
+/** Haalt iemand uit een team (V0.1.18). */
+function team_lid_verwijderen(PDO $pdo, int $team_id, int $gebruiker_id): void
+{
+    $stmt = $pdo->prepare('DELETE FROM team_leden WHERE team_id = :t AND gebruiker_id = :g');
+    $stmt->execute(['t' => $team_id, 'g' => $gebruiker_id]);
+}
+
+/** Alle actieve accounts met MDT-toegang, voor de team-ledenkeuzelijst (V0.1.18). */
+function get_mdt_gebruikers(PDO $pdo): array
+{
+    return $pdo->query(
+        "SELECT g.id, g.naam, g.functie
+         FROM mdt_gebruikers m
+         JOIN gebruikers g ON g.id = m.gebruiker_id
+         WHERE m.actief = 1 AND g.actief = 1
+         ORDER BY g.naam ASC"
+    )->fetchAll();
 }
 
 /**
@@ -1209,7 +1277,7 @@ function plotbord_individueel(PDO $pdo): array
          JOIN gebruikers g ON g.id = m.gebruiker_id
          LEFT JOIN eenheidsstatussen es ON es.id = g.huidige_eenheidsstatus_id
          WHERE m.actief = 1 AND g.actief = 1
-           AND g.id NOT IN (SELECT gekoppelde_gebruiker_id FROM teams WHERE gekoppelde_gebruiker_id IS NOT NULL)
+           AND g.id NOT IN (SELECT gebruiker_id FROM team_leden)
          ORDER BY g.naam ASC"
     )->fetchAll();
 

@@ -16,8 +16,11 @@ include __DIR__ . '/includes/header.php';
     <div>
         <p class="eyebrow">Meldingen</p>
         <h1>Plotbord</h1>
-        <p>Alle teams en losse MDT-gebruikers in 1 oogopslag (alleen-lezen), met hun actuele eenheidsstatus en — indien van toepassing — de melding waar ze nu aan werken. Eenheidsstatussen en teams zelf beheer je in het meldkamersysteem.</p>
+        <p>Alle teams en losse MDT-gebruikers in 1 oogopslag, met hun actuele eenheidsstatus en — indien van toepassing — de melding waar ze nu aan werken. Eenheidsstatussen zelf beheer je in het meldkamersysteem; wie in welk team zit kun je sinds kort ook hier wijzigen.</p>
     </div>
+    <?php if (is_beheerder()): ?>
+        <a href="/teams.php" class="btn">Teams beheren</a>
+    <?php endif; ?>
 </div>
 
 <div class="panel">
@@ -27,13 +30,23 @@ include __DIR__ . '/includes/header.php';
     <?php else: ?>
     <div class="plotbord-grid">
         <?php foreach ($teams as $team): ?>
-            <div class="plotbord-card <?= $team['status_afkorting'] ? '' : 'plotbord-card-leeg' ?>">
+            <div class="plotbord-card <?= $team['leden'] ? '' : 'plotbord-card-leeg' ?>">
                 <div class="plotbord-naam"><?= e($team['naam']) ?></div>
-                <div class="plotbord-persoon"><?= $team['gebruiker_naam'] ? e($team['gebruiker_naam']) : '— onbemand —' ?></div>
-                <?php if ($team['status_afkorting']): ?>
-                    <div class="plotbord-status"><span class="afk"><?= e($team['status_afkorting']) ?></span><span class="naam"><?= e($team['status_naam']) ?></span></div>
+                <?php if (!$team['leden']): ?>
+                    <div class="plotbord-persoon">— onbemand —</div>
                 <?php else: ?>
-                    <div class="plotbord-status plotbord-status-onbekend">geen status</div>
+                    <div class="plotbord-leden">
+                        <?php foreach ($team['leden'] as $lid): ?>
+                            <div class="plotbord-lid">
+                                <span class="plotbord-lid-naam"><?= e($lid['naam']) ?></span>
+                                <?php if ($lid['status_afkorting']): ?>
+                                    <span class="plotbord-status"><span class="afk"><?= e($lid['status_afkorting']) ?></span><span class="naam"><?= e($lid['status_naam']) ?></span></span>
+                                <?php else: ?>
+                                    <span class="plotbord-status plotbord-status-onbekend">geen status</span>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endif; ?>
                 <?php if ($team['actieve_melding']): ?>
                     <div class="plotbord-melding"><?= e($team['actieve_melding']['meld_id']) ?> · <?= e($team['actieve_melding']['titel']) ?></div>

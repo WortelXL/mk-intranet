@@ -481,21 +481,32 @@ Deze zijn niet expliciet gevraagd — pas ze gerust aan:
 - **Plotbord (V0.1.12):** overgenomen van mkapp's eigen `plotbord.php` en
   de bijbehorende `plotbord_teams()`/`plotbord_individueel()` — dezelfde
   query's, dezelfde definitie van "actief" (via `get_actieve_statussen()`,
-  niet hardcoded), alleen-lezen. Eén bewuste afwijking: waar mkapp losse
+  niet hardcoded). Eén bewuste afwijking: waar mkapp losse
   MDT-gebruikers als kaartjes toont, staan ze hier als een uitklapbare
   lijst (zelfde toggle-patroon als het logboek/wijzigingenlog elders in
   deze app) — de naam en status blijven altijd zichtbaar, de actieve
   melding klapt pas open na een klik. Bij veel losse MDT-gebruikers blijft
   het overzicht zo compact; bij weinig gebruikers scheelt het verder
-  niets. Teams blijven ongewijzigd een vaste kaartjes-grid. Eenheidsstatus
-  zelf instellen/wijzigen kan alleen vanuit MDT, en statussen/teams zelf
-  beheren blijft een taak van het meldkamersysteem (`admin/
-  eenheidsstatussen.php`, `admin/teams.php` daar) — hier is dit puur een
-  live weergave. Sinds V0.1.13 zijn de teamkaartjes compacter (minimale
+  niets. Sinds V0.1.13 zijn de teamkaartjes compacter (minimale
   breedte 150px i.p.v. 200px, kleinere padding en tekst) — op de volle
   breedte van de app (1100px) passen er zo 6 naast elkaar in plaats van
   5; op een smallere weergave (mobiel, of een kleiner browservenster)
   worden het er vanzelf minder, tot 1 kolom op een telefoon.
+  Eenheidsstatus zelf instellen/wijzigen kan alleen vanuit MDT, en
+  teams zelf aanmaken/hernoemen/verwijderen blijft een taak van het
+  meldkamersysteem (`admin/teams.php` daar).
+- **Teams met meerdere leden + Beheer > Teams (V0.1.18):** overgenomen
+  van mkapp V2.0.2.22 — een team kan sinds kort 0 of meerdere leden
+  hebben (tabel `team_leden`, many-to-many; iemand mag ook in meerdere
+  teams tegelijk zitten) in plaats van hooguit 1 gekoppelde
+  MDT-gebruiker. Plotbord toont per team een rij per lid, elk met eigen
+  eenheidsstatus. Nieuw hier: `teams.php` (Beheer > Teams, alleen
+  beheerders) waar je — anders dan de rest van deze paragraaf — wél kunt
+  schrijven: leden toevoegen aan of verwijderen uit een bestaand team
+  (`team_lid_toevoegen()`/`team_lid_verwijderen()`, zelfde functies en
+  gedeelde tabel als mkapp). Teams zelf aanmaken, hernoemen of
+  verwijderen kan bewust niet vanuit MK Intranet — dat blijft een taak
+  van het meldkamersysteem.
 - **Archief:** toont meldingen met een status uit de categorie "afgerond",
   met filters op hoofdclassificatie, subclassificatie, prioriteit en label
   (geen zoekveld/-commando zoals in `mkapp`'s eigen archief). Gecapped op

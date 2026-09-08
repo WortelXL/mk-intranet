@@ -1,0 +1,6 @@
+MK Intranet - V0.1.18
+8 september 2026
+
+Nieuw
+- Een team kan nu 0 of meerdere leden hebben (overgenomen van mkapp) -- Plotbord toont een rij per lid, elk met eigen eenheidsstatus.
+- Nieuw: Beheer > Teams, waar je leden aan een team kunt toevoegen of verwijderen. Teams zelf aanmaken, hernoemen of verwijderen blijft een taak van het meldkamersysteem.
