@@ -360,6 +360,52 @@ function get_crew(PDO $pdo): array
     return $pdo->query('SELECT * FROM crew ORDER BY naam ASC')->fetchAll();
 }
 
+/**
+ * Combineert Crew-contacten en MDT-gebruikers in 1 lijst (overgenomen uit
+ * mkapp V2.0.2.17/V2.0.2.20) -- gebruikt door crew.php, hier ook
+ * beheerbaar (MDT-login aanmaken/wijzigen, "Zichtbaar in MDT"-vinkje).
+ */
+function alle_crew_personen(PDO $pdo): array
+{
+    $personen = [];
+
+    $crew = $pdo->query('SELECT * FROM crew')->fetchAll();
+    foreach ($crew as $c) {
+        $personen[] = [
+            'type' => 'crew',
+            'id' => (int) $c['id'],
+            'naam' => $c['naam'],
+            'functie' => $c['functie'],
+            'telefoonnummer' => $c['telefoonnummer'],
+            'zichtbaar_in_mdt' => (int) $c['zichtbaar_in_mdt'],
+        ];
+    }
+
+    $mdt = $pdo->query(
+        "SELECT m.id AS mdt_id, g.id AS gebruiker_id, g.naam, g.functie, g.gebruikersnaam, g.actief,
+                g.mag_inloggen_mkapp, m.telefoonnummer, m.zichtbaar_in_mdt
+         FROM mdt_gebruikers m
+         JOIN gebruikers g ON g.id = m.gebruiker_id"
+    )->fetchAll();
+    foreach ($mdt as $m) {
+        $personen[] = [
+            'type' => 'mdt',
+            'id' => (int) $m['gebruiker_id'],
+            'naam' => $m['naam'],
+            'functie' => $m['functie'],
+            'telefoonnummer' => $m['telefoonnummer'],
+            'gebruikersnaam' => $m['gebruikersnaam'],
+            'actief' => (int) $m['actief'],
+            'mag_inloggen_mkapp' => (int) $m['mag_inloggen_mkapp'],
+            'zichtbaar_in_mdt' => (int) $m['zichtbaar_in_mdt'],
+        ];
+    }
+
+    usort($personen, fn ($a, $b) => strcasecmp($a['naam'], $b['naam']));
+
+    return $personen;
+}
+
 /* =========================================================================
  * Statussen & prioriteiten (zelfde logica als het hoofdsysteem, zodat
  * eigen/aangepaste statussen ook hier correct getoond worden)

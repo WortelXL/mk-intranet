@@ -1139,3 +1139,7 @@ button.koppel-chip:hover {
 @media (max-width: 720px) {
     .kaart-layout { grid-template-columns: 1fr; }
 }
+
+/* ---- Crew-formulier: MDT-loginvelden alleen tonen als het vinkje aan staat (V0.1.16) ---- */
+.mdt-login-velden { display: none; }
+.form-grid:has(#mdt-login-toggle:checked) .mdt-login-velden { display: contents; }

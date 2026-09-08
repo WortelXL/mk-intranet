@@ -1,0 +1,6 @@
+MK Intranet - V0.1.16
+8 september 2026
+
+Gewijzigd
+- Crew overgenomen uit mkapp: Crew-contacten en MDT-gebruikers staan nu samen in 1 lijst, met een vinkje "Zichtbaar in MDT" per persoon.
+- Vanuit Crew kun je nu ook een MDT-login aanmaken of wijzigen (gebruikersnaam/wachtwoord) -- niet meer alleen kale contactpersonen.
