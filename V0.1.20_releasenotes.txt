@@ -1,0 +1,24 @@
+MK Intranet V0.1.20 -- MDT bij Gebruikers + Geplande meldingen
+================================================================
+
+Nieuw:
+- Beheer > Gebruikers heeft nu een kolom "MDT" (overgenomen van mkapp
+  V2.0.2.26): MDT-toegang voor een bestaand account kan voortaan ook
+  direct daar aan/uit gezet worden, naast de bestaande MK/Intranet-
+  vinkjes. Zelfde account, zelfde wachtwoord -- geen los MDT-login.
+  Uitvinken deactiveert alleen (behoudt instellingen); naam, functie,
+  telefoonnummer en het MDT-wachtwoord beheer je verder op Beheer >
+  Crew (link "instellingen ->" naast het vinkje).
+- Nieuw: Beheer > Geplande meldingen (overgenomen van mkapp). Plan een
+  melding in voor een toekomstig tijdstip, evt. met herhaling
+  (dagelijks / elke X uur / elke X minuten), bewerk of annuleer 'm --
+  zelfde gedeelde tabel als het meldkamersysteem, dus meteen zichtbaar
+  in beide apps.
+- Bewust NIET overgenomen: het daadwerkelijk laten verschijnen als
+  echte melding. Dat blijft alleen via mkapp lopen (die staat toch
+  altijd open in de meldkamer) -- zo verwerken nooit twee apps
+  tegelijk dezelfde geplande melding.
+
+Vereist: geen aparte migratie op mkapp nodig -- beide tabellen
+(mdt_gebruikers, geplande_meldingen) bestonden al in de gedeelde
+database.

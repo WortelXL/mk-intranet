@@ -648,6 +648,27 @@ function get_hoofdclassificaties(PDO $pdo): array
     return $pdo->query('SELECT * FROM hoofdclassificaties ORDER BY naam ASC')->fetchAll();
 }
 
+/** Alle subclassificaties, evt. gefilterd op 1 hoofdclassificatie (overgenomen van mkapp, voor Beheer > Geplande meldingen). */
+function get_subclassificaties(PDO $pdo, ?int $hoofdclassificatie_id = null): array
+{
+    if ($hoofdclassificatie_id !== null) {
+        $stmt = $pdo->prepare('SELECT * FROM subclassificaties WHERE hoofdclassificatie_id = :h ORDER BY naam ASC');
+        $stmt->execute(['h' => $hoofdclassificatie_id]);
+        return $stmt->fetchAll();
+    }
+    return $pdo->query('SELECT * FROM subclassificaties ORDER BY naam ASC')->fetchAll();
+}
+
+/** Alle subclassificaties gegroepeerd per hoofdclassificatie_id, handig voor JS-dropdowns (overgenomen van mkapp). */
+function get_subclassificaties_gegroepeerd(PDO $pdo): array
+{
+    $gegroepeerd = [];
+    foreach (get_subclassificaties($pdo) as $sub) {
+        $gegroepeerd[(int) $sub['hoofdclassificatie_id']][] = $sub;
+    }
+    return $gegroepeerd;
+}
+
 /** Haalt alle vooraf ingestelde locaties op uit het meldkamersysteem (alleen-lezen, incl. plattegrond-positie), alfabetisch */
 function get_locaties(PDO $pdo): array
 {
@@ -1260,6 +1281,25 @@ function get_mdt_gebruikers(PDO $pdo): array
          WHERE m.actief = 1 AND g.actief = 1
          ORDER BY g.naam ASC"
     )->fetchAll();
+}
+
+/**
+ * MDT-toegangsstatus per gebruiker_id (V0.1.20, overgenomen van mkapp
+ * V2.0.2.26) -- voor de "MDT"-kolom op Beheer > Gebruikers, die in 1
+ * oogopslag laat zien wie ook MDT-toegang heeft en die met dezelfde
+ * sneltoggel als de MK/Intranet-vinkjes aan/uit kan zetten. Geeft
+ * alleen gebruiker_id's terug die een mdt_gebruikers-rij hebben, met
+ * de bijbehorende actief-vlag -- ontbreekt een id, dan heeft die
+ * gebruiker nog nooit MDT-toegang gehad.
+ */
+function mdt_toegang_per_gebruiker(PDO $pdo): array
+{
+    $rijen = $pdo->query('SELECT gebruiker_id, actief FROM mdt_gebruikers')->fetchAll();
+    $resultaat = [];
+    foreach ($rijen as $r) {
+        $resultaat[(int) $r['gebruiker_id']] = (bool) $r['actief'];
+    }
+    return $resultaat;
 }
 
 /**

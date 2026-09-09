@@ -126,6 +126,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $succes = 'Toegang bijgewerkt.';
     }
 
+    if ($actie === 'mdt_toegang_wijzigen') {
+        $id = (int) ($_POST['id'] ?? 0);
+        $bestaand = $pdo->prepare('SELECT id FROM mdt_gebruikers WHERE gebruiker_id = :g');
+        $bestaand->execute(['g' => $id]);
+        $mdt_id = $bestaand->fetchColumn();
+        if ($mdt_id) {
+            // Rij bestaat al -- alleen actief/inactief wisselen, zodat
+            // eventuele instellingen (telefoonnummer, zichtbaarheid)
+            // behouden blijven.
+            $pdo->prepare('UPDATE mdt_gebruikers SET actief = NOT actief WHERE id = :id')->execute(['id' => $mdt_id]);
+        } else {
+            // Nog geen MDT-toegang gehad -- nieuwe rij met standaardwaarden
+            // (zelfde alsof je op Beheer > Crew deze persoon als MDT-account
+            // aanmaakt).
+            $pdo->prepare('INSERT INTO mdt_gebruikers (gebruiker_id) VALUES (:g)')->execute(['g' => $id]);
+        }
+        $succes = 'MDT-toegang bijgewerkt.';
+    }
+
     if ($actie === 'wachtwoord_wijzigen') {
         $id               = (int) ($_POST['id'] ?? 0);
         $nieuw_wachtwoord = $_POST['nieuw_wachtwoord'] ?? '';
@@ -168,6 +187,7 @@ foreach ($gebruikers as $g) {
 foreach ($pdo->query('SELECT gebruiker_id, rol_id FROM gebruiker_rollen')->fetchAll() as $koppeling) {
     $rollen_per_gebruiker[$koppeling['gebruiker_id']][] = (int) $koppeling['rol_id'];
 }
+$mdt_toegang = mdt_toegang_per_gebruiker($pdo);
 
 $actief = 'beheer';
 $paginatitel = 'Gebruikers beheren';
@@ -179,6 +199,7 @@ include __DIR__ . '/includes/header.php';
         <p class="eyebrow"><a href="/beheer.php" class="back-link">&larr; Beheer</a></p>
         <h1>Gebruikers beheren</h1>
         <p>Dit is dezelfde inlogtabel als het meldkamersysteem — een account dat je hier aanmaakt of wijzigt, werkt (of verandert) daar ook meteen mee.</p>
+        <p class="section-note" style="margin-top:8px;">Een account kan daarnaast ook MDT-toegang hebben (mobiele app voor crew op terrein) — zelfde account, zelfde wachtwoord, geen los MDT-login. De kolom "MDT" hiernaast zet die toegang aan/uit; naam, functie, telefoonnummer en het MDT-wachtwoord van die persoon beheer je op <a href="/crew.php">Beheer &rarr; Crew</a>.</p>
     </div>
 </div>
 
@@ -236,7 +257,7 @@ include __DIR__ . '/includes/header.php';
     <div class="tabel-scroll">
     <table class="admin-table">
         <thead>
-            <tr><th>Naam</th><th>Gebruikersnaam</th><th>Rol</th><th>Rollen</th><th>Functie</th><th>Status</th><th>Toegang</th><th>Wachtwoord</th><th></th></tr>
+            <tr><th>Naam</th><th>Gebruikersnaam</th><th>Rol</th><th>Rollen</th><th>Functie</th><th>Status</th><th>Toegang</th><th>MDT</th><th>Wachtwoord</th><th></th></tr>
         </thead>
         <tbody>
         <?php foreach ($gebruikers as $g): ?>
@@ -294,6 +315,18 @@ include __DIR__ . '/includes/header.php';
                             <input type="checkbox" name="mag_mkintranet" value="1" <?= gebruiker_mag_inloggen($g, 'mag_inloggen_mkintranet') ? 'checked' : '' ?> onchange="this.form.submit()"> Intranet
                         </label>
                     </form>
+                </td>
+                <td class="nowrap">
+                    <form method="post" class="inline-form" style="display:flex; align-items:center; gap:4px;">
+                        <input type="hidden" name="actie" value="mdt_toegang_wijzigen">
+                        <input type="hidden" name="id" value="<?= $g['id'] ?>">
+                        <label class="toegang-checkbox" title="Mag inloggen op MDT (mobiele app voor crew op terrein) -- zelfde account, zelfde wachtwoord">
+                            <input type="checkbox" <?= !empty($mdt_toegang[$g['id']]) ? 'checked' : '' ?> onchange="this.form.submit()"> MDT
+                        </label>
+                    </form>
+                    <?php if (array_key_exists((int) $g['id'], $mdt_toegang)): ?>
+                        <a href="/crew.php?bewerk=<?= $g['id'] ?>&type=mdt" style="font-size:11px; color:var(--muted);">instellingen &rarr;</a>
+                    <?php endif; ?>
                 </td>
                 <td class="nowrap">
                     <form method="post" class="inline-form" onsubmit="return confirm('Wachtwoord van \'<?= e($g['naam']) ?>\' wijzigen naar het ingevulde wachtwoord?');">

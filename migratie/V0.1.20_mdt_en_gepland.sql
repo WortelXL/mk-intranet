@@ -1,0 +1,25 @@
+-- ============================================================
+-- MK INTRANET - Migratie voor V0.1.20
+-- Geen eigen schemawijziging -- mdt_gebruikers en geplande_meldingen
+-- horen al bij de gedeelde database (mkapp). Dit voegt alleen de
+-- wijzigingenlog-regel toe.
+--
+-- Wat er verandert:
+-- 1. Beheer > Gebruikers heeft nu een kolom "MDT" (overgenomen van
+--    mkapp V2.0.2.26): MDT-toegang voor een bestaand account kan
+--    voortaan ook direct daar aan/uit gezet worden, naast de
+--    bestaande MK/Intranet-vinkjes (zelfde account, zelfde
+--    wachtwoord). Uitvinken deactiveert alleen; naam, functie,
+--    telefoonnummer en het MDT-wachtwoord beheer je verder op
+--    Beheer > Crew.
+-- 2. Nieuw: Beheer > Geplande meldingen (gepland.php), overgenomen van
+--    mkapp. Hier kun je meldingen inplannen, bewerken en annuleren op
+--    dezelfde gedeelde tabel geplande_meldingen. Het daadwerkelijk
+--    laten verschijnen als echte melding blijft bewust alleen via
+--    mkapp lopen (die controleert dit bij elke paginabezoek) -- zo
+--    verwerken nooit twee apps tegelijk dezelfde rij.
+-- ============================================================
+INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
+('V0.1.20', '9 september 2026', '## Nieuw
+- Beheer > Gebruikers heeft nu een kolom "MDT" (overgenomen van mkapp) om MDT-toegang voor een bestaand account direct aan/uit te zetten, naast de bestaande MK/Intranet-vinkjes -- zelfde account, zelfde wachtwoord, alles op 1 plek.
+- Nieuw: Beheer > Geplande meldingen, overgenomen van mkapp. Plan hier een melding in voor een toekomstig tijdstip (evt. met herhaling), bewerk of annuleer 'm -- zelfde gedeelde lijst als het meldkamersysteem. Het daadwerkelijk laten verschijnen blijft via mkapp lopen.');

@@ -33,6 +33,10 @@ include __DIR__ . '/includes/header.php';
         <h3>Teams beheren</h3>
         <p>Leden toevoegen aan of verwijderen uit een team voor het Plotbord. Teams zelf aanmaken of verwijderen blijft een taak van het meldkamersysteem.</p>
     </a>
+    <a href="/gepland.php" class="beheer-card">
+        <h3>Geplande meldingen</h3>
+        <p>Meldingen inplannen voor een toekomstig tijdstip, evt. met herhaling. Zelfde gedeelde lijst als het meldkamersysteem — het daadwerkelijk laten verschijnen gebeurt via mkapp.</p>
+    </a>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>
