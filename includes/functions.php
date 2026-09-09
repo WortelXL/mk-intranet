@@ -681,11 +681,6 @@ function get_labels(PDO $pdo): array
     return $pdo->query('SELECT * FROM labels ORDER BY naam ASC')->fetchAll();
 }
 
-/** Alle subclassificaties, gegroepeerd op hoofdclassificatie voor het archieffilter */
-function get_subclassificaties(PDO $pdo): array
-{
-    return $pdo->query('SELECT * FROM subclassificaties ORDER BY naam ASC')->fetchAll();
-}
 
 /**
  * Afgeronde meldingen (status uit de categorie 'afgerond'), meest recent
