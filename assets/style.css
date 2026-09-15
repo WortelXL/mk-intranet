@@ -295,6 +295,7 @@ select.rol-badge.rol-badge-wisselaar:focus {
 }
 
 .section-title-action { font-family: var(--font-body); font-weight: 500; }
+.section-title-actions { display: flex; align-items: center; gap: 10px; }
 
 .back-link { color: var(--muted); text-decoration: none; }
 .back-link:hover { color: var(--text); }

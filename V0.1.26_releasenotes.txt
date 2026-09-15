@@ -1,0 +1,17 @@
+MK Intranet V0.1.26 -- Berichtenoverzicht als aparte pagina
+=============================================================
+
+Nieuw:
+- Nieuwe pagina "Berichten" (alle_berichten.php), bereikbaar via
+  Event > Berichten in de navigatie. Toont alle berichten, ook
+  eerder geplaatste en verlopen berichten (met een "verlopen op"
+  label), alleen-lezen voor iedereen die ingelogd is.
+
+Gewijzigd:
+- Het beginscherm toont voortaan alleen de 3 meest recente
+  (actuele) berichten in plaats van tot 20. Bij de sectiekop staat
+  een nieuwe link "Alle berichten" die naar het volledige overzicht
+  linkt.
+
+Vereist: geen schemawijziging, alleen de wijzigingenlog-regel
+(migratie/V0.1.26_alle_berichten_pagina.sql).

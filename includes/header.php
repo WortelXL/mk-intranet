@@ -3,7 +3,7 @@
 $paginatitel = $paginatitel ?? 'Intranet';
 $actief = $actief ?? '';
 $in_meldingen_menu = in_array($actief, ['meldingen', 'archief', 'statistieken', 'plotbord', 'plattegrond'], true);
-$in_event_menu = in_array($actief, ['qa', 'documenten'], true);
+$in_event_menu = in_array($actief, ['qa', 'documenten', 'alle_berichten'], true);
 
 // V0.1.8: rollen (het meldkamersysteem-rollensysteem). Heeft de actieve
 // rol een gekoppelde hoofdclassificatie, dan beperkt dat de navigatie tot
@@ -64,6 +64,7 @@ $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !
                             <div class="nav-dropdown-menu">
                                 <a href="/qa.php" class="<?= $actief === 'qa' ? 'active' : '' ?>">Q&amp;A</a>
                                 <a href="/documenten.php" class="<?= $actief === 'documenten' ? 'active' : '' ?>">Documenten</a>
+                                <a href="/alle_berichten.php" class="<?= $actief === 'alle_berichten' ? 'active' : '' ?>">Berichten</a>
                             </div>
                         </details>
                     </div>

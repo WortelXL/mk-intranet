@@ -15,7 +15,7 @@ $evenement_dag          = bepaal_evenement_dag($pdo);
 $evenement_dagen_totaal = event_aantal_dagen($pdo);
 
 /* ---- Berichten: alleen-lezen, beheren gebeurt op berichten.php --------- */
-$berichten = get_berichten($pdo, 20, true);
+$berichten = get_berichten($pdo, 3, true);
 $links_per_bericht = get_links_per_bericht($pdo, array_column($berichten, 'id'));
 
 /* ---- Nieuw in de kennisbank ---- */
@@ -69,9 +69,12 @@ include __DIR__ . '/includes/header.php';
 <section class="section">
     <h2 class="section-title">
         Berichten
-        <?php if (is_beheerder()): ?>
-            <a href="/berichten.php" class="btn btn-small section-title-action">Beheren</a>
-        <?php endif; ?>
+        <span class="section-title-actions">
+            <a href="/alle_berichten.php" class="btn btn-small section-title-action">Alle berichten &rarr;</a>
+            <?php if (is_beheerder()): ?>
+                <a href="/berichten.php" class="btn btn-small section-title-action">Beheren</a>
+            <?php endif; ?>
+        </span>
     </h2>
 
     <?php if (!$berichten): ?>
