@@ -1,0 +1,20 @@
+MK Intranet V0.1.25 -- "Toegewezen aan mij" op het beginscherm
+================================================================
+
+Nieuw:
+- Beginscherm: nieuwe statuschip "Toegewezen aan mij", voor iedereen
+  zichtbaar. Telt je eigen actieve meldingen (als centralist) en linkt
+  door naar Overview met dat filter alvast aan.
+- Overview (meldingen.php) heeft een nieuw filter "Alleen aan mij
+  toegewezen", te combineren met het bestaande classificatiefilter.
+
+Gewijzigd:
+- De "Gepland vandaag"-chip op het beginscherm is nu beheerder-only.
+  Geplande meldingen is toch al een beheerder-only pagina, dus voor
+  een centralist was die chip sowieso een doodlopende link. Een
+  centralist ziet in plaats daarvan gewoon de "Toegewezen aan
+  mij"-chip op die plek.
+
+Vereist: geen schemawijziging (toegewezen_centralist_id bestond al op
+meldingen), alleen de wijzigingenlog-regel
+(migratie/V0.1.25_toegewezen_aan_mij_chip.sql).

@@ -10,6 +10,7 @@ $pdo = get_pdo();
 // zie mijn-rol.php, dat hier met dit filter al ingesteld naartoe stuurt.
 $hoofdclassificaties = get_hoofdclassificaties($pdo);
 $gekozen_hoofd_id = isset($_GET['hoofd']) && $_GET['hoofd'] !== '' ? (int) $_GET['hoofd'] : null;
+$alleen_van_mij = isset($_GET['van_mij']) && $_GET['van_mij'] !== '';
 
 $mijn_actieve_rol = actieve_rol($pdo);
 $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !== null;
@@ -23,7 +24,7 @@ if ($gekozen_hoofd_id) {
     }
 }
 
-$meldingen = get_actieve_meldingen($pdo, $gekozen_hoofd_id);
+$meldingen = get_actieve_meldingen($pdo, $gekozen_hoofd_id, $alleen_van_mij ? (int) $_SESSION['gebruiker_id'] : null);
 $actieve_statussen = get_actieve_statussen($pdo);
 $tellingen = get_status_tellingen($pdo);
 $notities_per_melding = get_notities_per_melding($pdo, array_column($meldingen, 'id'));
@@ -74,9 +75,15 @@ include __DIR__ . '/includes/header.php';
                 <?php endforeach; ?>
             </select>
         </div>
+        <div class="field">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:13.5px; color:var(--text); font-weight:400;">
+                <input type="checkbox" name="van_mij" value="1" <?= $alleen_van_mij ? 'checked' : '' ?> style="width:auto; height:auto;">
+                Alleen aan mij toegewezen
+            </label>
+        </div>
         <div class="actions full">
             <button type="submit" class="btn btn-primary">Filteren</button>
-            <?php if ($gekozen_hoofd_id): ?>
+            <?php if ($gekozen_hoofd_id || $alleen_van_mij): ?>
                 <a href="/meldingen.php" class="btn">Wis filter</a>
             <?php endif; ?>
         </div>
@@ -100,7 +107,7 @@ include __DIR__ . '/includes/header.php';
 
     <div class="melding-list">
         <?php if (!$meldingen): ?>
-            <div class="empty">Geen actieve meldingen<?= $gekozen_hoofd_id ? ' voor deze classificatie' : '' ?>.</div>
+            <div class="empty">Geen actieve meldingen<?= $gekozen_hoofd_id ? ' voor deze classificatie' : '' ?><?= $alleen_van_mij ? ' die aan jou zijn toegewezen' : '' ?>.</div>
         <?php endif; ?>
         <?php
         $actieve_melding_ids = array_column($meldingen, 'id');

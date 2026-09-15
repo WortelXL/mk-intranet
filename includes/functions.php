@@ -481,7 +481,7 @@ function prioriteit_kleur(string $prioriteit): string
  * door de gefilterde weergave voor een classificatie-gekoppelde rol).
  * Alleen-lezen — wordt hier nergens gewijzigd.
  */
-function get_actieve_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null): array
+function get_actieve_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null, ?int $toegewezen_centralist_id = null): array
 {
     $actieve_sleutels = statussen_sleutels(get_actieve_statussen($pdo));
     if (!$actieve_sleutels) {
@@ -499,6 +499,10 @@ function get_actieve_meldingen(PDO $pdo, ?int $hoofdclassificatie_id = null): ar
     if ($hoofdclassificatie_id) {
         $where .= ' AND m.hoofdclassificatie_id = :hoofd_id';
         $params['hoofd_id'] = $hoofdclassificatie_id;
+    }
+    if ($toegewezen_centralist_id) {
+        $where .= ' AND m.toegewezen_centralist_id = :centralist_id';
+        $params['centralist_id'] = $toegewezen_centralist_id;
     }
 
     $sql = 'SELECT m.*, h.naam AS hoofd_naam, h.kleur AS hoofd_kleur, s.naam AS sub_naam,
@@ -1136,6 +1140,26 @@ function tel_actieve_meldingen_attentie(PDO $pdo): int
         $params['s' . $i] = $sleutel;
     }
     $sql = "SELECT COUNT(*) FROM meldingen WHERE status IN (" . implode(',', $plekhouders) . ") AND (attentie = 1 OR prioriteit = 'kritiek')";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return (int) $stmt->fetchColumn();
+}
+
+/** Aantal actieve meldingen die aan deze gebruiker (als centralist) zijn toegewezen */
+function tel_toegewezen_aan_mij(PDO $pdo, int $gebruiker_id): int
+{
+    $actieve_sleutels = statussen_sleutels(get_actieve_statussen($pdo));
+    if (!$actieve_sleutels) {
+        return 0;
+    }
+    $plekhouders = [];
+    $params = [];
+    foreach ($actieve_sleutels as $i => $sleutel) {
+        $plekhouders[] = ':s' . $i;
+        $params['s' . $i] = $sleutel;
+    }
+    $params['gebruiker_id'] = $gebruiker_id;
+    $sql = 'SELECT COUNT(*) FROM meldingen WHERE status IN (' . implode(',', $plekhouders) . ') AND toegewezen_centralist_id = :gebruiker_id';
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     return (int) $stmt->fetchColumn();

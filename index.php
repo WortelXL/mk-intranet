@@ -6,6 +6,7 @@ $pdo = get_pdo();
 /* ---- Statuschips (V0.1.23): compacte tellingen, net als op het voorbeeld ---- */
 $aantal_actief           = tel_actieve_meldingen($pdo);
 $aantal_attentie         = tel_actieve_meldingen_attentie($pdo);
+$aantal_van_mij          = tel_toegewezen_aan_mij($pdo, (int) $_SESSION['gebruiker_id']);
 $aantal_gepland_vandaag  = tel_gepland_later_vandaag($pdo);
 $aantal_afgerond_vandaag = tel_afgerond_vandaag($pdo);
 
@@ -43,10 +44,16 @@ include __DIR__ . '/includes/header.php';
         <span class="chip-icon">⚠️</span>
         <span class="chip-tekst"><span class="chip-getal"><?= $aantal_attentie ?></span> <span class="chip-label">attentie / kritiek</span></span>
     </a>
+    <a href="/meldingen.php?van_mij=1" class="chip">
+        <span class="chip-icon">👤</span>
+        <span class="chip-tekst"><span class="chip-getal"><?= $aantal_van_mij ?></span> <span class="chip-label">toegewezen aan mij</span></span>
+    </a>
+    <?php if (is_beheerder()): ?>
     <a href="/gepland.php" class="chip">
         <span class="chip-icon">🕒</span>
         <span class="chip-tekst"><span class="chip-getal"><?= $aantal_gepland_vandaag ?></span> <span class="chip-label">gepland vandaag</span></span>
     </a>
+    <?php endif; ?>
     <a href="/archief.php" class="chip ok">
         <span class="chip-icon">✅</span>
         <span class="chip-tekst"><span class="chip-getal"><?= $aantal_afgerond_vandaag ?></span> <span class="chip-label">afgerond vandaag</span></span>
