@@ -119,6 +119,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute(['id' => $id]);
         $succes = 'Verwijderd uit de lijst.';
     }
+
+    if ($actie === 'verwijder_alle_afgehandeld') {
+        $stmt = $pdo->prepare("DELETE FROM geplande_meldingen WHERE status IN ('verwerkt', 'geannuleerd')");
+        $stmt->execute();
+        $aantal = $stmt->rowCount();
+        $succes = $aantal > 0
+            ? $aantal . ' afgehandelde geplande melding' . ($aantal === 1 ? '' : 'en') . ' verwijderd.'
+            : 'Niets te verwijderen.';
+    }
 }
 
 if (isset($_GET['bewerk'])) {
@@ -333,7 +342,13 @@ include __DIR__ . '/includes/header.php';
 
 <?php if ($afgehandelde_meldingen): ?>
 <div class="panel">
-    <h3>Verwerkt / geannuleerd</h3>
+    <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <h3 style="margin:0;">Verwerkt / geannuleerd <span class="count-badge"><?= count($afgehandelde_meldingen) ?></span></h3>
+        <form method="post" onsubmit="return confirm('Alle <?= count($afgehandelde_meldingen) ?> afgehandelde geplande meldingen (verwerkt + geannuleerd) verwijderen? Dit heeft geen invloed op de eventueel al aangemaakte meldingen zelf, en kan niet ongedaan gemaakt worden.');">
+            <input type="hidden" name="actie" value="verwijder_alle_afgehandeld">
+            <button type="submit" class="btn btn-small btn-danger">Verwijder alles (<?= count($afgehandelde_meldingen) ?>)</button>
+        </form>
+    </div>
     <div class="tabel-scroll">
     <table class="admin-table">
         <thead><tr><th>Tijdstip</th><th>Classificatie</th><th>Status</th><th></th></tr></thead>

@@ -1,0 +1,13 @@
+MK Intranet V0.1.22 -- Verwijder alles bij Geplande meldingen
+================================================================
+
+Nieuw:
+- Beheer > Geplande meldingen: bij "Verwerkt / geannuleerd" staat nu
+  een "Verwijder alles"-knop (overgenomen van mkapp V2.0.2.30) om in
+  1 keer alle afgehandelde geplande meldingen (verwerkt + geannuleerd)
+  op te ruimen, in plaats van 1 voor 1. Heeft geen invloed op de
+  eventueel al aangemaakte meldingen zelf, en kan niet ongedaan
+  gemaakt worden -- vraagt daarom om bevestiging.
+
+Vereist: geen schemawijziging, alleen de wijzigingenlog-regel
+(migratie/V0.1.22_verwijder_alles_gepland.sql).
