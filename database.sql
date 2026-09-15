@@ -495,6 +495,59 @@ CREATE TABLE IF NOT EXISTS intranet_versies (
     UNIQUE KEY versienummer_uniek (versienummer)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Kennisbank (V0.1.21): Q&A + Documenten, categorieen gedeeld tussen
+-- beide. MK-Intranet-only, geen mkapp-kant.
+CREATE TABLE IF NOT EXISTS kb_categorieen (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    naam VARCHAR(100) NOT NULL,
+    volgorde INT NOT NULL DEFAULT 0,
+    aangemaakt_op DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS kb_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    categorie_id INT NOT NULL,
+    vraag VARCHAR(255) NOT NULL,
+    antwoord TEXT NOT NULL,
+    volgorde INT NOT NULL DEFAULT 0,
+    auteur_id INT DEFAULT NULL,
+    aangemaakt_op DATETIME DEFAULT CURRENT_TIMESTAMP,
+    bijgewerkt_op DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (categorie_id) REFERENCES kb_categorieen(id) ON DELETE CASCADE,
+    FOREIGN KEY (auteur_id) REFERENCES gebruikers(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS kb_item_links (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    kb_item_id INT NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    url VARCHAR(500) NOT NULL,
+    volgorde INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (kb_item_id) REFERENCES kb_items(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS kb_documenten (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    categorie_id INT NOT NULL,
+    titel VARCHAR(255) NOT NULL,
+    toelichting TEXT DEFAULT NULL,
+    volgorde INT NOT NULL DEFAULT 0,
+    auteur_id INT DEFAULT NULL,
+    aangemaakt_op DATETIME DEFAULT CURRENT_TIMESTAMP,
+    bijgewerkt_op DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (categorie_id) REFERENCES kb_categorieen(id) ON DELETE CASCADE,
+    FOREIGN KEY (auteur_id) REFERENCES gebruikers(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS kb_document_links (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    kb_document_id INT NOT NULL,
+    label VARCHAR(100) NOT NULL,
+    url VARCHAR(500) NOT NULL,
+    volgorde INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (kb_document_id) REFERENCES kb_documenten(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 ('V0.0.1', '28 augustus 2026', '## Eerste versie
 - Live overzicht van lopende meldingen (alleen-lezen) en crewbeheer (toevoegen/bewerken/verwijderen) op één dashboardpagina.

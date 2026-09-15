@@ -1,0 +1,27 @@
+MK Intranet V0.1.21 -- Kennisbank: Q&A + Documenten
+================================================================
+
+Nieuw:
+- Nieuwe navigatietab "Event" met daaronder Q&A en Documenten.
+- Q&A (/qa.php): vraag/antwoord per categorie, met een zoekveld
+  bovenaan en per vraag tot 5 links naar naslag/documenten.
+- Documenten (/documenten.php): een apart archief per categorie voor
+  materiaal zonder vraag-vorm -- titel, optionele toelichting en tot 5
+  links (draaiboeken, protocollen, etc.).
+- Nieuwe beheerpagina Beheer > Kennisbank beheren: categorieen
+  aanmaken/hernoemen/herordenen/verwijderen (alleen als leeg), en
+  Q&A-items/documenten toevoegen, bewerken, verwijderen -- inclusief
+  het link-beheer per item, hetzelfde patroon als bij Berichten.
+- Zichtbaar voor iedere ingelogde gebruiker, net als Dashboard en
+  Berichten. Beheren blijft voorbehouden aan beheerders.
+
+Bewust NIET overgenomen:
+- Geen file-upload/opslag -- alleen links naar externe documenten,
+  zelfde precedent als de eerder weer verwijderde bijlagen-functie.
+- Geen rol-gebaseerde zichtbaarheid per categorie (voor nu).
+- Geen weergave in mkapp -- dit is een MK-Intranet-only feature, net
+  als Berichten/Rollen/Teams-beheer.
+
+Vereist: migratie/V0.1.21_kennisbank.sql (5 nieuwe tabellen:
+kb_categorieen, kb_items, kb_item_links, kb_documenten,
+kb_document_links).

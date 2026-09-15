@@ -1091,6 +1091,124 @@ function get_links_per_bericht(PDO $pdo, array $bericht_ids): array
 }
 
 /* =========================================================================
+ * Kennisbank (Q&A + Documenten, V0.1.21) -- categorieen, Q&A-items en
+ * documentenarchief-items. MK-Intranet-only, geen mkapp-kant.
+ * ========================================================================= */
+
+/** Alle categorieen, op volgorde -- gedeeld tussen Q&A en Documenten */
+function get_kb_categorieen(PDO $pdo): array
+{
+    return $pdo->query('SELECT * FROM kb_categorieen ORDER BY volgorde ASC, naam ASC')->fetchAll();
+}
+
+/** Heeft een categorie nog Q&A-items of documenten? Bepaalt of 'm verwijderd mag worden. */
+function kb_categorie_is_leeg(PDO $pdo, int $categorie_id): bool
+{
+    $stmt = $pdo->prepare(
+        '(SELECT id FROM kb_items WHERE categorie_id = :c1 LIMIT 1)
+         UNION ALL
+         (SELECT id FROM kb_documenten WHERE categorie_id = :c2 LIMIT 1)
+         LIMIT 1'
+    );
+    $stmt->execute(['c1' => $categorie_id, 'c2' => $categorie_id]);
+    return $stmt->fetch() === false;
+}
+
+/** Alle Q&A-items, op volgorde, gegroepeerd per categorie-id (voor de publieke Q&A-pagina) */
+function get_kb_items_gegroepeerd(PDO $pdo): array
+{
+    $rijen = $pdo->query('SELECT * FROM kb_items ORDER BY volgorde ASC, id ASC')->fetchAll();
+    $resultaat = [];
+    foreach ($rijen as $rij) {
+        $resultaat[(int) $rij['categorie_id']][] = $rij;
+    }
+    return $resultaat;
+}
+
+/** Alle Q&A-items met categorienaam erbij, voor de beheerpagina */
+function get_kb_items_met_categorie(PDO $pdo): array
+{
+    return $pdo->query(
+        'SELECT i.*, c.naam AS categorie_naam
+         FROM kb_items i
+         INNER JOIN kb_categorieen c ON c.id = i.categorie_id
+         ORDER BY c.volgorde ASC, c.naam ASC, i.volgorde ASC, i.id ASC'
+    )->fetchAll();
+}
+
+function get_kb_item(PDO $pdo, int $id): ?array
+{
+    $stmt = $pdo->prepare('SELECT * FROM kb_items WHERE id = :id');
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch() ?: null;
+}
+
+/** Links per Q&A-item-id, op volgorde -- zelfde opzet als get_links_per_bericht() */
+function get_kb_item_links(PDO $pdo, array $item_ids): array
+{
+    $links_per_item = [];
+    if (!$item_ids) {
+        return $links_per_item;
+    }
+    $plekhouders = implode(',', array_fill(0, count($item_ids), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT * FROM kb_item_links WHERE kb_item_id IN ($plekhouders) ORDER BY volgorde ASC, id ASC"
+    );
+    $stmt->execute($item_ids);
+    foreach ($stmt->fetchAll() as $rij) {
+        $links_per_item[(int) $rij['kb_item_id']][] = $rij;
+    }
+    return $links_per_item;
+}
+
+/** Alle documenten, op volgorde, gegroepeerd per categorie-id (voor de publieke Documenten-pagina) */
+function get_kb_documenten_gegroepeerd(PDO $pdo): array
+{
+    $rijen = $pdo->query('SELECT * FROM kb_documenten ORDER BY volgorde ASC, id ASC')->fetchAll();
+    $resultaat = [];
+    foreach ($rijen as $rij) {
+        $resultaat[(int) $rij['categorie_id']][] = $rij;
+    }
+    return $resultaat;
+}
+
+/** Alle documenten met categorienaam erbij, voor de beheerpagina */
+function get_kb_documenten_met_categorie(PDO $pdo): array
+{
+    return $pdo->query(
+        'SELECT d.*, c.naam AS categorie_naam
+         FROM kb_documenten d
+         INNER JOIN kb_categorieen c ON c.id = d.categorie_id
+         ORDER BY c.volgorde ASC, c.naam ASC, d.volgorde ASC, d.id ASC'
+    )->fetchAll();
+}
+
+function get_kb_document(PDO $pdo, int $id): ?array
+{
+    $stmt = $pdo->prepare('SELECT * FROM kb_documenten WHERE id = :id');
+    $stmt->execute(['id' => $id]);
+    return $stmt->fetch() ?: null;
+}
+
+/** Links per document-id, op volgorde */
+function get_kb_document_links(PDO $pdo, array $document_ids): array
+{
+    $links_per_document = [];
+    if (!$document_ids) {
+        return $links_per_document;
+    }
+    $plekhouders = implode(',', array_fill(0, count($document_ids), '?'));
+    $stmt = $pdo->prepare(
+        "SELECT * FROM kb_document_links WHERE kb_document_id IN ($plekhouders) ORDER BY volgorde ASC, id ASC"
+    );
+    $stmt->execute($document_ids);
+    foreach ($stmt->fetchAll() as $rij) {
+        $links_per_document[(int) $rij['kb_document_id']][] = $rij;
+    }
+    return $links_per_document;
+}
+
+/* =========================================================================
  * Versiebeheer / wijzigingenlog van MK Intranet zelf (los van mkapp's
  * eigen 'versies'-tabel)
  * ========================================================================= */

@@ -1182,3 +1182,38 @@ button.koppel-chip:hover {
 /* ---- Crew-formulier: MDT-loginvelden alleen tonen als het vinkje aan staat (V0.1.16) ---- */
 .mdt-login-velden { display: none; }
 .form-grid:has(#mdt-login-toggle:checked) .mdt-login-velden { display: contents; }
+
+/* Kennisbank: Q&A + Documenten (V0.1.21) */
+.kb-zoekveld { width: 100%; max-width: 420px; }
+.kb-item-lijst { display: flex; flex-direction: column; gap: 10px; }
+.kb-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+.kb-item-vraag {
+    cursor: pointer;
+    font-weight: 600;
+    list-style: none;
+}
+.kb-item-vraag::-webkit-details-marker { display: none; }
+.kb-item-vraag::marker { content: ""; }
+.kb-item-vraag::before {
+    content: "\25b8";
+    display: inline-block;
+    margin-right: 8px;
+    color: var(--teal);
+    transition: transform 0.15s ease;
+}
+.kb-item[open] .kb-item-vraag::before { transform: rotate(90deg); }
+.kb-item-antwoord { margin-top: 10px; }
+.kb-item-antwoord p { margin: 0 0 10px; color: var(--text); line-height: 1.5; }
+.kb-item-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.kb-doc-lijst { display: flex; flex-direction: column; gap: 10px; }
+.kb-doc-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+.kb-doc-item h4 { margin: 0 0 4px; font-family: var(--font-display); font-size: 15px; }
+.kb-doc-item p { margin: 0 0 10px; }
