@@ -1,0 +1,16 @@
+MK Intranet V0.1.24 -- Compactere navigatiebalk
+================================================================
+
+Gewijzigd:
+- De navigatiebalk paste bij een wat smaller scherm niet meer op 1
+  regel ("Uitloggen" viel naar een 2e regel). Opgelost door overal
+  iets krappere padding/lettergrootte te gebruiken (navlinks, de
+  naam-link, de rol-badge/-wisselaar), en door "Uitloggen" om te
+  zetten naar een klein rond icoon met tooltip in plaats van de
+  volledige tekst -- dat scheelde het meest.
+- De rol-badge/-wisselaar krijgt ook een vaste maximumbreedte (met
+  "..." erna), zodat een lange rolnaam de balk nooit meer kan
+  opblazen.
+
+Vereist: geen schemawijziging, alleen de wijzigingenlog-regel
+(migratie/V0.1.24_compacte_navbalk.sql).

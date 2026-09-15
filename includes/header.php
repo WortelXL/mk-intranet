@@ -93,7 +93,7 @@ $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !
                 <?php else: ?>
                 <span class="rol-badge rol-<?= e(huidige_gebruiker_rol()) ?>"><?= e(rol_label(huidige_gebruiker_rol())) ?></span>
                 <?php endif; ?>
-                <a href="/logout.php">Uitloggen</a>
+                <a href="/logout.php" class="uitloggen-icon" title="Uitloggen">&#9211;</a>
             <?php else: ?>
                 <a href="/login.php">Inloggen</a>
             <?php endif; ?>
