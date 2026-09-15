@@ -1,0 +1,29 @@
+MK Intranet V0.1.23 -- Beginscherm-vernieuwing + belangrijke berichten
+================================================================
+
+Nieuw op het beginscherm:
+- Compacte statuschips bovenaan, net als bij Home Assistant: aantal
+  actieve meldingen, aantal met attentie/kritiek, aantal geplande
+  meldingen later vandaag, aantal vandaag afgeronde meldingen. Elke
+  chip linkt door naar de bijbehorende pagina (Overview, Geplande
+  meldingen, Archief).
+- "Dag X van Y" onder de intro-tekst.
+- Rij snelkoppelingen: Plotbord, Crew, Q&A.
+- Nieuw blokje "Nieuw in de kennisbank": de 3 meest recent toegevoegde
+  Q&A- en documentitems, met link door naar Q&A/Documenten.
+
+Nieuw bij Berichten:
+- Een bericht kan nu als "Belangrijk" gemarkeerd worden -- verschijnt
+  dan vastgepind bovenaan (linker teal-randje + label), ongeacht
+  datum.
+- Een bericht kan een "geldig tot"-datum krijgen. Na die datum
+  verdwijnt het vanzelf van het beginscherm, maar blijft het gewoon
+  zichtbaar in Beheer > Berichten (met een "verlopen op ..."-label) om
+  te verlengen of op te ruimen.
+
+Bewust NIET meegenomen (op verzoek):
+- Geen "+ Nieuwe melding"-snelkoppeling -- MK Intranet heeft geen
+  eigen pagina om een melding aan te maken, dat blijft mkapp-only.
+
+Vereist: migratie/V0.1.23_dashboard_en_belangrijke_berichten.sql (2
+nieuwe kolommen op berichten: belangrijk, geldig_tot).

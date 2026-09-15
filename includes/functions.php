@@ -1049,13 +1049,22 @@ function melding_notities_samengevoegd(PDO $pdo, array $melding_ids): array
  * Berichten (mededelingen van beheerders, los van meldingen)
  * ========================================================================= */
 
-/** Meest recente berichten eerst, met naam van de auteur erbij */
-function get_berichten(PDO $pdo, ?int $limiet = null): array
+/**
+ * Berichten, meest belangrijke (vastgepinde) eerst en dan meest recent
+ * eerst, met naam van de auteur erbij. $alleen_actueel = true (gebruikt
+ * door het beginscherm) laat berichten weg waarvan de "geldig tot"-datum
+ * al verstreken is -- op de beheerpagina (berichten.php) blijven ze
+ * gewoon staan, zodat je ze nog kan verlengen of opruimen.
+ */
+function get_berichten(PDO $pdo, ?int $limiet = null, bool $alleen_actueel = false): array
 {
     $sql = 'SELECT b.*, g.naam AS auteur_naam
             FROM berichten b
-            LEFT JOIN gebruikers g ON g.id = b.auteur_id
-            ORDER BY b.aangemaakt_op DESC';
+            LEFT JOIN gebruikers g ON g.id = b.auteur_id';
+    if ($alleen_actueel) {
+        $sql .= ' WHERE b.geldig_tot IS NULL OR b.geldig_tot > NOW()';
+    }
+    $sql .= ' ORDER BY b.belangrijk DESC, b.aangemaakt_op DESC';
     if ($limiet !== null) {
         $sql .= ' LIMIT ' . (int) $limiet;
     }
@@ -1088,6 +1097,95 @@ function get_links_per_bericht(PDO $pdo, array $bericht_ids): array
         $links_per_bericht[$rij['bericht_id']][] = $rij;
     }
     return $links_per_bericht;
+}
+
+/* =========================================================================
+ * Dashboard-statistieken (V0.1.23) -- compacte tellingen voor de
+ * statuschips op het beginscherm.
+ * ========================================================================= */
+
+/** Aantal actieve meldingen (status-categorie 'actief') */
+function tel_actieve_meldingen(PDO $pdo): int
+{
+    $actieve_sleutels = statussen_sleutels(get_actieve_statussen($pdo));
+    if (!$actieve_sleutels) {
+        return 0;
+    }
+    $plekhouders = [];
+    $params = [];
+    foreach ($actieve_sleutels as $i => $sleutel) {
+        $plekhouders[] = ':s' . $i;
+        $params['s' . $i] = $sleutel;
+    }
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM meldingen WHERE status IN (' . implode(',', $plekhouders) . ')');
+    $stmt->execute($params);
+    return (int) $stmt->fetchColumn();
+}
+
+/** Aantal actieve meldingen met attentie=1 of prioriteit "kritiek" */
+function tel_actieve_meldingen_attentie(PDO $pdo): int
+{
+    $actieve_sleutels = statussen_sleutels(get_actieve_statussen($pdo));
+    if (!$actieve_sleutels) {
+        return 0;
+    }
+    $plekhouders = [];
+    $params = [];
+    foreach ($actieve_sleutels as $i => $sleutel) {
+        $plekhouders[] = ':s' . $i;
+        $params['s' . $i] = $sleutel;
+    }
+    $sql = "SELECT COUNT(*) FROM meldingen WHERE status IN (" . implode(',', $plekhouders) . ") AND (attentie = 1 OR prioriteit = 'kritiek')";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return (int) $stmt->fetchColumn();
+}
+
+/** Aantal geplande meldingen dat later vandaag nog moet verschijnen */
+function tel_gepland_later_vandaag(PDO $pdo): int
+{
+    return (int) $pdo->query(
+        "SELECT COUNT(*) FROM geplande_meldingen
+         WHERE status = 'wachtend' AND geplande_tijd >= NOW() AND DATE(geplande_tijd) = CURDATE()"
+    )->fetchColumn();
+}
+
+/**
+ * Aantal meldingen dat vandaag is afgerond -- zelfde benadering als de
+ * doorlooptijd-berekening op de statistiekenpagina: de laatste wijziging
+ * (bijgewerkt_op) op een melding die nu in een afgeronde status staat.
+ */
+function tel_afgerond_vandaag(PDO $pdo): int
+{
+    $afgeronde_sleutels = statussen_sleutels(get_afgeronde_statussen($pdo));
+    if (!$afgeronde_sleutels) {
+        return 0;
+    }
+    $plekhouders = [];
+    $params = [];
+    foreach ($afgeronde_sleutels as $i => $sleutel) {
+        $plekhouders[] = ':s' . $i;
+        $params['s' . $i] = $sleutel;
+    }
+    $sql = 'SELECT COUNT(*) FROM meldingen WHERE status IN (' . implode(',', $plekhouders) . ') AND DATE(bijgewerkt_op) = CURDATE()';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return (int) $stmt->fetchColumn();
+}
+
+/** De $limiet meest recent toegevoegde kennisbank-items (Q&A + documenten door elkaar), voor het "Nieuw in de kennisbank"-blokje op het beginscherm */
+function get_kb_recente_items(PDO $pdo, int $limiet = 3): array
+{
+    $limiet = (int) $limiet;
+    return $pdo->query(
+        "(SELECT 'qa' AS type, i.id, i.vraag AS titel, c.naam AS categorie_naam, i.aangemaakt_op
+          FROM kb_items i INNER JOIN kb_categorieen c ON c.id = i.categorie_id)
+         UNION ALL
+         (SELECT 'document' AS type, d.id, d.titel, c.naam AS categorie_naam, d.aangemaakt_op
+          FROM kb_documenten d INNER JOIN kb_categorieen c ON c.id = d.categorie_id)
+         ORDER BY aangemaakt_op DESC
+         LIMIT $limiet"
+    )->fetchAll();
 }
 
 /* =========================================================================

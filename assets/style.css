@@ -1217,3 +1217,44 @@ button.koppel-chip:hover {
 }
 .kb-doc-item h4 { margin: 0 0 4px; font-family: var(--font-display); font-size: 15px; }
 .kb-doc-item p { margin: 0 0 10px; }
+
+/* Dashboard: statuschips, snelkoppelingen, kennisbank-preview (V0.1.23) */
+.dagteller { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+
+.status-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0; }
+.chip {
+    display: inline-flex; align-items: center; gap: 9px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 100px;
+    padding: 5px 14px 5px 5px; text-decoration: none; color: var(--text);
+    transition: border-color .15s, background .15s;
+}
+.chip:hover { border-color: var(--teal); background: var(--panel-2); }
+.chip-icon {
+    width: 28px; height: 28px; flex: none; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; background: rgba(45,212,191,0.15); color: var(--teal);
+}
+.chip-tekst { display: flex; align-items: baseline; gap: 6px; }
+.chip-getal { font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+.chip-label { font-size: 12px; color: var(--muted); }
+.chip.warn .chip-icon { background: rgba(239,68,68,0.18); color: #fca5a5; }
+.chip.warn .chip-getal { color: #fca5a5; }
+.chip.ok .chip-icon { background: rgba(34,197,94,0.15); color: #4ade80; }
+
+.quicklinks { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 36px; }
+.quicklinks a {
+    display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 7px; padding: 9px 16px; font-size: 13.5px; font-weight: 500;
+}
+.quicklinks a:hover { border-color: var(--teal); }
+
+.bericht-card.gepind { border-color: var(--teal-dim); border-left: 3px solid var(--teal); }
+.bericht-card h3 .tag { margin-left: 8px; vertical-align: middle; }
+.tag-belangrijk { background: rgba(245,165,36,0.15); color: #f5a524; }
+.tag-geldig { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); font-weight: 400; }
+
+.kb-preview-list { display: flex; flex-direction: column; gap: 8px; }
+.kb-preview-item { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 10px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--text); font-size: 13.5px; transition: border-color .15s; }
+.kb-preview-item:hover { border-color: var(--teal); }
+.kb-preview-item span.cat { color: var(--muted); font-size: 12px; white-space: nowrap; }

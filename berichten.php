@@ -11,19 +11,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $actie = $_POST['actie'] ?? '';
 
     if ($actie === 'bericht_opslaan') {
-        $id      = (int) ($_POST['id'] ?? 0);
-        $titel   = trim($_POST['titel'] ?? '');
-        $inhoud  = trim($_POST['inhoud'] ?? '');
+        $id             = (int) ($_POST['id'] ?? 0);
+        $titel          = trim($_POST['titel'] ?? '');
+        $inhoud         = trim($_POST['inhoud'] ?? '');
+        $belangrijk     = isset($_POST['belangrijk']) ? 1 : 0;
+        $geldig_tot_ruw = trim($_POST['geldig_tot'] ?? '');
+        $geldig_tot     = $geldig_tot_ruw !== '' ? DateTime::createFromFormat('Y-m-d\TH:i', $geldig_tot_ruw) : null;
+        $geldig_tot_sql = $geldig_tot ? $geldig_tot->format('Y-m-d H:i:s') : null;
 
         if ($titel === '' || $inhoud === '') {
             $fout = 'Vul een titel en tekst in.';
         } elseif ($id > 0) {
-            $stmt = $pdo->prepare('UPDATE berichten SET titel = :t, inhoud = :i WHERE id = :id');
-            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'id' => $id]);
+            $stmt = $pdo->prepare('UPDATE berichten SET titel = :t, inhoud = :i, belangrijk = :b, geldig_tot = :g WHERE id = :id');
+            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'b' => $belangrijk, 'g' => $geldig_tot_sql, 'id' => $id]);
             $succes = 'Bericht bijgewerkt.';
         } else {
-            $stmt = $pdo->prepare('INSERT INTO berichten (titel, inhoud, auteur_id) VALUES (:t, :i, :a)');
-            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'a' => $_SESSION['gebruiker_id']]);
+            $stmt = $pdo->prepare('INSERT INTO berichten (titel, inhoud, belangrijk, geldig_tot, auteur_id) VALUES (:t, :i, :b, :g, :a)');
+            $stmt->execute(['t' => $titel, 'i' => $inhoud, 'b' => $belangrijk, 'g' => $geldig_tot_sql, 'a' => $_SESSION['gebruiker_id']]);
             $succes = 'Bericht "' . $titel . '" is geplaatst.';
         }
     }
@@ -110,6 +114,17 @@ include __DIR__ . '/includes/header.php';
             <label for="inhoud">Tekst</label>
             <textarea id="inhoud" name="inhoud" required rows="4" placeholder="Wat wil je delen met de crew?"><?= e($bewerk['inhoud'] ?? '') ?></textarea>
         </div>
+        <div class="field">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:13.5px; color:var(--text); font-weight:400;">
+                <input type="checkbox" name="belangrijk" <?= !empty($bewerk['belangrijk']) ? 'checked' : '' ?> style="width:auto; height:auto;">
+                Belangrijk (vastgepind bovenaan)
+            </label>
+        </div>
+        <div class="field">
+            <label for="geldig_tot">Geldig tot (optioneel)</label>
+            <input type="datetime-local" id="geldig_tot" name="geldig_tot"
+                   value="<?= $bewerk && $bewerk['geldig_tot'] ? e((new DateTime($bewerk['geldig_tot']))->format('Y-m-d\TH:i')) : '' ?>">
+        </div>
         <div class="actions full">
             <button type="submit" class="btn btn-primary"><?= $bewerk ? 'Wijzigingen opslaan' : 'Bericht plaatsen' ?></button>
             <?php if ($bewerk): ?>
@@ -126,12 +141,18 @@ include __DIR__ . '/includes/header.php';
     <?php else: ?>
         <div class="bericht-list">
             <?php foreach ($berichten as $b): ?>
-                <article class="bericht-card">
-                    <h3><?= e($b['titel']) ?></h3>
+                <article class="bericht-card<?= $b['belangrijk'] ? ' gepind' : '' ?>">
+                    <h3>
+                        <?= e($b['titel']) ?>
+                        <?php if ($b['belangrijk']): ?><span class="tag tag-belangrijk">Belangrijk</span><?php endif; ?>
+                    </h3>
                     <p><?= nl2br(e($b['inhoud'])) ?></p>
                     <p class="section-note">
                         <?= e($b['auteur_naam'] ?: 'Onbekend') ?>
                         &middot; <?= (new DateTime($b['aangemaakt_op']))->format('d-m-Y H:i') ?>
+                        <?php if ($b['geldig_tot']): ?>
+                            &middot; <span class="tag-geldig"><?= new DateTime($b['geldig_tot']) < new DateTime() ? 'verlopen op' : 'geldig tot' ?> <?= (new DateTime($b['geldig_tot']))->format('d-m-Y H:i') ?></span>
+                        <?php endif; ?>
                     </p>
                     <div class="actions">
                         <a href="/berichten.php?bewerk=<?= $b['id'] ?>" class="btn btn-small">Bewerken</a>
