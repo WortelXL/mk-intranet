@@ -1290,6 +1290,83 @@ button.koppel-chip:hover {
 .kb-doc-item h4 { margin: 0 0 4px; font-family: var(--font-display); font-size: 15px; }
 .kb-doc-item p { margin: 0 0 10px; }
 
+/* Kennisbank beheer: Q&A-items en documenten per stuk inklapbaar
+   (V0.1.30) -- zelfde <details>/<summary>-aanpak (en chevron) als de
+   openbare Q&A-pagina hierboven, maar met categorie-label en
+   linktelling in de kop, en de bewerken/verwijderen-acties + linkbeheer
+   in de ingeklapte inhoud. Voorkomt dat "Kennisbank beheren" een hele
+   lange pagina wordt zodra er veel items/documenten bijkomen. */
+.kb-beheer-lijst { display: flex; flex-direction: column; gap: 8px; }
+.kb-beheer-item,
+.kb-beheer-doc {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--panel-2);
+}
+.kb-beheer-item:hover,
+.kb-beheer-doc:hover { border-color: var(--teal-dim); }
+.kb-beheer-item-kop,
+.kb-beheer-doc-kop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    list-style: none;
+}
+.kb-beheer-item-kop::-webkit-details-marker,
+.kb-beheer-doc-kop::-webkit-details-marker { display: none; }
+.kb-beheer-item-kop::marker,
+.kb-beheer-doc-kop::marker { content: ""; }
+.kb-beheer-item-kop-links,
+.kb-beheer-doc-kop-links {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+.kb-beheer-item-kop-links::before,
+.kb-beheer-doc-kop-links::before {
+    content: "\25b8";
+    color: var(--teal);
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+}
+.kb-beheer-item[open] .kb-beheer-item-kop-links::before,
+.kb-beheer-doc[open] .kb-beheer-doc-kop-links::before { transform: rotate(90deg); }
+.kb-beheer-item-vraag,
+.kb-beheer-doc-titel {
+    font-weight: 600;
+    font-size: 13.5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.kb-beheer-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--teal);
+    border: 1px solid var(--teal-dim);
+    border-radius: 999px;
+    padding: 1px 7px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.kb-beheer-teller {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.kb-beheer-item-body,
+.kb-beheer-doc-body {
+    padding: 10px 14px 14px;
+    border-top: 1px solid var(--border);
+}
+.kb-beheer-tekst { margin: 0 0 10px; color: var(--text); line-height: 1.5; }
+
 /* Dashboard: statuschips, snelkoppelingen, kennisbank-preview (V0.1.23) */
 .dagteller { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 8px; }
 

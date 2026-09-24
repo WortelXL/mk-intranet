@@ -329,54 +329,61 @@ include __DIR__ . '/includes/header.php';
     <?php if (!$items): ?>
         <p class="section-note">Nog geen Q&amp;A-items toegevoegd.</p>
     <?php else: ?>
-        <div class="bericht-list">
+        <div class="kb-beheer-lijst">
             <?php foreach ($items as $item): ?>
-                <article class="bericht-card">
-                    <p class="section-note"><?= e($item['categorie_naam']) ?></p>
-                    <h3><?= e($item['vraag']) ?></h3>
-                    <p><?= nl2br(e($item['antwoord'])) ?></p>
-                    <div class="actions">
-                        <a href="/kennisbank.php?bewerk_item=<?= $item['id'] ?>#item-form" class="btn btn-small">Bewerken</a>
-                        <form method="post" style="display:inline;" onsubmit="return confirm('Q&amp;A-item \'<?= e(addslashes($item['vraag'])) ?>\' verwijderen?');">
-                            <input type="hidden" name="actie" value="item_verwijderen">
-                            <input type="hidden" name="id" value="<?= $item['id'] ?>">
-                            <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
-                        </form>
-                    </div>
-
-                    <?php $item_links = $links_per_item[$item['id']] ?? []; ?>
-                    <div class="link-beheer">
-                        <p class="link-beheer-kop">Links (max. 5)</p>
-                        <?php if (!$item_links): ?>
-                            <p class="section-note">Nog geen links voor dit item.</p>
-                        <?php else: ?>
-                            <ul class="link-lijst">
-                                <?php foreach ($item_links as $link): ?>
-                                    <li class="link-item">
-                                        <span class="link-item-tekst">
-                                            <strong><?= e($link['label']) ?></strong>
-                                            <span class="muted"> &rarr; <a href="<?= e($link['url']) ?>" target="_blank" rel="noopener" class="bericht-link"><?= e($link['url']) ?></a></span>
-                                        </span>
-                                        <form method="post" style="display:inline;" onsubmit="return confirm('Link \'<?= e($link['label']) ?>\' verwijderen?');">
-                                            <input type="hidden" name="actie" value="item_link_verwijderen">
-                                            <input type="hidden" name="id" value="<?= $link['id'] ?>">
-                                            <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
-                                        </form>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php endif; ?>
-                        <?php if (count($item_links) < 5): ?>
-                            <form method="post" class="link-toevoegen-form">
-                                <input type="hidden" name="actie" value="item_link_aanmaken">
-                                <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
-                                <input type="text" name="label" placeholder="Knoptekst, bv. 'Draaiboek'" class="input-small link-input-label" required>
-                                <input type="text" name="url" placeholder="https://..." class="input-small link-input-url" required>
-                                <button type="submit" class="btn btn-small">Link toevoegen</button>
+                <?php $item_links = $links_per_item[$item['id']] ?? []; ?>
+                <details class="kb-beheer-item">
+                    <summary class="kb-beheer-item-kop">
+                        <span class="kb-beheer-item-kop-links">
+                            <span class="kb-beheer-item-vraag"><?= e($item['vraag']) ?></span>
+                            <span class="kb-beheer-tag"><?= e($item['categorie_naam']) ?></span>
+                        </span>
+                        <span class="kb-beheer-teller"><?= count($item_links) ? count($item_links) . ' ' . (count($item_links) === 1 ? 'link' : 'links') : 'geen links' ?></span>
+                    </summary>
+                    <div class="kb-beheer-item-body">
+                        <p class="kb-beheer-tekst"><?= nl2br(e($item['antwoord'])) ?></p>
+                        <div class="actions">
+                            <a href="/kennisbank.php?bewerk_item=<?= $item['id'] ?>#item-form" class="btn btn-small">Bewerken</a>
+                            <form method="post" style="display:inline;" onsubmit="return confirm('Q&amp;A-item \'<?= e(addslashes($item['vraag'])) ?>\' verwijderen?');">
+                                <input type="hidden" name="actie" value="item_verwijderen">
+                                <input type="hidden" name="id" value="<?= $item['id'] ?>">
+                                <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
                             </form>
-                        <?php endif; ?>
+                        </div>
+
+                        <div class="link-beheer">
+                            <p class="link-beheer-kop">Links (max. 5)</p>
+                            <?php if (!$item_links): ?>
+                                <p class="section-note">Nog geen links voor dit item.</p>
+                            <?php else: ?>
+                                <ul class="link-lijst">
+                                    <?php foreach ($item_links as $link): ?>
+                                        <li class="link-item">
+                                            <span class="link-item-tekst">
+                                                <strong><?= e($link['label']) ?></strong>
+                                                <span class="muted"> &rarr; <a href="<?= e($link['url']) ?>" target="_blank" rel="noopener" class="bericht-link"><?= e($link['url']) ?></a></span>
+                                            </span>
+                                            <form method="post" style="display:inline;" onsubmit="return confirm('Link \'<?= e($link['label']) ?>\' verwijderen?');">
+                                                <input type="hidden" name="actie" value="item_link_verwijderen">
+                                                <input type="hidden" name="id" value="<?= $link['id'] ?>">
+                                                <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
+                                            </form>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                            <?php if (count($item_links) < 5): ?>
+                                <form method="post" class="link-toevoegen-form">
+                                    <input type="hidden" name="actie" value="item_link_aanmaken">
+                                    <input type="hidden" name="item_id" value="<?= $item['id'] ?>">
+                                    <input type="text" name="label" placeholder="Knoptekst, bv. 'Draaiboek'" class="input-small link-input-label" required>
+                                    <input type="text" name="url" placeholder="https://..." class="input-small link-input-url" required>
+                                    <button type="submit" class="btn btn-small">Link toevoegen</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </article>
+                </details>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
@@ -418,56 +425,63 @@ include __DIR__ . '/includes/header.php';
     <?php if (!$documenten): ?>
         <p class="section-note">Nog geen documenten toegevoegd.</p>
     <?php else: ?>
-        <div class="bericht-list">
+        <div class="kb-beheer-lijst">
             <?php foreach ($documenten as $doc): ?>
-                <article class="bericht-card">
-                    <p class="section-note"><?= e($doc['categorie_naam']) ?></p>
-                    <h3><?= e($doc['titel']) ?></h3>
-                    <?php if ($doc['toelichting']): ?>
-                        <p><?= nl2br(e($doc['toelichting'])) ?></p>
-                    <?php endif; ?>
-                    <div class="actions">
-                        <a href="/kennisbank.php?bewerk_document=<?= $doc['id'] ?>#document-form" class="btn btn-small">Bewerken</a>
-                        <form method="post" style="display:inline;" onsubmit="return confirm('Document \'<?= e(addslashes($doc['titel'])) ?>\' verwijderen?');">
-                            <input type="hidden" name="actie" value="document_verwijderen">
-                            <input type="hidden" name="id" value="<?= $doc['id'] ?>">
-                            <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
-                        </form>
-                    </div>
-
-                    <?php $doc_links = $links_per_document[$doc['id']] ?? []; ?>
-                    <div class="link-beheer">
-                        <p class="link-beheer-kop">Links (max. 5)</p>
-                        <?php if (!$doc_links): ?>
-                            <p class="section-note">Nog geen links voor dit document.</p>
-                        <?php else: ?>
-                            <ul class="link-lijst">
-                                <?php foreach ($doc_links as $link): ?>
-                                    <li class="link-item">
-                                        <span class="link-item-tekst">
-                                            <strong><?= e($link['label']) ?></strong>
-                                            <span class="muted"> &rarr; <a href="<?= e($link['url']) ?>" target="_blank" rel="noopener" class="bericht-link"><?= e($link['url']) ?></a></span>
-                                        </span>
-                                        <form method="post" style="display:inline;" onsubmit="return confirm('Link \'<?= e($link['label']) ?>\' verwijderen?');">
-                                            <input type="hidden" name="actie" value="document_link_verwijderen">
-                                            <input type="hidden" name="id" value="<?= $link['id'] ?>">
-                                            <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
-                                        </form>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
+                <?php $doc_links = $links_per_document[$doc['id']] ?? []; ?>
+                <details class="kb-beheer-doc">
+                    <summary class="kb-beheer-doc-kop">
+                        <span class="kb-beheer-doc-kop-links">
+                            <span class="kb-beheer-doc-titel"><?= e($doc['titel']) ?></span>
+                            <span class="kb-beheer-tag"><?= e($doc['categorie_naam']) ?></span>
+                        </span>
+                        <span class="kb-beheer-teller"><?= count($doc_links) ? count($doc_links) . ' ' . (count($doc_links) === 1 ? 'link' : 'links') : 'geen links' ?></span>
+                    </summary>
+                    <div class="kb-beheer-doc-body">
+                        <?php if ($doc['toelichting']): ?>
+                            <p class="kb-beheer-tekst"><?= nl2br(e($doc['toelichting'])) ?></p>
                         <?php endif; ?>
-                        <?php if (count($doc_links) < 5): ?>
-                            <form method="post" class="link-toevoegen-form">
-                                <input type="hidden" name="actie" value="document_link_aanmaken">
-                                <input type="hidden" name="document_id" value="<?= $doc['id'] ?>">
-                                <input type="text" name="label" placeholder="Knoptekst, bv. 'Draaiboek'" class="input-small link-input-label" required>
-                                <input type="text" name="url" placeholder="https://..." class="input-small link-input-url" required>
-                                <button type="submit" class="btn btn-small">Link toevoegen</button>
+                        <div class="actions">
+                            <a href="/kennisbank.php?bewerk_document=<?= $doc['id'] ?>#document-form" class="btn btn-small">Bewerken</a>
+                            <form method="post" style="display:inline;" onsubmit="return confirm('Document \'<?= e(addslashes($doc['titel'])) ?>\' verwijderen?');">
+                                <input type="hidden" name="actie" value="document_verwijderen">
+                                <input type="hidden" name="id" value="<?= $doc['id'] ?>">
+                                <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
                             </form>
-                        <?php endif; ?>
+                        </div>
+
+                        <div class="link-beheer">
+                            <p class="link-beheer-kop">Links (max. 5)</p>
+                            <?php if (!$doc_links): ?>
+                                <p class="section-note">Nog geen links voor dit document.</p>
+                            <?php else: ?>
+                                <ul class="link-lijst">
+                                    <?php foreach ($doc_links as $link): ?>
+                                        <li class="link-item">
+                                            <span class="link-item-tekst">
+                                                <strong><?= e($link['label']) ?></strong>
+                                                <span class="muted"> &rarr; <a href="<?= e($link['url']) ?>" target="_blank" rel="noopener" class="bericht-link"><?= e($link['url']) ?></a></span>
+                                            </span>
+                                            <form method="post" style="display:inline;" onsubmit="return confirm('Link \'<?= e($link['label']) ?>\' verwijderen?');">
+                                                <input type="hidden" name="actie" value="document_link_verwijderen">
+                                                <input type="hidden" name="id" value="<?= $link['id'] ?>">
+                                                <button type="submit" class="btn btn-small btn-danger">Verwijderen</button>
+                                            </form>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                            <?php if (count($doc_links) < 5): ?>
+                                <form method="post" class="link-toevoegen-form">
+                                    <input type="hidden" name="actie" value="document_link_aanmaken">
+                                    <input type="hidden" name="document_id" value="<?= $doc['id'] ?>">
+                                    <input type="text" name="label" placeholder="Knoptekst, bv. 'Draaiboek'" class="input-small link-input-label" required>
+                                    <input type="text" name="url" placeholder="https://..." class="input-small link-input-url" required>
+                                    <button type="submit" class="btn btn-small">Link toevoegen</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </article>
+                </details>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>

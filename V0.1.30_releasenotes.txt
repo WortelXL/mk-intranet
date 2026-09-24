@@ -1,0 +1,18 @@
+MK Intranet V0.1.30 -- Kennisbank beheren: items inklapbaar
+
+Verbetering
+-----------
+- Q&A-items en documenten op de beheerpagina ("Kennisbank beheren")
+  staan nu standaard ingeklapt: 1 compacte regel per item met de
+  vraag/titel, de categorie en het aantal gekoppelde links.
+- Klik op een regel om 'm te openen en het antwoord/de toelichting, de
+  linkbeheer-sectie en de knoppen Bewerken/Verwijderen te zien.
+- Zelfde interactiepatroon (<details>/<summary> met draaiend pijltje)
+  als de openbare Q&A-pagina en het inklapbare logboek elders in de
+  app -- geen JavaScript-library nodig.
+- Voorkomt dat de beheerpagina bij een groeiende kennisbank een hele
+  lange, onoverzichtelijke lijst wordt.
+
+Geen schemawijziging. De migratie
+(migratie/V0.1.30_kennisbank_beheer_inklapbaar.sql) is enkel om deze
+versie in het versie-overzicht te laten verschijnen.
