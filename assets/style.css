@@ -1040,7 +1040,7 @@ button.koppel-chip:hover {
    blijft totdat je een naam openklikt. --------------------------------- */
 .plotbord-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     gap: 10px;
 }
 .plotbord-card {
@@ -1055,7 +1055,15 @@ button.koppel-chip:hover {
 .plotbord-persoon { color: var(--muted); font-size: 11px; margin-top: 2px; }
 /* Meerdere leden per team (V0.1.18) -- 1 rij per lid, elk met eigen status. */
 .plotbord-leden { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
-.plotbord-lid { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+/* V0.1.28: eigen rij i.p.v. naast elkaar, anders past een lange
+   statusnaam (bv. "Beschikbaar (BS)") niet in de smalle teamkaartjes en
+   loopt de pil/dropdown buiten de kaart. */
+.plotbord-lid {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
 .plotbord-lid-naam { font-size: 11px; color: var(--text); }
 .plotbord-status {
     display: inline-flex;
@@ -1067,6 +1075,8 @@ button.koppel-chip:hover {
     color: var(--green);
     font-size: 11px;
     white-space: nowrap;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 .plotbord-card > .plotbord-status { margin-top: 8px; }
 .plotbord-status .afk { font-family: var(--font-mono); font-weight: 700; }
@@ -1124,7 +1134,7 @@ button.koppel-chip:hover {
    .plotbord-status hierboven, maar dan als een echt <select>: klikken
    opent het eigen dropdown-menu van de browser, precies zoals de
    statuswijziging op het mkapp-dashboard. */
-.plotbord-status-form { display: inline-flex; margin: 0; }
+.plotbord-status-form { display: inline-flex; margin: 0; max-width: 100%; }
 .plotbord-status-select {
     appearance: none;
     -webkit-appearance: none;
@@ -1140,6 +1150,11 @@ button.koppel-chip:hover {
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
     background-repeat: no-repeat;
     background-position: right 6px center;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 .plotbord-status-select:hover { border-color: var(--green); }
 .plotbord-status-select.leeg {
