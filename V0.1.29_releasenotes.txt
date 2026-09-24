@@ -1,0 +1,14 @@
+MK Intranet V0.1.29 -- Plotbord: teamkaartje-layout gerepareerd
+
+Reparatie
+---------
+- De statuspil/-dropdown naast een teamlid-naam op het Plotbord liep bij
+  een lange statusnaam (bijvoorbeeld "Beschikbaar (BS)") buiten de rand
+  van het (smalle) teamkaartje.
+- Naam en status staan nu onder elkaar in plaats van naast elkaar, en de
+  pil/dropdown kan nooit breder worden dan het kaartje.
+- Teamkaartjes zijn ook iets breder geworden (170px i.p.v. 150px minimum).
+
+Geen schemawijziging. De migratie
+(migratie/V0.1.29_plotbord_kaart_layout_fix.sql) is enkel om deze versie
+in het versie-overzicht te laten verschijnen.
