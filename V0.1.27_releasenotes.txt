@@ -1,0 +1,16 @@
+MK Intranet V0.1.27 -- Automatisch verversen op het Dashboard
+===============================================================
+
+Reparatie:
+- Het Dashboard ververste niet automatisch, ook niet met "Automatisch
+  verversen" aan bij Mijn instellingen. Oorzaak: die pagina had de
+  ververslogica nooit gekregen -- die stond al wel op Meldingen,
+  Plotbord en Plattegrond, maar was destijds niet meeverhuisd toen het
+  Dashboard werd opgebouwd (V0.1.23).
+- Werkt nu hetzelfde als op de andere pagina's: ververst op het
+  ingestelde interval, pauzeert zodra het tabblad niet actief in beeld
+  is, en onthoudt de scrollpositie zodat de pagina niet naar boven
+  springt.
+
+Vereist: geen schemawijziging, alleen de wijzigingenlog-regel
+(migratie/V0.1.27_dashboard_auto_refresh.sql).

@@ -21,6 +21,11 @@ $links_per_bericht = get_links_per_bericht($pdo, array_column($berichten, 'id'))
 /* ---- Nieuw in de kennisbank ---- */
 $kb_recent = get_kb_recente_items($pdo, 3);
 
+/* ---- Automatisch verversen (V0.1.27): stond al op Meldingen/Plotbord/
+ * Plattegrond, maar ontbrak nog op het Dashboard zelf. ---- */
+$mijn_instellingen = huidige_gebruiker_instellingen($pdo);
+$auto_refresh_seconden = (int) $mijn_instellingen['auto_refresh_seconden'];
+
 $actief = 'dashboard';
 $paginatitel = 'Intranet';
 include __DIR__ . '/includes/header.php';
@@ -123,6 +128,30 @@ include __DIR__ . '/includes/header.php';
         <?php endforeach; ?>
     </div>
 </section>
+<?php endif; ?>
+
+<?php if ($auto_refresh_seconden > 0): ?>
+<script>
+(function () {
+    // Zelfde auto-refresh-logica als de Meldingen-pagina: blijft doorlopen
+    // (niet één keer), pauzeert vanzelf zodra dit tabblad niet actief in
+    // beeld is, en onthoudt de scrollpositie zodat de pagina niet steeds
+    // naar boven springt.
+    var SCROLL_SLEUTEL = 'mkintranet_scroll_' + location.pathname;
+    var opgeslagen_scroll = sessionStorage.getItem(SCROLL_SLEUTEL);
+    if (opgeslagen_scroll !== null) {
+        window.scrollTo(0, parseInt(opgeslagen_scroll, 10) || 0);
+        sessionStorage.removeItem(SCROLL_SLEUTEL);
+    }
+
+    setInterval(function () {
+        if (document.visibilityState === 'visible') {
+            sessionStorage.setItem(SCROLL_SLEUTEL, window.scrollY);
+            window.location.reload();
+        }
+    }, <?= $auto_refresh_seconden * 1000 ?>);
+})();
+</script>
 <?php endif; ?>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

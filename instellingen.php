@@ -91,7 +91,7 @@ include __DIR__ . '/includes/header.php';
                     <option value="<?= $waarde ?>" <?= (int) $instellingen['auto_refresh_seconden'] === $waarde ? 'selected' : '' ?>><?= e($label) ?></option>
                 <?php endforeach; ?>
             </select>
-            <p class="section-note">Geldt voor de Meldingen-pagina. Pauzeert vanzelf zolang dit tabblad niet actief in beeld is.</p>
+            <p class="section-note">Geldt voor het Dashboard, de Meldingen-pagina, Plotbord en Plattegrond. Pauzeert vanzelf zolang dit tabblad niet actief in beeld is.</p>
         </div>
 
         <div class="field field-full">
