@@ -1102,7 +1102,6 @@ button.koppel-chip:hover {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    cursor: pointer;
 }
 .plotbord-rij-links {
     display: flex;
@@ -1110,8 +1109,44 @@ button.koppel-chip:hover {
     gap: 14px;
     min-width: 0;
 }
+/* Naam en schakelaartje blijven los klikbaar (2 losse <label>'s voor
+   dezelfde checkbox) zodat de statusdropdown ertussenin (zie hieronder)
+   niet per ongeluk ook de log opent/sluit. */
+.plotbord-naam-label,
+.plotbord-rij-toggle {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
 .plotbord-rij .plotbord-naam { white-space: nowrap; }
 .plotbord-rij .plotbord-status { margin-top: 0; }
+/* Klikbare statuswijziging (beheerder/medewerker) -- zelfde pil-vorm als
+   .plotbord-status hierboven, maar dan als een echt <select>: klikken
+   opent het eigen dropdown-menu van de browser, precies zoals de
+   statuswijziging op het mkapp-dashboard. */
+.plotbord-status-form { display: inline-flex; margin: 0; }
+.plotbord-status-select {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 3px 22px 3px 8px;
+    background-color: rgba(34,197,94,0.14);
+    color: var(--green);
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+}
+.plotbord-status-select:hover { border-color: var(--green); }
+.plotbord-status-select.leeg {
+    background-color: var(--panel);
+    color: var(--muted);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238b93a7' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+}
 .plotbord-rij .row-log { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
 .plotbord-rij:has(.log-toggle-checkbox:checked) .log-toggle-switch {
     background: var(--teal-dim);

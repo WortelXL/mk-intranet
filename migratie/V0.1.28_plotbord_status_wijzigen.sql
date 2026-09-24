@@ -1,0 +1,23 @@
+-- ============================================================
+-- MK INTRANET - Migratie voor V0.1.28
+-- Geen schemawijziging -- de gebruikte tabellen (eenheidsstatussen,
+-- eenheidsstatus_rollen, mdt_gebruikers, gebruikers.huidige_eenheidsstatus_id)
+-- bestaan al in de gedeelde database (aangemaakt vanuit mkapp). Alleen
+-- de wijzigingenlog-regel.
+--
+-- Wat er verandert:
+-- 1. Beheerders en medewerkers (bv. centralisten) kunnen op het Plotbord
+--    voortaan de eenheidsstatus van iemand anders wijzigen, via een
+--    dropdown i.p.v. de eerdere alleen-lezen pil -- handig als iemand
+--    vergeten is zijn eigen status bij te werken.
+-- 2. De dropdown toont alleen de statussen die bij de mdt-rol van die
+--    specifieke persoon horen (zelfde koppeling als MDT zelf gebruikt),
+--    dus verschilt per persoon/rol.
+-- 3. Andere rollen (view-niveau) zien gewoon de bestaande, niet-klikbare
+--    statuspil -- geen wijziging voor hen.
+-- ============================================================
+INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
+('V0.1.28', '24 september 2026', '## Nieuw (Plotbord)
+- Beheerders en medewerkers (bv. centralisten) kunnen op het Plotbord nu de eenheidsstatus van iemand anders wijzigen, via een dropdown i.p.v. de eerdere alleen-lezen pil -- handig als iemand vergeten is zijn eigen status bij te werken.
+- De dropdown toont alleen de statussen die bij de mdt-rol van die specifieke persoon horen, dus kan per persoon verschillen.
+- Andere rollen blijven de bestaande, niet-klikbare statuspil zien.');

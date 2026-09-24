@@ -1,0 +1,19 @@
+MK Intranet V0.1.28 -- Status wijzigen vanaf het Plotbord
+=============================================================
+
+Nieuw:
+- Beheerders en medewerkers (bv. centralisten) kunnen op het Plotbord
+  nu de eenheidsstatus van iemand anders wijzigen -- handig als iemand
+  vergeten is zijn eigen status bij te werken.
+- Werkt via een dropdown gestyled als de bestaande statuspil, zelfde
+  aanpak als de statuswijziging op het mkapp-dashboard: klikken opent
+  het eigen menu van je browser, kiezen stuurt 'm direct weg.
+- De dropdown toont alleen de statussen die bij de mdt-rol van die
+  specifieke persoon horen (dezelfde koppeling als MDT zelf al
+  gebruikt), kan dus per persoon verschillen.
+- Andere rollen (view-niveau) blijven gewoon de bestaande, niet-klikbare
+  statuspil zien -- geen wijziging voor hen.
+
+Vereist: geen schemawijziging (alle gebruikte tabellen bestaan al in de
+gedeelde database), alleen de wijzigingenlog-regel
+(migratie/V0.1.28_plotbord_status_wijzigen.sql).

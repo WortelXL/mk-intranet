@@ -1426,9 +1426,11 @@ function plotbord_teams(PDO $pdo): array
     $teams = $pdo->query('SELECT id, naam FROM teams WHERE zichtbaar_op_plotbord = 1 ORDER BY naam ASC')->fetchAll();
 
     $leden_stmt = $pdo->prepare(
-        "SELECT g.id, g.naam, es.naam AS status_naam, es.afkorting AS status_afkorting
+        "SELECT g.id, g.naam, g.huidige_eenheidsstatus_id, m.rol_id AS mdt_rol_id,
+                es.naam AS status_naam, es.afkorting AS status_afkorting
          FROM team_leden tl
          JOIN gebruikers g ON g.id = tl.gebruiker_id
+         LEFT JOIN mdt_gebruikers m ON m.gebruiker_id = g.id
          LEFT JOIN eenheidsstatussen es ON es.id = g.huidige_eenheidsstatus_id
          WHERE tl.team_id = ?
          ORDER BY g.naam ASC"
@@ -1547,7 +1549,7 @@ function mdt_toegang_per_gebruiker(PDO $pdo): array
 function plotbord_individueel(PDO $pdo): array
 {
     $gebruikers = $pdo->query(
-        "SELECT g.id, g.naam,
+        "SELECT g.id, g.naam, g.huidige_eenheidsstatus_id, m.rol_id AS mdt_rol_id,
                 es.naam AS status_naam, es.afkorting AS status_afkorting
          FROM mdt_gebruikers m
          JOIN gebruikers g ON g.id = m.gebruiker_id
@@ -1571,4 +1573,100 @@ function plotbord_individueel(PDO $pdo): array
     unset($gebruiker);
 
     return $gebruikers;
+}
+
+/**
+ * Eenheidsstatussen die bij een specifieke MDT-rol horen, via de
+ * koppeltabel eenheidsstatus_rollen -- dezelfde rol_id als op
+ * mdt_gebruikers.rol_id staat, en dezelfde filtering als MDT zelf al
+ * gebruikt voor "Mijn status". Geen rol_id (nog niet ingesteld voor die
+ * persoon) levert een lege lijst op -- dan valt het Plotbord terug op de
+ * gewone alleen-lezen pil (zie render_plotbord_status_html()).
+ */
+function eenheidsstatussen_voor_rol(PDO $pdo, ?int $rol_id): array
+{
+    if ($rol_id === null) {
+        return [];
+    }
+    $stmt = $pdo->prepare(
+        'SELECT e.* FROM eenheidsstatussen e
+         INNER JOIN eenheidsstatus_rollen er ON er.eenheidsstatus_id = e.id
+         WHERE er.rol_id = :r
+         ORDER BY e.volgorde ASC, e.id ASC'
+    );
+    $stmt->execute(['r' => $rol_id]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Mag deze (ingelogde) gebruiker vanaf het Plotbord de eenheidsstatus
+ * van iemand anders wijzigen? Beperkt tot beheerder- en
+ * medewerker-niveau (de rol "Centralist" zit standaard op
+ * medewerker-niveau) -- een view-niveau rol mag op het Plotbord, net als
+ * de rest van MK Intranet, alleen kijken.
+ */
+function mag_status_wijzigen(): bool
+{
+    return in_array(huidige_gebruiker_rol(), ['beheerder', 'medewerker'], true);
+}
+
+/**
+ * Zet de eenheidsstatus van iemand anders vanaf het Plotbord. Controleert
+ * dat de gekozen status ook echt bij de mdt-rol van díe persoon hoort
+ * (dezelfde koppeltabel als eenheidsstatussen_voor_rol() hierboven),
+ * zodat een handmatig aangepast formulier niet zomaar een status kan
+ * zetten die voor die rol niet bedoeld is. Geeft true terug bij succes.
+ */
+function zet_eenheidsstatus_vanaf_plotbord(PDO $pdo, int $gebruiker_id, int $eenheidsstatus_id): bool
+{
+    $stmt = $pdo->prepare(
+        'SELECT e.id FROM eenheidsstatussen e
+         INNER JOIN eenheidsstatus_rollen er ON er.eenheidsstatus_id = e.id
+         INNER JOIN mdt_gebruikers m ON m.rol_id = er.rol_id
+         WHERE e.id = :status_id AND m.gebruiker_id = :gebruiker_id'
+    );
+    $stmt->execute(['status_id' => $eenheidsstatus_id, 'gebruiker_id' => $gebruiker_id]);
+    if (!$stmt->fetchColumn()) {
+        return false;
+    }
+    $update = $pdo->prepare('UPDATE gebruikers SET huidige_eenheidsstatus_id = :s WHERE id = :g');
+    return $update->execute(['s' => $eenheidsstatus_id, 'g' => $gebruiker_id]);
+}
+
+/**
+ * Rendert de statusweergave voor 1 persoon op het Plotbord: voor wie mag
+ * wijzigen (mag_status_wijzigen()) en van wie de mdt-rol eenheidsstatussen
+ * heeft, een klikbare dropdown gestyled als de bestaande statuspil --
+ * kiezen stuurt 'm direct naar plotbord_status.php. Voor iedereen anders
+ * (of als er voor die rol geen statussen zijn ingesteld) gewoon de
+ * bestaande alleen-lezen pil. $persoon heeft de velden id,
+ * status_afkorting, status_naam, huidige_eenheidsstatus_id, mdt_rol_id --
+ * exact wat plotbord_teams() en plotbord_individueel() teruggeven.
+ */
+function render_plotbord_status_html(PDO $pdo, array $persoon): string
+{
+    $opties = (mag_status_wijzigen() && $persoon['mdt_rol_id'])
+        ? eenheidsstatussen_voor_rol($pdo, (int) $persoon['mdt_rol_id'])
+        : [];
+
+    if (!$opties) {
+        if (!$persoon['status_afkorting']) {
+            return '<span class="plotbord-status plotbord-status-onbekend">geen status</span>';
+        }
+        return '<span class="plotbord-status"><span class="afk">' . e($persoon['status_afkorting']) . '</span><span class="naam">' . e($persoon['status_naam']) . '</span></span>';
+    }
+
+    $html = '<form method="post" action="/plotbord_status.php" class="plotbord-status-form">';
+    $html .= '<input type="hidden" name="gebruiker_id" value="' . (int) $persoon['id'] . '">';
+    $html .= '<select name="eenheidsstatus_id" class="plotbord-status-select' . ($persoon['status_afkorting'] ? '' : ' leeg') . '" onchange="this.form.submit()">';
+    if (!$persoon['status_afkorting']) {
+        $html .= '<option selected disabled>geen status</option>';
+    }
+    foreach ($opties as $optie) {
+        $geselecteerd = (int) $persoon['huidige_eenheidsstatus_id'] === (int) $optie['id'] ? ' selected' : '';
+        $html .= '<option value="' . (int) $optie['id'] . '"' . $geselecteerd . '>' . e($optie['naam']) . ' (' . e($optie['afkorting']) . ')</option>';
+    }
+    $html .= '</select></form>';
+
+    return $html;
 }

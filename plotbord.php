@@ -39,11 +39,7 @@ include __DIR__ . '/includes/header.php';
                         <?php foreach ($team['leden'] as $lid): ?>
                             <div class="plotbord-lid">
                                 <span class="plotbord-lid-naam"><?= e($lid['naam']) ?></span>
-                                <?php if ($lid['status_afkorting']): ?>
-                                    <span class="plotbord-status"><span class="afk"><?= e($lid['status_afkorting']) ?></span><span class="naam"><?= e($lid['status_naam']) ?></span></span>
-                                <?php else: ?>
-                                    <span class="plotbord-status plotbord-status-onbekend">geen status</span>
-                                <?php endif; ?>
+                                <?= render_plotbord_status_html($pdo, $lid) ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -68,17 +64,17 @@ include __DIR__ . '/includes/header.php';
     <div class="plotbord-lijst">
         <?php foreach ($individueel as $i => $gebruiker): ?>
             <div class="plotbord-rij <?= $gebruiker['status_afkorting'] ? '' : 'plotbord-card-leeg' ?>">
-                <label for="plotbord-toggle-<?= (int) $gebruiker['id'] ?>" class="plotbord-rij-kop">
+                <div class="plotbord-rij-kop">
                     <span class="plotbord-rij-links">
-                        <span class="plotbord-naam"><?= e($gebruiker['naam']) ?></span>
-                        <?php if ($gebruiker['status_afkorting']): ?>
-                            <span class="plotbord-status"><span class="afk"><?= e($gebruiker['status_afkorting']) ?></span><span class="naam"><?= e($gebruiker['status_naam']) ?></span></span>
-                        <?php else: ?>
-                            <span class="plotbord-status plotbord-status-onbekend">geen status</span>
-                        <?php endif; ?>
+                        <label for="plotbord-toggle-<?= (int) $gebruiker['id'] ?>" class="plotbord-naam-label">
+                            <span class="plotbord-naam"><?= e($gebruiker['naam']) ?></span>
+                        </label>
+                        <?= render_plotbord_status_html($pdo, $gebruiker) ?>
                     </span>
-                    <span class="log-toggle-switch"></span>
-                </label>
+                    <label for="plotbord-toggle-<?= (int) $gebruiker['id'] ?>" class="plotbord-rij-toggle">
+                        <span class="log-toggle-switch"></span>
+                    </label>
+                </div>
                 <input type="checkbox" id="plotbord-toggle-<?= (int) $gebruiker['id'] ?>" class="log-toggle-checkbox">
                 <div class="row-log">
                     <?php if ($gebruiker['actieve_melding']): ?>
