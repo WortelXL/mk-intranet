@@ -1,0 +1,18 @@
+MK Intranet V0.1.32 -- Editor: knop kwam er half achter te zitten
+
+Reparatie
+---------
+- Op "Kennisbank beheren" (Q&A-antwoord, document-toelichting) en
+  "Berichten beheren" (berichttekst) rekende de rijke-tekst-editor zijn
+  eigen hoogte verkeerd, waardoor de knop eronder (bv. "Document
+  toevoegen") er half achter kwam te zitten in plaats van er gewoon
+  onder te staan.
+- Oorzaak: de editor krijgt van zichzelf height:100%, en dat resolvet
+  niet altijd betrouwbaar naar de werkelijke inhoud-hoogte binnen het
+  flex-formulier waarin hij staat (Chrome-specifiek gedrag). Nu
+  expliciet op height:auto gezet, zodat de editor-box en de ruimte die
+  de pagina ervoor vrijhoudt weer overeenkomen.
+
+Geen schemawijziging. De migratie
+(migratie/V0.1.32_editor_knop_overlap_fix.sql) is enkel om deze versie
+in het versie-overzicht te laten verschijnen.

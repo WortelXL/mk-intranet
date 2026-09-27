@@ -1370,6 +1370,15 @@ button.koppel-chip:hover {
 /* Rijke-tekst-editor (Quill, V0.1.31): zelfde donkere thema als de rest
    van de app i.p.v. Quill's standaard witte "snow"-thema. Gebruikt voor
    Kennisbank-antwoord/toelichting en Berichten-tekst. */
+/* .ql-container/.ql-editor komen standaard met height:100% uit Quill's
+   eigen CSS -- dat is prima in een normale pagina, maar deze editor zit
+   in .field, wat display:flex heeft (voor het formulier-grid hierboven).
+   Percentage-hoogtes van geneste elementen resolven binnen flexbox niet
+   altijd naar 'auto' zoals bij gewone block-layout (Chrome-specifiek
+   gedrag), waardoor de editor-box hoger werd getekend dan zijn eigen
+   ouder 'm meerekende -- gevolg: de "Opslaan"-knop erna kwam er half
+   achter te zitten. Vandaar hier expliciet height:auto i.p.v. op de
+   100%-default te vertrouwen. */
 .rijke-editor-wrap { margin-bottom: 4px; }
 .rijke-editor-wrap .ql-toolbar.ql-snow {
     background: var(--panel-2);
@@ -1383,8 +1392,9 @@ button.koppel-chip:hover {
     border-radius: 0 0 8px 8px;
     font-family: var(--font-body);
     font-size: 14px;
+    height: auto;
 }
-.rijke-editor-wrap .ql-editor { color: var(--text); min-height: 120px; line-height: 1.5; }
+.rijke-editor-wrap .ql-editor { color: var(--text); min-height: 120px; height: auto; line-height: 1.5; }
 .rijke-editor-wrap .ql-editor.ql-blank::before { color: var(--muted); font-style: normal; }
 .rijke-editor-wrap .ql-snow .ql-stroke { stroke: var(--muted); }
 .rijke-editor-wrap .ql-snow .ql-fill { fill: var(--muted); }
