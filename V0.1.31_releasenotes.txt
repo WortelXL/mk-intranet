@@ -1,0 +1,26 @@
+MK Intranet V0.1.31 -- Rijke-tekst-editor voor Kennisbank en Berichten
+
+Nieuw
+-----
+- Het antwoordveld van een Q&A-item, de toelichting van een document
+  (Kennisbank beheren) en de tekst van een bericht (Berichten beheren)
+  hebben nu een echte tekst-editor (Quill) in plaats van een platte
+  tekstbox.
+- Beschikbare opmaak: vet, cursief, onderstreept, doorstreept, kopjes
+  (h1-h3), genummerde en ongenummerde lijstjes, quote-blok en links.
+- Bestaande, eerder opgeslagen platte tekst blijft gewoon zichtbaar
+  zoals eerst (automatisch herkend, geen aparte migratiestap nodig).
+
+Techniek / veiligheid
+----------------------
+- De HTML die de editor aanlevert wordt bij het opslaan altijd eerst
+  gefilterd (server-side, via PHP's ingebouwde DOMDocument -- geen
+  externe library) op een vaste lijst toegestane tags en veilige
+  links, voordat die in de database komt. Scripts, opmaak-attributen
+  en andere niet-toegestane HTML worden verwijderd.
+- De editor-library (Quill, BSD-3-licentie) is lokaal meegeleverd onder
+  assets/vendor/quill/ -- geen externe CDN-afhankelijkheid.
+
+Geen schemawijziging. De migratie
+(migratie/V0.1.31_rijke_tekst_editor.sql) is enkel om deze versie in
+het versie-overzicht te laten verschijnen.

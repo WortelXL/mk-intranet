@@ -1413,6 +1413,115 @@ function render_wijzigingen_html(string $tekst): string
 }
 
 /**
+ * Whitelist-sanitisatie van de HTML die de rijke-tekst-editor (Quill)
+ * aanlevert, vlak voor het opslaan (V0.1.31: Kennisbank-antwoord/
+ * toelichting en Berichten-inhoud). Staat alleen simpele opmaak toe
+ * (vet/cursief/onderstreept/doorstreept, lijstjes, kopjes t/m h3, quote,
+ * link) en haalt al het andere weg (script/style/iframe/on*-attributen/
+ * javascript:-links, class/style-attributen) -- ook al komt de invoer
+ * alleen van beheerders, dan nog slaan we nooit ongefilterde HTML op.
+ * Gebruikt alleen PHP's ingebouwde DOMDocument, geen externe library.
+ */
+function sanitize_rijke_tekst(string $html): string
+{
+    $html = trim($html);
+    if ($html === '') {
+        return '';
+    }
+
+    $toegestane_tags = [
+        'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'a',
+        'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'blockquote',
+    ];
+
+    $dom = new DOMDocument();
+    libxml_use_internal_errors(true);
+    $dom->loadHTML('<?xml encoding="utf-8"?><div>' . $html . '</div>', LIBXML_NOERROR | LIBXML_NOWARNING);
+    libxml_clear_errors();
+
+    $wortel = $dom->getElementsByTagName('div')->item(0);
+    if (!$wortel) {
+        return '';
+    }
+
+    $opschonen = function (DOMNode $node) use (&$opschonen, $toegestane_tags) {
+        foreach (iterator_to_array($node->childNodes) as $kind) {
+            if ($kind->nodeType === XML_TEXT_NODE) {
+                continue;
+            }
+            if ($kind->nodeType !== XML_ELEMENT_NODE) {
+                $node->removeChild($kind);
+                continue;
+            }
+            /** @var DOMElement $kind */
+            $tag = strtolower($kind->nodeName);
+            if (!in_array($tag, $toegestane_tags, true)) {
+                // Tag zelf niet toegestaan: haal 'm weg maar behoud de
+                // inhoud (bv. een <span> of <div> wordt "uitgepakt").
+                while ($kind->firstChild) {
+                    $node->insertBefore($kind->firstChild, $kind);
+                }
+                $node->removeChild($kind);
+                continue;
+            }
+            // Alle attributen weg, behalve een veilige href op <a>.
+            foreach (iterator_to_array($kind->attributes ?? []) as $attribuut) {
+                $kind->removeAttribute($attribuut->name);
+            }
+            $opschonen($kind);
+        }
+    };
+
+    // Links krijgen hun href pas ná het algemene attributen-opschonen
+    // terug (alleen http(s)/mailto), zodat er geen omweg via
+    // bijvoorbeeld "onclick" overblijft.
+    $hrefs = [];
+    foreach ($wortel->getElementsByTagName('a') as $index => $a) {
+        $href = $a->getAttribute('href');
+        if (preg_match('#^(https?://|mailto:)#i', $href)) {
+            $hrefs[] = $href;
+        } else {
+            $hrefs[] = null;
+        }
+    }
+    $opschonen($wortel);
+    $links_nu = $wortel->getElementsByTagName('a');
+    foreach ($links_nu as $index => $a) {
+        if (!empty($hrefs[$index])) {
+            $a->setAttribute('href', $hrefs[$index]);
+            $a->setAttribute('target', '_blank');
+            $a->setAttribute('rel', 'noopener');
+        }
+    }
+
+    $resultaat = '';
+    foreach (iterator_to_array($wortel->childNodes) as $kind) {
+        $resultaat .= $dom->saveHTML($kind);
+    }
+    return trim($resultaat);
+}
+
+/**
+ * Toont rijke tekst (antwoord/toelichting/berichttekst) die met de
+ * Quill-editor is opgeslagen. Al bij het opslaan gesaniticeerd (zie
+ * sanitize_rijke_tekst()), dus hier gewoon direct als HTML tonen.
+ * Terugwaarts compatibel met tekst van vóór de editor (V0.1.31): die
+ * bevat nooit een "<" (platte tekst), dus die val terug op de oude
+ * nl2br(e())-weergave in plaats van als HTML te worden geinterpreteerd.
+ */
+function render_rijke_tekst(?string $tekst): string
+{
+    $tekst = (string) $tekst;
+    if ($tekst === '') {
+        return '';
+    }
+    if (strpos($tekst, '<') === false) {
+        return nl2br(e($tekst));
+    }
+    return $tekst;
+}
+
+/**
  * Plotbord (V0.1.12): teams met hun leden (sinds V0.1.18: 0 of
  * meerdere, via team_leden), actuele eenheidsstatus per lid en (indien
  * aanwezig) de actieve melding die aan dat team is toegewezen. 1-op-1

@@ -13,13 +13,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($actie === 'bericht_opslaan') {
         $id             = (int) ($_POST['id'] ?? 0);
         $titel          = trim($_POST['titel'] ?? '');
-        $inhoud         = trim($_POST['inhoud'] ?? '');
+        $inhoud         = sanitize_rijke_tekst(trim($_POST['inhoud'] ?? ''));
         $belangrijk     = isset($_POST['belangrijk']) ? 1 : 0;
         $geldig_tot_ruw = trim($_POST['geldig_tot'] ?? '');
         $geldig_tot     = $geldig_tot_ruw !== '' ? DateTime::createFromFormat('Y-m-d\TH:i', $geldig_tot_ruw) : null;
         $geldig_tot_sql = $geldig_tot ? $geldig_tot->format('Y-m-d H:i:s') : null;
 
-        if ($titel === '' || $inhoud === '') {
+        if ($titel === '' || trim(strip_tags($inhoud)) === '') {
             $fout = 'Vul een titel en tekst in.';
         } elseif ($id > 0) {
             $stmt = $pdo->prepare('UPDATE berichten SET titel = :t, inhoud = :i, belangrijk = :b, geldig_tot = :g WHERE id = :id');
@@ -87,6 +87,7 @@ $links_per_bericht = get_links_per_bericht($pdo, array_column($berichten, 'id'))
 
 $actief = 'beheer';
 $paginatitel = 'Berichten beheren';
+$extra_head = '<link rel="stylesheet" href="/assets/vendor/quill/quill.snow.css?v=' . urlencode(APP_VERSION) . '">';
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -111,8 +112,11 @@ include __DIR__ . '/includes/header.php';
             <input type="text" id="titel" name="titel" required value="<?= e($bewerk['titel'] ?? '') ?>" placeholder="bv. Aangepaste openingstijden dag 2">
         </div>
         <div class="field field-full">
-            <label for="inhoud">Tekst</label>
-            <textarea id="inhoud" name="inhoud" required rows="4" placeholder="Wat wil je delen met de crew?"><?= e($bewerk['inhoud'] ?? '') ?></textarea>
+            <label for="inhoud_editor">Tekst</label>
+            <div class="rijke-editor-wrap">
+                <div id="inhoud_editor" class="rijke-editor"><?= render_rijke_tekst($bewerk['inhoud'] ?? '') ?></div>
+            </div>
+            <input type="hidden" name="inhoud" id="inhoud_input" data-verplicht="1">
         </div>
         <div class="field">
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:13.5px; color:var(--text); font-weight:400;">
@@ -146,7 +150,7 @@ include __DIR__ . '/includes/header.php';
                         <?= e($b['titel']) ?>
                         <?php if ($b['belangrijk']): ?><span class="tag tag-belangrijk">Belangrijk</span><?php endif; ?>
                     </h3>
-                    <p><?= nl2br(e($b['inhoud'])) ?></p>
+                    <p><?= render_rijke_tekst($b['inhoud']) ?></p>
                     <p class="section-note">
                         <?= e($b['auteur_naam'] ?: 'Onbekend') ?>
                         &middot; <?= (new DateTime($b['aangemaakt_op']))->format('d-m-Y H:i') ?>
@@ -201,4 +205,35 @@ include __DIR__ . '/includes/header.php';
     <?php endif; ?>
 </div>
 
+<script src="/assets/vendor/quill/quill.min.js?v=<?= urlencode(APP_VERSION) ?>"></script>
+<script>
+(function () {
+    var editorEl = document.getElementById('inhoud_editor');
+    var inputEl = document.getElementById('inhoud_input');
+    if (!editorEl || !inputEl) { return; }
+    var quill = new Quill('#inhoud_editor', {
+        theme: 'snow',
+        placeholder: 'Wat wil je delen met de crew?',
+        modules: {
+            toolbar: [
+                [{ header: [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['blockquote', 'link'],
+                ['clean']
+            ]
+        }
+    });
+    var form = editorEl.closest('form');
+    if (!form) { return; }
+    form.addEventListener('submit', function (e) {
+        if (inputEl.dataset.verplicht && quill.getText().trim().length === 0) {
+            e.preventDefault();
+            alert('Vul een tekst in.');
+            return;
+        }
+        inputEl.value = quill.root.innerHTML;
+    });
+})();
+</script>
 <?php include __DIR__ . '/includes/footer.php'; ?>

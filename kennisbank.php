@@ -63,9 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) ($_POST['id'] ?? 0);
         $categorie_id = (int) ($_POST['categorie_id'] ?? 0);
         $vraag = trim($_POST['vraag'] ?? '');
-        $antwoord = trim($_POST['antwoord'] ?? '');
+        $antwoord = sanitize_rijke_tekst(trim($_POST['antwoord'] ?? ''));
 
-        if ($categorie_id <= 0 || $vraag === '' || $antwoord === '') {
+        if ($categorie_id <= 0 || $vraag === '' || trim(strip_tags($antwoord)) === '') {
             $fout = 'Kies een categorie en vul zowel een vraag als een antwoord in.';
         } elseif ($id > 0) {
             $stmt = $pdo->prepare('UPDATE kb_items SET categorie_id = :c, vraag = :v, antwoord = :a WHERE id = :id');
@@ -138,7 +138,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) ($_POST['id'] ?? 0);
         $categorie_id = (int) ($_POST['categorie_id'] ?? 0);
         $titel = trim($_POST['titel'] ?? '');
-        $toelichting = trim($_POST['toelichting'] ?? '');
+        $toelichting = sanitize_rijke_tekst(trim($_POST['toelichting'] ?? ''));
+        if (trim(strip_tags($toelichting)) === '') {
+            $toelichting = '';
+        }
 
         if ($categorie_id <= 0 || $titel === '') {
             $fout = 'Kies een categorie en vul een titel in.';
@@ -223,6 +226,7 @@ $links_per_document = get_kb_document_links($pdo, array_column($documenten, 'id'
 
 $actief = 'beheer';
 $paginatitel = 'Kennisbank beheren';
+$extra_head = '<link rel="stylesheet" href="/assets/vendor/quill/quill.snow.css?v=' . urlencode(APP_VERSION) . '">';
 include __DIR__ . '/includes/header.php';
 ?>
 
@@ -314,8 +318,11 @@ include __DIR__ . '/includes/header.php';
             <input type="text" id="item_vraag" name="vraag" required value="<?= e($bewerk_item['vraag'] ?? '') ?>" placeholder="bv. Waar kan ik inchecken?">
         </div>
         <div class="field field-full">
-            <label for="item_antwoord">Antwoord</label>
-            <textarea id="item_antwoord" name="antwoord" required rows="4"><?= e($bewerk_item['antwoord'] ?? '') ?></textarea>
+            <label for="item_antwoord_editor">Antwoord</label>
+            <div class="rijke-editor-wrap">
+                <div id="item_antwoord_editor" class="rijke-editor"><?= render_rijke_tekst($bewerk_item['antwoord'] ?? '') ?></div>
+            </div>
+            <input type="hidden" name="antwoord" id="item_antwoord_input" data-verplicht="1">
         </div>
         <div class="actions full">
             <button type="submit" class="btn btn-primary"><?= $bewerk_item ? 'Wijzigingen opslaan' : 'Item toevoegen' ?></button>
@@ -341,7 +348,7 @@ include __DIR__ . '/includes/header.php';
                         <span class="kb-beheer-teller"><?= count($item_links) ? count($item_links) . ' ' . (count($item_links) === 1 ? 'link' : 'links') : 'geen links' ?></span>
                     </summary>
                     <div class="kb-beheer-item-body">
-                        <p class="kb-beheer-tekst"><?= nl2br(e($item['antwoord'])) ?></p>
+                        <p class="kb-beheer-tekst"><?= render_rijke_tekst($item['antwoord']) ?></p>
                         <div class="actions">
                             <a href="/kennisbank.php?bewerk_item=<?= $item['id'] ?>#item-form" class="btn btn-small">Bewerken</a>
                             <form method="post" style="display:inline;" onsubmit="return confirm('Q&amp;A-item \'<?= e(addslashes($item['vraag'])) ?>\' verwijderen?');">
@@ -410,8 +417,11 @@ include __DIR__ . '/includes/header.php';
             <input type="text" id="doc_titel" name="titel" required value="<?= e($bewerk_document['titel'] ?? '') ?>" placeholder="bv. Draaiboek dag 2">
         </div>
         <div class="field field-full">
-            <label for="doc_toelichting">Toelichting (optioneel)</label>
-            <textarea id="doc_toelichting" name="toelichting" rows="3"><?= e($bewerk_document['toelichting'] ?? '') ?></textarea>
+            <label for="doc_toelichting_editor">Toelichting (optioneel)</label>
+            <div class="rijke-editor-wrap">
+                <div id="doc_toelichting_editor" class="rijke-editor"><?= render_rijke_tekst($bewerk_document['toelichting'] ?? '') ?></div>
+            </div>
+            <input type="hidden" name="toelichting" id="doc_toelichting_input">
         </div>
         <div class="actions full">
             <button type="submit" class="btn btn-primary"><?= $bewerk_document ? 'Wijzigingen opslaan' : 'Document toevoegen' ?></button>
@@ -438,7 +448,7 @@ include __DIR__ . '/includes/header.php';
                     </summary>
                     <div class="kb-beheer-doc-body">
                         <?php if ($doc['toelichting']): ?>
-                            <p class="kb-beheer-tekst"><?= nl2br(e($doc['toelichting'])) ?></p>
+                            <p class="kb-beheer-tekst"><?= render_rijke_tekst($doc['toelichting']) ?></p>
                         <?php endif; ?>
                         <div class="actions">
                             <a href="/kennisbank.php?bewerk_document=<?= $doc['id'] ?>#document-form" class="btn btn-small">Bewerken</a>
@@ -487,4 +497,39 @@ include __DIR__ . '/includes/header.php';
     <?php endif; ?>
 </div>
 
+<script src="/assets/vendor/quill/quill.min.js?v=<?= urlencode(APP_VERSION) ?>"></script>
+<script>
+(function () {
+    function maakRijkeEditor(editorId, inputId) {
+        var editorEl = document.getElementById(editorId);
+        var inputEl = document.getElementById(inputId);
+        if (!editorEl || !inputEl) { return; }
+        var quill = new Quill('#' + editorId, {
+            theme: 'snow',
+            placeholder: 'Typ hier de tekst...',
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['blockquote', 'link'],
+                    ['clean']
+                ]
+            }
+        });
+        var form = editorEl.closest('form');
+        if (!form) { return; }
+        form.addEventListener('submit', function (e) {
+            if (inputEl.dataset.verplicht && quill.getText().trim().length === 0) {
+                e.preventDefault();
+                alert('Vul een tekst in.');
+                return;
+            }
+            inputEl.value = quill.root.innerHTML;
+        });
+    }
+    maakRijkeEditor('item_antwoord_editor', 'item_antwoord_input');
+    maakRijkeEditor('doc_toelichting_editor', 'doc_toelichting_input');
+})();
+</script>
 <?php include __DIR__ . '/includes/footer.php'; ?>

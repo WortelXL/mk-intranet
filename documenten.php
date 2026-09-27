@@ -38,7 +38,7 @@ include __DIR__ . '/includes/header.php';
                     <article class="kb-doc-item">
                         <h4><?= e($doc['titel']) ?></h4>
                         <?php if ($doc['toelichting']): ?>
-                            <p class="muted"><?= nl2br(e($doc['toelichting'])) ?></p>
+                            <p class="muted"><?= render_rijke_tekst($doc['toelichting']) ?></p>
                         <?php endif; ?>
                         <?php $links = $links_per_document[$doc['id']] ?? []; ?>
                         <?php if ($links): ?>

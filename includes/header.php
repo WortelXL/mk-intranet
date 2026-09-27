@@ -28,6 +28,7 @@ $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($paginatitel) ?> — MK Intranet</title>
 <link rel="stylesheet" href="/assets/style.css?v=<?= urlencode(APP_VERSION) ?>">
+<?= $extra_head ?? '' ?>
 </head>
 <body>
 <div class="topbar">

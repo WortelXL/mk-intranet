@@ -29,7 +29,7 @@ include __DIR__ . '/includes/header.php';
                     <?= e($b['titel']) ?>
                     <?php if ($b['belangrijk']): ?><span class="tag tag-belangrijk">Belangrijk</span><?php endif; ?>
                 </h3>
-                <p><?= nl2br(e($b['inhoud'])) ?></p>
+                <p><?= render_rijke_tekst($b['inhoud']) ?></p>
                 <?php if (!empty($links_per_bericht[$b['id']])): ?>
                     <div class="link-knoppen">
                         <?php foreach ($links_per_bericht[$b['id']] as $link): ?>

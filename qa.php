@@ -38,7 +38,7 @@ include __DIR__ . '/includes/header.php';
                     <details class="kb-item">
                         <summary class="kb-item-vraag"><?= e($item['vraag']) ?></summary>
                         <div class="kb-item-antwoord">
-                            <p><?= nl2br(e($item['antwoord'])) ?></p>
+                            <p><?= render_rijke_tekst($item['antwoord']) ?></p>
                             <?php $links = $links_per_item[$item['id']] ?? []; ?>
                             <?php if ($links): ?>
                                 <div class="kb-item-links">

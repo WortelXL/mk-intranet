@@ -1367,6 +1367,70 @@ button.koppel-chip:hover {
 }
 .kb-beheer-tekst { margin: 0 0 10px; color: var(--text); line-height: 1.5; }
 
+/* Rijke-tekst-editor (Quill, V0.1.31): zelfde donkere thema als de rest
+   van de app i.p.v. Quill's standaard witte "snow"-thema. Gebruikt voor
+   Kennisbank-antwoord/toelichting en Berichten-tekst. */
+.rijke-editor-wrap { margin-bottom: 4px; }
+.rijke-editor-wrap .ql-toolbar.ql-snow {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+}
+.rijke-editor-wrap .ql-container.ql-snow {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 0 0 8px 8px;
+    font-family: var(--font-body);
+    font-size: 14px;
+}
+.rijke-editor-wrap .ql-editor { color: var(--text); min-height: 120px; line-height: 1.5; }
+.rijke-editor-wrap .ql-editor.ql-blank::before { color: var(--muted); font-style: normal; }
+.rijke-editor-wrap .ql-snow .ql-stroke { stroke: var(--muted); }
+.rijke-editor-wrap .ql-snow .ql-fill { fill: var(--muted); }
+.rijke-editor-wrap .ql-snow .ql-picker { color: var(--muted); }
+.rijke-editor-wrap .ql-snow .ql-picker-label { border-color: transparent; }
+.rijke-editor-wrap .ql-snow.ql-toolbar button:hover,
+.rijke-editor-wrap .ql-snow.ql-toolbar button.ql-active,
+.rijke-editor-wrap .ql-snow.ql-toolbar .ql-picker-label:hover,
+.rijke-editor-wrap .ql-snow.ql-toolbar .ql-picker-item:hover {
+    color: var(--teal);
+}
+.rijke-editor-wrap .ql-snow.ql-toolbar button:hover .ql-stroke,
+.rijke-editor-wrap .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.rijke-editor-wrap .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke {
+    stroke: var(--teal);
+}
+.rijke-editor-wrap .ql-snow.ql-toolbar button:hover .ql-fill,
+.rijke-editor-wrap .ql-snow.ql-toolbar button.ql-active .ql-fill {
+    fill: var(--teal);
+}
+.rijke-editor-wrap .ql-snow .ql-picker-options {
+    background: var(--panel);
+    border: 1px solid var(--border);
+}
+.rijke-editor-wrap .ql-snow .ql-tooltip {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    box-shadow: none;
+}
+.rijke-editor-wrap .ql-snow .ql-tooltip input[type=text] {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+}
+.rijke-editor-wrap .ql-snow a { color: var(--teal); }
+
+/* Weergave van opgeslagen rijke tekst (public + beheer-preview): links
+   in dezelfde teal-kleur als de rest van de app, lijstjes met wat lucht. */
+.kb-beheer-tekst a,
+.kb-item-antwoord a,
+.bericht-card a { color: var(--teal); }
+.kb-beheer-tekst ul, .kb-beheer-tekst ol,
+.kb-item-antwoord ul, .kb-item-antwoord ol,
+.bericht-card ul, .bericht-card ol { margin: 0 0 10px; padding-left: 22px; }
+
 /* Dashboard: statuschips, snelkoppelingen, kennisbank-preview (V0.1.23) */
 .dagteller { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-top: 8px; }
 
