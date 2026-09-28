@@ -20,6 +20,30 @@ if (is_ingelogd()) {
     }
 }
 $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !== null;
+
+// Eigen hyperlinks (Beheer > Menu, V0.1.33). Alleen voor de normale
+// navigatie hieronder -- de rol-beperkte weergave (mijn-rol.php)
+// gebruikt dit systeem bewust niet en blijft ongewijzigd.
+$eigen_links = [];
+$mijn_rol_ids_navbar = [];
+if (is_ingelogd() && !$rol_beperkt) {
+    $mijn_rol_ids_navbar = array_map(static function ($r) {
+        return (int) $r['id'];
+    }, $mijn_rollen_navbar);
+    $eigen_links = eigen_menu_links_per_plek($pdo);
+}
+
+/** Tekent de zichtbare eigen links op 1 plek in de navigatiebalk ('' = los in het hoofdmenu, of 'meldingen'/'event' = genest in dat uitklapmenu). */
+$toon_eigen_links = static function (string $plek) use ($eigen_links, $mijn_rol_ids_navbar) {
+    foreach ($eigen_links[$plek] ?? [] as $el) {
+        if (!menu_item_zichtbaar_voor($el, $mijn_rol_ids_navbar)) {
+            continue;
+        }
+        echo '<a href="' . e($el['url'] ?? '#') . '"'
+            . (!empty($el['nieuw_tab']) ? ' target="_blank" rel="noopener"' : '')
+            . '>' . e($el['naam']) . '</a>';
+    }
+};
 ?>
 <!doctype html>
 <html lang="nl">
@@ -55,6 +79,7 @@ $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !
                                 <a href="/statistieken.php" class="<?= $actief === 'statistieken' ? 'active' : '' ?>">Statistieken</a>
                                 <a href="/plotbord.php" class="<?= $actief === 'plotbord' ? 'active' : '' ?>">Plotbord</a>
                                 <a href="/plattegrond.php" class="<?= $actief === 'plattegrond' ? 'active' : '' ?>">Plattegrond</a>
+                                <?php $toon_eigen_links('meldingen'); ?>
                             </div>
                         </details>
                     </div>
@@ -66,12 +91,14 @@ $rol_beperkt = $mijn_actieve_rol && $mijn_actieve_rol['hoofdclassificatie_id'] !
                                 <a href="/qa.php" class="<?= $actief === 'qa' ? 'active' : '' ?>">Q&amp;A</a>
                                 <a href="/documenten.php" class="<?= $actief === 'documenten' ? 'active' : '' ?>">Documenten</a>
                                 <a href="/alle_berichten.php" class="<?= $actief === 'alle_berichten' ? 'active' : '' ?>">Berichten</a>
+                                <?php $toon_eigen_links('event'); ?>
                             </div>
                         </details>
                     </div>
                     <?php if (is_beheerder()): ?>
                         <a href="/beheer.php" class="<?= $actief === 'beheer' ? 'active' : '' ?>">Beheer</a>
                     <?php endif; ?>
+                    <?php $toon_eigen_links(''); ?>
                 <?php endif; ?>
                 <a href="/instellingen.php" class="user-chip" title="Mijn instellingen">
                     <?= e(huidige_gebruiker_naam()) ?>

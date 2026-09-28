@@ -1,0 +1,19 @@
+MK Intranet V0.1.33 -- Eigen hyperlinks in het menu (Beheer > Menu)
+
+Nieuw
+-----
+- Beheer > Menu: eigen hyperlinks toevoegen aan de navigatiebalk, net als
+  "Beheer > Menu" in MKAPP.
+- Een link kan los in het hoofdmenu staan, of genest zitten onder het
+  uitklapmenu Meldingen of Event.
+- Per link instelbaar: openen in een nieuw tabblad, tijdelijk verbergen,
+  en de volgorde tussen links onderling.
+- Optioneel koppelen aan een of meerdere rollen -- is een link aan geen
+  enkele rol gekoppeld, dan is hij zichtbaar voor iedereen. Is hij wel
+  gekoppeld, dan zien alleen gebruikers met (een van) die rollen hem.
+- Eigen tabellen (intranet_menu_items/intranet_menu_item_rollen), zodat
+  deze links nooit doorlekken naar of vanuit het meldkamersysteem (mkapp
+  heeft zijn eigen, gelijknamige tabellen voor zijn eigen menu).
+
+Schemawijziging: migratie/V0.1.33_menu_links.sql voegt de tabellen
+intranet_menu_items en intranet_menu_item_rollen toe.

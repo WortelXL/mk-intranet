@@ -41,6 +41,10 @@ include __DIR__ . '/includes/header.php';
         <h3>Kennisbank beheren</h3>
         <p>Categorieen, Q&amp;A en documenten voor de Event-tab in de navigatie. Alleen zichtbaar hier in MK Intranet, geen weergave in mkapp.</p>
     </a>
+    <a href="/menu.php" class="beheer-card">
+        <h3>Menu beheren</h3>
+        <p>Eigen hyperlinks toevoegen aan de navigatiebalk, los of genest onder Meldingen/Event, optioneel per rol zichtbaar.</p>
+    </a>
 </div>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

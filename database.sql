@@ -550,6 +550,30 @@ CREATE TABLE IF NOT EXISTS kb_document_links (
     FOREIGN KEY (kb_document_id) REFERENCES kb_documenten(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- Eigen hyperlinks in de navigatiebalk (Beheer > Menu, V0.1.33) -- let
+-- op: dit verwacht dat de gedeelde `rollen`-tabel (van het
+-- meldkamersysteem) al bestaat; die staat niet in dit bestand omdat MK
+-- Intranet altijd bovenop een al geinstalleerde mkapp-database draait.
+CREATE TABLE IF NOT EXISTS intranet_menu_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    parent_sleutel VARCHAR(50) DEFAULT NULL,
+    naam VARCHAR(100) NOT NULL,
+    url VARCHAR(255) NOT NULL,
+    nieuw_tab TINYINT(1) NOT NULL DEFAULT 0,
+    zichtbaar TINYINT(1) NOT NULL DEFAULT 1,
+    volgorde INT NOT NULL DEFAULT 0,
+    aangemaakt_op DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS intranet_menu_item_rollen (
+    menu_item_id INT NOT NULL,
+    rol_id INT NOT NULL,
+    toegewezen_op DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (menu_item_id, rol_id),
+    FOREIGN KEY (menu_item_id) REFERENCES intranet_menu_items(id) ON DELETE CASCADE,
+    FOREIGN KEY (rol_id) REFERENCES rollen(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 ('V0.0.1', '28 augustus 2026', '## Eerste versie
 - Live overzicht van lopende meldingen (alleen-lezen) en crewbeheer (toevoegen/bewerken/verwijderen) op één dashboardpagina.

@@ -1522,6 +1522,66 @@ function render_rijke_tekst(?string $tekst): string
 }
 
 /**
+ * Eigen hyperlinks in de navigatiebalk (Beheer > Menu, V0.1.33) --
+ * zelfde idee als "Beheer > Menu" in mkapp, maar met een eigen tabel
+ * (intranet_menu_items/intranet_menu_item_rollen) zodat een link die
+ * hier wordt toegevoegd alleen in MK Intranet verschijnt, nooit
+ * (ongewild) ook in mkapp. Alle eigen links, platte lijst, op plek dan
+ * volgorde.
+ */
+function alle_eigen_menu_links(PDO $pdo): array
+{
+    return $pdo->query(
+        'SELECT * FROM intranet_menu_items ORDER BY parent_sleutel IS NULL DESC, parent_sleutel ASC, volgorde ASC, id ASC'
+    )->fetchAll();
+}
+
+/** Rol-ids gekoppeld aan 1 eigen link (leeg = zichtbaar voor iedereen die er sowieso al bij mag). */
+function menu_item_rol_ids(PDO $pdo, int $menu_item_id): array
+{
+    $stmt = $pdo->prepare('SELECT rol_id FROM intranet_menu_item_rollen WHERE menu_item_id = :id');
+    $stmt->execute(['id' => $menu_item_id]);
+    return array_map('intval', array_column($stmt->fetchAll(), 'rol_id'));
+}
+
+/**
+ * Eigen links gegroepeerd per plek in het menu ('' = los in het
+ * hoofdmenu, 'meldingen'/'event' = genest in dat uitklapmenu), elk al
+ * voorzien van zijn eigen rol_ids, op volgorde. Gebruikt door
+ * includes/header.php om naast de vaste navigatie ook de eigen links op
+ * de juiste plek te tonen.
+ */
+function eigen_menu_links_per_plek(PDO $pdo): array
+{
+    $per_plek = ['' => [], 'meldingen' => [], 'event' => []];
+    foreach (alle_eigen_menu_links($pdo) as $item) {
+        $item['rol_ids'] = menu_item_rol_ids($pdo, (int) $item['id']);
+        $plek = $item['parent_sleutel'] ?? '';
+        if (!isset($per_plek[$plek])) {
+            $per_plek[$plek] = [];
+        }
+        $per_plek[$plek][] = $item;
+    }
+    return $per_plek;
+}
+
+/**
+ * Is deze eigen link zichtbaar voor iemand met deze rol-ids? Leeg
+ * rol-filter op het item = zichtbaar voor iedereen (zelfde conventie
+ * als bij webhook_classificaties/eenheidsstatus_rollen).
+ */
+function menu_item_zichtbaar_voor(array $item, array $mijn_rol_ids): bool
+{
+    if (!$item['zichtbaar']) {
+        return false;
+    }
+    if (empty($item['rol_ids'])) {
+        return true;
+    }
+    return (bool) array_intersect($item['rol_ids'], $mijn_rol_ids);
+}
+
+/**
  * Plotbord (V0.1.12): teams met hun leden (sinds V0.1.18: 0 of
  * meerdere, via team_leden), actuele eenheidsstatus per lid en (indien
  * aanwezig) de actieve melding die aan dat team is toegewezen. 1-op-1
