@@ -1,0 +1,15 @@
+MK Intranet V0.1.34 -- Reparatie: site viel uit als menu-links-tabel ontbrak
+
+Reparatie
+---------
+- Beheer > Menu (eigen hyperlinks, V0.1.33): als de tabel voor eigen
+  links ontbrak of onbereikbaar was (bv. omdat de migratie nog niet was
+  uitgevoerd), viel de hele site uit met een fatal error -- want elke
+  pagina laadt includes/header.php, en dat gebruikte deze query zonder
+  foutafhandeling.
+- Nu wordt zo'n database-fout afgevangen: er worden dan gewoon geen
+  eigen links getoond, in plaats van dat de site plat gaat.
+
+Geen schemawijziging. De migratie
+(migratie/V0.1.34_menu_links_hotfix.sql) is enkel om deze versie in het
+versie-overzicht te laten verschijnen.

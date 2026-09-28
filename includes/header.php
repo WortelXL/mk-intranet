@@ -30,7 +30,15 @@ if (is_ingelogd() && !$rol_beperkt) {
     $mijn_rol_ids_navbar = array_map(static function ($r) {
         return (int) $r['id'];
     }, $mijn_rollen_navbar);
-    $eigen_links = eigen_menu_links_per_plek($pdo);
+    try {
+        $eigen_links = eigen_menu_links_per_plek($pdo);
+    } catch (PDOException $e) {
+        // Val stil terug op "geen eigen links" i.p.v. de hele site
+        // (elke pagina laadt header.php!) onderuit te halen als de
+        // migratie voor deze functie nog niet is uitgevoerd of de
+        // tabel om een andere reden ontbreekt.
+        $eigen_links = [];
+    }
 }
 
 /** Tekent de zichtbare eigen links op 1 plek in de navigatiebalk ('' = los in het hoofdmenu, of 'meldingen'/'event' = genest in dat uitklapmenu). */
