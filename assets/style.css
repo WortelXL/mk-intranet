@@ -1,18 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
 
 :root {
-    --bg:        #0a0d13;
-    --panel:     #121722;
-    --panel-2:   #171d2b;
-    --border:    #232b3d;
-    --text:      #e7eaf1;
-    --muted:     #8b93a7;
-    --teal:      #2dd4bf;
-    --teal-dim:  #175c53;
-    --red:       #ef4444;
-    --green:     #22c55e;
-    --blue:      #3b82f6;
-    --gray:      #6b7280;
+    /* Huisstijl in de kleuren van het MKintranet-logo (V0.1.35), zelfde
+       merkpalet als mkapp (V2.0.2.46) en de MDT-app (V0.0.18). De
+       variabelenaam --teal is bewust behouden zodat bestaande
+       verwijzingen blijven werken, maar de waarde is nu het merkmagenta
+       van het logo. */
+    --bg:        #030917;
+    --panel:     #0a1330;
+    --panel-2:   #101c44;
+    --border:    #1c2b5e;
+    --text:      #f2f5ff;
+    --muted:     #9faad3;
+    --teal:      #e6007e;      /* merkmagenta: vlakken, randen, knoppen */
+    --teal-text: #ff5cb1;      /* zelfde kleur, lichter voor tekst op donker (contrast) */
+    --teal-dim:  #7a0a4b;
+    --red:       #ff4d5a;
+    --green:     #39b54a;
+    --blue:      #0394d2;
+    --gray:      #6e7ba8;
 
     --font-display: 'Space Grotesk', 'Inter', sans-serif;
     --font-body: 'Inter', system-ui, sans-serif;
@@ -26,8 +32,8 @@ html, body {
     padding: 0;
     background: var(--bg);
     background-image:
-        linear-gradient(rgba(45,212,191,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(45,212,191,0.025) 1px, transparent 1px);
+        linear-gradient(rgba(60,110,255,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(60,110,255,0.035) 1px, transparent 1px);
     background-size: 32px 32px;
     color: var(--text);
     font-family: var(--font-body);
@@ -71,14 +77,20 @@ a { color: inherit; }
 }
 
 .brand-mark {
-    font-family: var(--font-mono);
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 0.14em;
-    color: var(--teal);
-    border: 1px solid var(--teal-dim);
-    padding: 3px 7px;
-    border-radius: 3px;
+    display: block;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.18);
+}
+
+.login-hero {
+    display: block;
+    width: 150px;
+    height: 150px;
+    border-radius: 32px;
+    margin: 8px 0 22px;
+    box-shadow: 0 8px 28px rgba(230,0,126,0.45), 0 0 0 1px rgba(255,255,255,0.14);
 }
 
 .brand-name {
@@ -112,7 +124,7 @@ nav.mainnav a {
 }
 
 nav.mainnav a:hover { color: var(--text); background: var(--panel-2); }
-nav.mainnav a.active { color: var(--bg); background: var(--teal); }
+nav.mainnav a.active { color: #fff; background: var(--teal); }
 
 .nav-dropdown { position: relative; display: inline-flex; }
 .nav-dropdown details { position: relative; }
@@ -136,7 +148,7 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
     opacity: 0.7;
 }
 .nav-dropdown summary:hover { color: var(--text); background: var(--panel-2); }
-.nav-dropdown summary.active { color: var(--bg); background: var(--teal); }
+.nav-dropdown summary.active { color: #fff; background: var(--teal); }
 .nav-dropdown details[open] summary { color: var(--text); background: var(--panel-2); }
 .nav-dropdown-menu {
     position: absolute;
@@ -163,7 +175,7 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
     transition: background 0.15s, color 0.15s;
 }
 .nav-dropdown-menu a:hover { color: var(--text); background: var(--panel-2); }
-.nav-dropdown-menu a.active { color: var(--bg); background: var(--teal); }
+.nav-dropdown-menu a.active { color: #fff; background: var(--teal); }
 
 .user-chip {
     display: inline-flex;
@@ -193,7 +205,7 @@ nav.mainnav a.active { color: var(--bg); background: var(--teal); }
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.rol-badge.rol-beheerder { background: rgba(45,212,191,0.15); color: var(--teal); }
+.rol-badge.rol-beheerder { background: rgba(230,0,126,0.18); color: var(--teal-text); }
 .rol-badge.rol-medewerker { background: rgba(59,130,246,0.15); color: #8ab4f8; }
 .rol-badge.rol-view { background: rgba(107,114,128,0.2); color: var(--muted); }
 
@@ -258,7 +270,7 @@ select.rol-badge.rol-badge-wisselaar:focus {
 .eyebrow {
     font-family: var(--font-mono);
     font-size: 12.5px;
-    color: var(--teal);
+    color: var(--teal-text);
     letter-spacing: 0.06em;
     margin: 0 0 6px;
     text-transform: uppercase;
@@ -356,7 +368,7 @@ select.rol-badge.rol-badge-wisselaar:focus {
 
 /* ---- Berichten: links ------------------------------------------------ */
 .bericht-link {
-    color: var(--teal);
+    color: var(--teal-text);
     font-size: 13px;
     word-break: break-all;
 }
@@ -543,7 +555,7 @@ select.rol-badge.rol-badge-wisselaar:focus {
 .melding-main .meta { font-size: 12.5px; color: var(--muted); }
 
 .melding-link { color: inherit; text-decoration: none; }
-.melding-link:hover { color: var(--teal); }
+.melding-link:hover { color: var(--teal-text); }
 
 /* ---- Archief: selectievakjes voor export ------------------------ */
 .melding-row.archief-row {
@@ -569,7 +581,7 @@ select.rol-badge.rol-badge-wisselaar:focus {
 /* Bronlabel op een logboekregel die van een gekoppelde melding komt
    (V0.1.17, samengevoegd logboek) -- zelfde blauw als de koppel-chips. */
 .melding-log-bron {
-    color: #3b82f6;
+    color: var(--blue);
     text-decoration: none;
     font-weight: 600;
     margin-right: 4px;
@@ -785,11 +797,11 @@ button.koppel-chip:hover {
 
 .btn-primary {
     background: var(--teal);
-    color: #06231f;
+    color: #fff;
     border-color: var(--teal);
     font-weight: 600;
 }
-.btn-primary:hover { background: #26bfab; }
+.btn-primary:hover { border-color: var(--teal); filter: brightness(1.1); }
 
 .btn-block { width: 100%; justify-content: center; }
 
@@ -881,7 +893,7 @@ button.koppel-chip:hover {
     cursor: pointer;
     transition: color 0.15s, border-color 0.15s;
 }
-.versie-knop:hover { color: var(--teal); border-color: var(--teal-dim); }
+.versie-knop:hover { color: var(--teal-text); border-color: var(--teal-dim); }
 
 /* ---- Wijzigingenlog-dialoog ---------------------------------------------------- */
 .wijzigingen-dialog {
@@ -946,7 +958,7 @@ button.koppel-chip:hover {
     font-weight: 600;
     font-size: 13px;
     margin: 0 0 6px;
-    color: var(--teal);
+    color: var(--teal-text);
 }
 .wijzigingen-release-kop span { color: var(--muted); font-weight: 400; }
 
@@ -1147,7 +1159,7 @@ button.koppel-chip:hover {
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2339b54a' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
     background-repeat: no-repeat;
     background-position: right 6px center;
     max-width: 100%;
@@ -1160,7 +1172,7 @@ button.koppel-chip:hover {
 .plotbord-status-select.leeg {
     background-color: var(--panel);
     color: var(--muted);
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238b93a7' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%239faad3' stroke-width='3'><path d='M6 9l6 6 6-6'/></svg>");
 }
 .plotbord-rij .row-log { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
 .plotbord-rij:has(.log-toggle-checkbox:checked) .log-toggle-switch {
@@ -1235,7 +1247,7 @@ button.koppel-chip:hover {
     content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
     border: 6px solid transparent; border-top-color: var(--teal);
 }
-.pin-tooltip-locatie { font-family: var(--font-mono); font-size: 10.5px; color: var(--teal); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.03em; }
+.pin-tooltip-locatie { font-family: var(--font-mono); font-size: 10.5px; color: var(--teal-text); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.03em; }
 .pin-tooltip-melding { margin-bottom: 5px; }
 .pin-tooltip-melding .meld-id { display: block; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); }
 .pin-tooltip-melding .titel { display: block; font-size: 12.5px; font-weight: 600; }
@@ -1274,7 +1286,7 @@ button.koppel-chip:hover {
     content: "\25b8";
     display: inline-block;
     margin-right: 8px;
-    color: var(--teal);
+    color: var(--teal-text);
     transition: transform 0.15s ease;
 }
 .kb-item[open] .kb-item-vraag::before { transform: rotate(90deg); }
@@ -1329,7 +1341,7 @@ button.koppel-chip:hover {
 .kb-beheer-item-kop-links::before,
 .kb-beheer-doc-kop-links::before {
     content: "\25b8";
-    color: var(--teal);
+    color: var(--teal-text);
     flex-shrink: 0;
     transition: transform 0.15s ease;
 }
@@ -1346,7 +1358,7 @@ button.koppel-chip:hover {
 .kb-beheer-tag {
     font-family: var(--font-mono);
     font-size: 10px;
-    color: var(--teal);
+    color: var(--teal-text);
     border: 1px solid var(--teal-dim);
     border-radius: 999px;
     padding: 1px 7px;
@@ -1404,16 +1416,16 @@ button.koppel-chip:hover {
 .rijke-editor-wrap .ql-snow.ql-toolbar button.ql-active,
 .rijke-editor-wrap .ql-snow.ql-toolbar .ql-picker-label:hover,
 .rijke-editor-wrap .ql-snow.ql-toolbar .ql-picker-item:hover {
-    color: var(--teal);
+    color: var(--teal-text);
 }
 .rijke-editor-wrap .ql-snow.ql-toolbar button:hover .ql-stroke,
 .rijke-editor-wrap .ql-snow.ql-toolbar button.ql-active .ql-stroke,
 .rijke-editor-wrap .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke {
-    stroke: var(--teal);
+    stroke: var(--teal-text);
 }
 .rijke-editor-wrap .ql-snow.ql-toolbar button:hover .ql-fill,
 .rijke-editor-wrap .ql-snow.ql-toolbar button.ql-active .ql-fill {
-    fill: var(--teal);
+    fill: var(--teal-text);
 }
 .rijke-editor-wrap .ql-snow .ql-picker-options {
     background: var(--panel);
@@ -1430,13 +1442,13 @@ button.koppel-chip:hover {
     border: 1px solid var(--border);
     color: var(--text);
 }
-.rijke-editor-wrap .ql-snow a { color: var(--teal); }
+.rijke-editor-wrap .ql-snow a { color: var(--teal-text); }
 
 /* Weergave van opgeslagen rijke tekst (public + beheer-preview): links
    in dezelfde teal-kleur als de rest van de app, lijstjes met wat lucht. */
 .kb-beheer-tekst a,
 .kb-item-antwoord a,
-.bericht-card a { color: var(--teal); }
+.bericht-card a { color: var(--teal-text); }
 .kb-beheer-tekst ul, .kb-beheer-tekst ol,
 .kb-item-antwoord ul, .kb-item-antwoord ol,
 .bericht-card ul, .bericht-card ol { margin: 0 0 10px; padding-left: 22px; }
@@ -1455,7 +1467,7 @@ button.koppel-chip:hover {
 .chip-icon {
     width: 28px; height: 28px; flex: none; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; background: rgba(45,212,191,0.15); color: var(--teal);
+    font-size: 14px; background: rgba(230,0,126,0.18); color: var(--teal-text);
 }
 .chip-tekst { display: flex; align-items: baseline; gap: 6px; }
 .chip-getal { font-family: var(--font-display); font-weight: 700; font-size: 15px; }

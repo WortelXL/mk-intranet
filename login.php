@@ -49,6 +49,7 @@ include __DIR__ . '/includes/header.php';
 
 <div class="page-head">
     <div>
+        <img class="login-hero" src="/assets/logo-512.png" alt="MK Intranet" width="150" height="150">
         <p class="eyebrow">MK Intranet</p>
         <h1>Inloggen</h1>
         <p>Log in met je account van het meldkamersysteem.</p>

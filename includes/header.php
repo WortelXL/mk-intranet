@@ -60,13 +60,16 @@ $toon_eigen_links = static function (string $plek) use ($eigen_links, $mijn_rol_
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= e($paginatitel) ?> — MK Intranet</title>
 <link rel="stylesheet" href="/assets/style.css?v=<?= urlencode(APP_VERSION) ?>">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="theme-color" content="#030917">
 <?= $extra_head ?? '' ?>
 </head>
 <body>
 <div class="topbar">
     <div class="topbar-inner">
         <a href="<?= is_ingelogd() && $rol_beperkt ? '/mijn-rol.php' : '/index.php' ?>" class="brand">
-            <span class="brand-mark">MK</span>
+            <img class="brand-mark" src="/assets/logo-96.png" alt="" width="40" height="40">
             <span>
                 <span class="brand-name">Intranet</span><br>
                 <span class="brand-event"><?= e(event_naam($pdo)) ?></span>

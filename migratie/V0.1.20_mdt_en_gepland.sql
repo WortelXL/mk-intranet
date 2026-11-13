@@ -22,4 +22,4 @@
 INSERT IGNORE INTO intranet_versies (versienummer, datum, wijzigingen) VALUES
 ('V0.1.20', '9 september 2026', '## Nieuw
 - Beheer > Gebruikers heeft nu een kolom "MDT" (overgenomen van mkapp) om MDT-toegang voor een bestaand account direct aan/uit te zetten, naast de bestaande MK/Intranet-vinkjes -- zelfde account, zelfde wachtwoord, alles op 1 plek.
-- Nieuw: Beheer > Geplande meldingen, overgenomen van mkapp. Plan hier een melding in voor een toekomstig tijdstip (evt. met herhaling), bewerk of annuleer 'm -- zelfde gedeelde lijst als het meldkamersysteem. Het daadwerkelijk laten verschijnen blijft via mkapp lopen.');
+- Nieuw: Beheer > Geplande meldingen, overgenomen van mkapp. Plan hier een melding in voor een toekomstig tijdstip (evt. met herhaling), bewerk of annuleer ''m -- zelfde gedeelde lijst als het meldkamersysteem. Het daadwerkelijk laten verschijnen blijft via mkapp lopen.');
